@@ -59,6 +59,11 @@ public unsafe class Shader : IDisposable
         _gl.Uniform3(GetUniformLoc(name), vec.X, vec.Y, vec.Z);
     }
 
+    public void SetVec2(string name, Vector2 vec)
+    {
+        _gl.Uniform2(GetUniformLoc(name), vec.X, vec.Y);
+    }
+
     public void SetFloat(string name, float value)
     {
         _gl.Uniform1(GetUniformLoc(name), value);

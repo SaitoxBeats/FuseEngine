@@ -1,0 +1,83 @@
+using System.IO;
+using Blowtorch.Model;
+using Fuse.Renderer;
+using Fuse.Core;
+
+namespace Blowtorch;
+
+public class EditorSceneService
+{
+    private MapDocument _doc = null!;
+    private Scene _scene = null!;
+    private string _mapPath = "";
+
+    public MapDocument Document => _doc;
+    public Scene Scene => _scene;
+    public string MapPath => _mapPath;
+
+    public void LoadMap(string fuseResPath)
+    {
+        _mapPath = Path.Combine(fuseResPath, "Maps", "default.json");
+        _doc = MapDocument.Load(_mapPath) ?? new MapDocument();
+        _scene = new Scene();
+    }
+
+    public void SetDocument(MapDocument doc)
+    {
+        _doc = doc;
+    }
+
+    public void PopulateScene(EditorAssetService assetService)
+    {
+        _scene = new Scene();
+
+        foreach (var mapObj in _doc.Objects)
+        {
+            var mesh = assetService.GetOrCreateMesh(mapObj);
+            if (mesh == null) continue;
+
+            var entity = _scene.Add(mesh, mapObj.Id);
+            entity.MeshKey = mapObj.Mesh ?? mapObj.Model ?? "";
+            entity.TexturePath = mapObj.Texture ?? "";
+            entity.Visible = mapObj.Visible;
+            entity.ModelScale = mapObj.ModelScale;
+            entity.UvScale = mapObj.UvScale;
+
+            if (mapObj.Body != null)
+            {
+                entity.Transform.Position = mapObj.Body.Position;
+                entity.Transform.Rotation = mapObj.Body.Rotation;
+                
+                if (mapObj.Body.Shape == MapShapeType.Box && mapObj.Body.HalfExtents.HasValue)
+                {
+                    entity.Transform.Scale = mapObj.Body.HalfExtents.Value * 2.0f;
+                }
+                else if (mapObj.Body.Shape == MapShapeType.Sphere && mapObj.Body.Radius.HasValue)
+                {
+                    entity.Transform.Scale = new System.Numerics.Vector3(mapObj.Body.Radius.Value * 2.0f);
+                }
+                else
+                {
+                    entity.Transform.Scale = new System.Numerics.Vector3(mapObj.ModelScale);
+                }
+            }
+            else
+            {
+                entity.Transform.Scale = new System.Numerics.Vector3(mapObj.ModelScale);
+            }
+
+            if (!string.IsNullOrEmpty(mapObj.Texture))
+            {
+                assetService.GetOrCreateTexture(mapObj.Texture);
+            }
+        }
+    }
+
+    public void SaveMap()
+    {
+        if (string.IsNullOrEmpty(_mapPath) || _doc == null) return;
+        string json = _doc.Serialize();
+        File.WriteAllText(_mapPath, json);
+        Logger.Info($"Map saved to {_mapPath}");
+    }
+}

@@ -70,6 +70,13 @@ public unsafe class Mesh : IDisposable
         _gl.BindVertexArray(0);
     }
 
+    public void Draw(PrimitiveType mode)
+    {
+        _gl.BindVertexArray(_vao);
+        _gl.DrawElements(mode, _indexCount, DrawElementsType.UnsignedInt, (void*)0);
+        _gl.BindVertexArray(0);
+    }
+
     public static Mesh CreateCube(GL gl)
     {
         var vertices = new Vertex[]

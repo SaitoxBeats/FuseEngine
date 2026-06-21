@@ -95,6 +95,7 @@ public class MapDocument
             Mesh = obj.TryGetPropertyValue("mesh", out var meshNode) ? (string)meshNode! : null,
             Model = obj.TryGetPropertyValue("model", out var modelNode) ? (string)modelNode! : null,
             ModelScale = obj.TryGetPropertyValue("model_scale", out var scaleNode) ? (float)scaleNode! : 1.0f,
+            UvScale = obj.TryGetPropertyValue("uv_scale", out var uvNode) ? Vec2FromJson(uvNode!.AsArray()) : Vector2.One,
             Texture = obj.TryGetPropertyValue("texture", out var texNode) ? (string)texNode! : null,
             Interactable = obj.TryGetPropertyValue("interactable", out var interactNode) ? (string)interactNode! : null,
         };
@@ -164,6 +165,8 @@ public class MapDocument
         else if (obj.Mesh != null)
         {
             j["mesh"] = obj.Mesh;
+            if (obj.UvScale != Vector2.One)
+                j["uv_scale"] = Vec2ToJson(obj.UvScale);
         }
 
         if (!string.IsNullOrEmpty(obj.Texture))
@@ -219,10 +222,14 @@ public class MapDocument
     private static Vector3 Vec3FromJson(JsonArray arr) => new(
         (float)arr[0]!, (float)arr[1]!, (float)arr[2]!);
 
+    private static Vector2 Vec2FromJson(JsonArray arr) => new(
+        (float)arr[0]!, (float)arr[1]!);
+
     private static Quaternion QuatFromJson(JsonArray arr) => new(
         (float)arr[1]!, (float)arr[2]!, (float)arr[3]!, (float)arr[0]!);
 
     private static JsonArray Vec3ToJson(Vector3 v) => new(v.X, v.Y, v.Z);
+    private static JsonArray Vec2ToJson(Vector2 v) => new(v.X, v.Y);
     private static JsonArray QuatToJson(Quaternion q) => new(q.W, q.X, q.Y, q.Z);
 
     private static MapShapeType ShapeFromString(string s) => s switch

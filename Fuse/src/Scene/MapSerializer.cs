@@ -124,6 +124,8 @@ public static class MapSerializer
             else
             {
                 obj["mesh"] = e.MeshKey;
+                if (e.UvScale != Vector2.One)
+                    obj["uv_scale"] = new JsonArray(e.UvScale.X, e.UvScale.Y);
             }
 
             if (!string.IsNullOrEmpty(e.TexturePath))
@@ -205,6 +207,13 @@ public static class MapSerializer
             float modelScale = obj.TryGetPropertyValue("model_scale", out var scaleNode)
                 ? (float)scaleNode! : 1.0f;
 
+            Vector2 uvScale = Vector2.One;
+            if (obj.TryGetPropertyValue("uv_scale", out var uvNode))
+            {
+                var arr = uvNode!.AsArray();
+                uvScale = new Vector2((float)arr[0]!, (float)arr[1]!);
+            }
+
             string texturePath = obj.TryGetPropertyValue("texture", out var texNode)
                 ? (string)texNode! : "";
 
@@ -233,6 +242,7 @@ public static class MapSerializer
             entity.MeshKey = meshKey;
             entity.TexturePath = texturePath;
             entity.ModelScale = modelScale;
+            entity.UvScale = uvScale;
 
             if (obj.TryGetPropertyValue("interactable", out var interactableNode))
                 entity.InteractableType = (string)interactableNode!;
@@ -257,7 +267,19 @@ public static class MapSerializer
 
                 body.Build(physics);
                 entity.Body = body;
+                
+                if (body.Type == RigidBody.ShapeType.Box)
+                    entity.Transform.Scale = body.BoxHalfExtents * 2.0f;
+                else if (body.Type == RigidBody.ShapeType.Sphere)
+                    entity.Transform.Scale = new Vector3(body.SphereRadius * 2.0f);
+                else
+                    entity.Transform.Scale = new Vector3(modelScale);
+                    
                 createdBodies.Add(body);
+            }
+            else
+            {
+                entity.Transform.Scale = new Vector3(modelScale);
             }
         }
 

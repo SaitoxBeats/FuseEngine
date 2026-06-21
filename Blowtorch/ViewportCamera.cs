@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 
 namespace Blowtorch;
@@ -12,6 +13,7 @@ public class ViewportCamera
     private const float Sensitivity = 0.3f;
     private const float ScrollSpeed = 1.5f;
     private const float PanSpeed = 0.02f;
+    private const float FlySpeed = 15.0f;
     private const float MinDistance = 0.5f;
     private const float MaxDistance = 200.0f;
 
@@ -43,6 +45,14 @@ public class ViewportCamera
         _target += -right * deltaX * panScale + up * deltaY * panScale;
     }
 
+    public void Fly(float forward, float rightInput, float upInput, float dt)
+    {
+        var fwd = Vector3.Normalize(Front);
+        var right = Vector3.Normalize(Vector3.Cross(fwd, Vector3.UnitY));
+        
+        _target += (fwd * forward + right * rightInput + Vector3.UnitY * upInput) * FlySpeed * dt;
+    }
+
     public Matrix4x4 ViewMatrix =>
         Matrix4x4.CreateLookAt(Position, _target, Vector3.UnitY);
 
@@ -64,7 +74,7 @@ public class ViewportCamera
         }
     }
 
-    private Vector3 Front
+    public Vector3 Front
     {
         get
         {

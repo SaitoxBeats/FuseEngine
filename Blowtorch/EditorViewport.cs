@@ -1,0 +1,295 @@
+using System;
+using System.IO;
+using System.Numerics;
+using System.Collections.Generic;
+using Silk.NET.OpenGL;
+using Blowtorch.Model;
+using Fuse.Renderer;
+using Fuse.AssetManagement;
+using Fuse.Core;
+using Shader = Fuse.Renderer.Shader;
+using Mesh = Fuse.Renderer.Mesh;
+
+namespace Blowtorch;
+
+public unsafe class EditorViewport : IDisposable
+{
+    private readonly GL _gl;
+    private uint _fbo;
+    private uint _colorTex;
+    private uint _depthRbo;
+    private int _width = 800;
+    private int _height = 600;
+
+    private readonly ViewportCamera _camera;
+    private readonly Mesh _gridMesh;
+    private readonly Fuse.Debug.DebugDrawer _debugDrawer;
+    private Vector2 _lastMouse = Vector2.Zero;
+    private bool _isOrbiting;
+    private bool _isPanning;
+
+    public EditorViewport(GL gl)
+    {
+        _gl = gl;
+        _fbo = _gl.GenFramebuffer();
+        _camera = new ViewportCamera();
+        _gridMesh = CreateGridMesh(_gl, 20, 1.0f);
+        _debugDrawer = new Fuse.Debug.DebugDrawer(_gl) { Enabled = true };
+        CreateFbo(800, 600);
+    }
+
+    public uint ColorTexture => _colorTex;
+    public int Width => _width;
+    public int Height => _height;
+    public ViewportCamera Camera => _camera;
+
+    public void CreateFbo(int w, int h)
+    {
+        if (_colorTex != 0) _gl.DeleteTexture(_colorTex);
+        if (_depthRbo != 0) _gl.DeleteRenderbuffer(_depthRbo);
+
+        _colorTex = _gl.GenTexture();
+        _gl.BindTexture(TextureTarget.Texture2D, _colorTex);
+        _gl.TexImage2D(TextureTarget.Texture2D, 0, (int)InternalFormat.Rgba, (uint)w, (uint)h, 0,
+            PixelFormat.Rgba, PixelType.UnsignedByte, null);
+        _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)GLEnum.Linear);
+        _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)GLEnum.Linear);
+        _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)GLEnum.ClampToEdge);
+        _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)GLEnum.ClampToEdge);
+
+        _depthRbo = _gl.GenRenderbuffer();
+        _gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, _depthRbo);
+        _gl.RenderbufferStorage(RenderbufferTarget.Renderbuffer, InternalFormat.DepthComponent24, (uint)w, (uint)h);
+
+        _gl.BindFramebuffer(FramebufferTarget.Framebuffer, _fbo);
+        _gl.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0,
+            TextureTarget.Texture2D, _colorTex, 0);
+        _gl.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment,
+            RenderbufferTarget.Renderbuffer, _depthRbo);
+
+        if (_gl.CheckFramebufferStatus(FramebufferTarget.Framebuffer) != GLEnum.FramebufferComplete)
+            Logger.Error("Viewport FBO incomplete");
+
+        _gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+        _width = w;
+        _height = h;
+    }
+
+    public void BeginRender()
+    {
+        _gl.BindFramebuffer(FramebufferTarget.Framebuffer, _fbo);
+        _gl.Viewport(0, 0, (uint)_width, (uint)_height);
+        _gl.ClearColor(0.25f, 0.25f, 0.3f, 1.0f);
+        _gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+        _gl.Enable(EnableCap.DepthTest);
+        _gl.Enable(EnableCap.CullFace);
+    }
+
+    public void EndRender(int windowWidth, int windowHeight)
+    {
+        _gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+        _gl.Viewport(0, 0, (uint)windowWidth, (uint)windowHeight);
+    }
+
+    public void RenderScene(EditorAssetService assetService, EditorSceneService sceneService)
+    {
+        var shader = assetService.DefaultShader;
+        if (shader.ID == 0) return;
+
+        var scene = sceneService.Scene;
+        var view = _camera.ViewMatrix;
+        var proj = _camera.ProjectionMatrix((float)_width / _height);
+
+        shader.Use();
+        shader.SetVec3("uLightDir", Vector3.Normalize(new Vector3(1, 2, 1)));
+        shader.SetVec3("uLightColor", new Vector3(1, 0.95f, 0.9f));
+        shader.SetFloat("uAmbient", 0.2f);
+        shader.SetMat4("uView", view);
+        shader.SetMat4("uProj", proj);
+
+        // Draw Grid
+        _gl.Disable(EnableCap.CullFace);
+        shader.SetBool("uUseTexture", false);
+        shader.SetVec3("uColor", new Vector3(0.3f, 0.3f, 0.35f));
+        shader.SetMat4("uModel", Matrix4x4.Identity);
+        _gridMesh.Draw(PrimitiveType.Lines);
+        _gl.Enable(EnableCap.CullFace);
+
+        // Draw Entities
+        shader.SetVec3("uColor", Vector3.One);
+        foreach (var entity in scene.Entities)
+        {
+            if (!entity.Visible || entity.Mesh == null) continue;
+
+            shader.SetMat4("uModel", entity.Transform.Matrix);
+            shader.SetVec2("uUvScale", entity.UvScale);
+
+            uint texId = assetService.GetOrCreateTexture(entity.TexturePath);
+            if (texId == 0)
+                texId = assetService.DefaultTexture;
+
+            if (texId != 0)
+            {
+                shader.SetBool("uUseTexture", true);
+                shader.SetInt("uTexture", 0);
+                _gl.ActiveTexture(TextureUnit.Texture0);
+                _gl.BindTexture(TextureTarget.Texture2D, texId);
+            }
+            else
+            {
+                shader.SetBool("uUseTexture", false);
+            }
+
+            entity.Mesh.Draw();
+        }
+    }
+
+    public void RenderDebug(EditorAssetService assetService, EditorSceneService sceneService)
+    {
+        var view = _camera.ViewMatrix;
+        var proj = _camera.ProjectionMatrix((float)_width / _height);
+
+        _debugDrawer.Clear();
+
+        var doc = sceneService.Document;
+        var assets = assetService.AssetManager;
+        var fuseResPath = assetService.FuseResPath;
+
+        // Object shapes
+        foreach (var mapObj in doc.Objects)
+        {
+            if (mapObj.Body == null) continue;
+
+            var body = mapObj.Body;
+            var color = body.Mass > 0 ? new Vector3(1, 1, 0) : new Vector3(1, 0, 0);
+
+            switch (body.Shape)
+            {
+                case MapShapeType.Box when body.HalfExtents.HasValue:
+                    _debugDrawer.DrawBox(body.Position, body.Rotation, body.HalfExtents.Value, color);
+                    break;
+                case MapShapeType.Sphere when body.Radius.HasValue:
+                    _debugDrawer.DrawSphere(body.Position, body.Rotation, body.Radius.Value, color);
+                    break;
+                case MapShapeType.Capsule when body.Radius.HasValue && body.Height.HasValue:
+                    _debugDrawer.DrawCapsule(body.Position, body.Rotation, body.Height.Value * 0.5f, body.Radius.Value, color);
+                    break;
+                case MapShapeType.Trimesh when mapObj.IsModel && mapObj.Model != null:
+                    string modelPath = Path.GetFullPath(Path.Combine(fuseResPath, mapObj.Model));
+                    var model = assets.GetModel(modelPath, mapObj.ModelScale);
+                    if (model != null && model.CollVertices.Length > 0)
+                        _debugDrawer.DrawTrimesh(body.Position, body.Rotation, model.CollVertices, model.CollIndices, color);
+                    break;
+            }
+        }
+
+        // Player spawn
+        if (doc.PlayerSpawn != null)
+        {
+            var sp = doc.PlayerSpawn;
+            _debugDrawer.DrawCapsule(sp.Position, Quaternion.Identity, 0.9f, 0.5f, new Vector3(0, 1, 0));
+
+            float yawRad = float.DegreesToRadians(sp.Yaw);
+            float pitchRad = float.DegreesToRadians(sp.Pitch);
+            var fwd = new Vector3(
+                MathF.Cos(yawRad) * MathF.Cos(pitchRad),
+                MathF.Sin(pitchRad),
+                MathF.Sin(yawRad) * MathF.Cos(pitchRad)
+            );
+            Vector3 eyePos = sp.Position + new Vector3(0, 0.9f, 0);
+            _debugDrawer.PushLine(eyePos, eyePos + fwd * 1.5f, new Vector3(0, 1, 1));
+        }
+
+        _debugDrawer.Render(view, proj);
+    }
+
+    public void HandleInput(ImGuiNET.ImGuiIOPtr io, float dt)
+    {
+        float scroll = io.MouseWheel;
+        if (scroll != 0)
+            _camera.Zoom(scroll);
+
+        if (ImGuiNET.ImGui.IsMouseDown(ImGuiNET.ImGuiMouseButton.Right))
+        {
+            var mouse = io.MousePos;
+            if (!_isOrbiting)
+            {
+                _isOrbiting = true;
+                _lastMouse = mouse;
+            }
+            else
+            {
+                float dx = mouse.X - _lastMouse.X;
+                float dy = mouse.Y - _lastMouse.Y;
+                _camera.Orbit(dx, dy);
+                _lastMouse = mouse;
+            }
+
+            float fwd = 0, right = 0, up = 0;
+            if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.W)) fwd += 1;
+            if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.S)) fwd -= 1;
+            if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.D)) right += 1;
+            if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.A)) right -= 1;
+            if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.E)) up += 1;
+            if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.Q)) up -= 1;
+
+            if (fwd != 0 || right != 0 || up != 0)
+                _camera.Fly(fwd, right, up, dt);
+        }
+        else
+        {
+            _isOrbiting = false;
+        }
+
+        if (ImGuiNET.ImGui.IsMouseDown(ImGuiNET.ImGuiMouseButton.Middle))
+        {
+            var mouse = io.MousePos;
+            if (!_isPanning)
+            {
+                _isPanning = true;
+                _lastMouse = mouse;
+            }
+            else
+            {
+                float dx = mouse.X - _lastMouse.X;
+                float dy = mouse.Y - _lastMouse.Y;
+                _camera.Pan(dx, dy);
+                _lastMouse = mouse;
+            }
+        }
+        else
+        {
+            _isPanning = false;
+        }
+    }
+
+    private Mesh CreateGridMesh(GL gl, int size, float spacing)
+    {
+        int half = size / 2;
+        var verts = new List<Vertex>();
+        var idxs = new List<uint>();
+
+        for (int i = -half; i <= half; i++)
+        {
+            float p = i * spacing;
+            verts.Add(new Vertex { Position = new Vector3(p, 0, -half * spacing), Normal = Vector3.UnitY });
+            verts.Add(new Vertex { Position = new Vector3(p, 0, half * spacing), Normal = Vector3.UnitY });
+            verts.Add(new Vertex { Position = new Vector3(-half * spacing, 0, p), Normal = Vector3.UnitY });
+            verts.Add(new Vertex { Position = new Vector3(half * spacing, 0, p), Normal = Vector3.UnitY });
+        }
+
+        for (uint i = 0; i < verts.Count; i++)
+            idxs.Add(i);
+
+        return new Mesh(gl, verts.ToArray(), idxs.ToArray());
+    }
+
+    public void Dispose()
+    {
+        _debugDrawer.Dispose();
+        _gl.DeleteFramebuffer(_fbo);
+        _gl.DeleteTexture(_colorTex);
+        _gl.DeleteRenderbuffer(_depthRbo);
+        _gridMesh.Dispose();
+    }
+}

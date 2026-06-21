@@ -22,6 +22,7 @@ public class Entity
     public string TexturePath { get; set; } = "";
     public string InteractableType { get; set; } = "";
     public float ModelScale { get; set; } = 1.0f;
+    public Vector2 UvScale { get; set; } = Vector2.One;
     public Mesh? Mesh { get; set; }
     public RigidBody? Body { get; set; }
     public Transform Transform { get; set; } = new();
@@ -65,6 +66,7 @@ public class Scene
             }
 
             shader.SetMat4("uModel", e.Transform.Matrix);
+            shader.SetVec2("uUvScale", e.UvScale);
             e.Mesh.Draw();
         }
     }

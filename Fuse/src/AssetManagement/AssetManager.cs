@@ -44,7 +44,7 @@ public class AssetManager
         mesh = key switch
         {
             "cube" => Renderer.Mesh.CreateCube(_gl),
-            "ground" => Renderer.Mesh.CreateGround(_gl, 40.0f, 20.0f),
+            "ground" => Renderer.Mesh.CreateGround(_gl, 1.0f, 1.0f),
             _ => null
         };
 

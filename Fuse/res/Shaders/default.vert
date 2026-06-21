@@ -10,9 +10,10 @@ out vec3 vWorldNormal;
 uniform mat4 uModel;
 uniform mat4 uView;
 uniform mat4 uProj;
+uniform vec2 uUvScale;
 
 void main() {
-    vTexCoord = aTexCoord;
+    vTexCoord = aTexCoord * uUvScale;
     vec4 worldPos = uModel * vec4(aPos, 1.0);
     vWorldPos = worldPos.xyz;
     vWorldNormal = mat3(transpose(inverse(uModel))) * aNormal;

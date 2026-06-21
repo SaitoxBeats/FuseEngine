@@ -1,0 +1,111 @@
+using System;
+using System.IO;
+using System.Collections.Generic;
+using Silk.NET.OpenGL;
+using Blowtorch.Model;
+using Fuse.AssetManagement;
+using Fuse.Renderer;
+using Fuse.Core;
+using Shader = Fuse.Renderer.Shader;
+using Mesh = Fuse.Renderer.Mesh;
+using Texture = Fuse.Renderer.Texture;
+
+namespace Blowtorch;
+
+public class EditorAssetService : IDisposable
+{
+    private readonly GL _gl;
+    private readonly AssetManager _assets;
+    private Shader _shader = null!;
+    private uint _defaultTex;
+    private readonly Dictionary<string, uint> _texCache = [];
+    private readonly Dictionary<string, Mesh?> _meshCache = [];
+    private string _fuseResPath = "";
+
+    public EditorAssetService(GL gl)
+    {
+        _gl = gl;
+        _assets = new AssetManager(gl);
+    }
+
+    public string FuseResPath => _fuseResPath;
+    public Shader DefaultShader => _shader;
+    public uint DefaultTexture => _defaultTex;
+    public AssetManager AssetManager => _assets;
+
+    public void Initialize(string baseDirectory)
+    {
+        _fuseResPath = Path.GetFullPath(Path.Combine(baseDirectory, @"..\..\..\..\Fuse\res"));
+        
+        _shader = _assets.GetShader(
+            Path.Combine(_fuseResPath, "Shaders", "default.vert"),
+            Path.Combine(_fuseResPath, "Shaders", "default.frag"));
+
+        string crateTexPath = Path.Combine(_fuseResPath, "Textures", "dev_measurecrate01.bmp");
+        if (File.Exists(crateTexPath))
+        {
+            var crateTex = new Texture(_gl, crateTexPath);
+            _defaultTex = crateTex.ID;
+        }
+    }
+
+    public Mesh? GetOrCreateMesh(MapObject mapObj)
+    {
+        if (mapObj.IsModel && mapObj.Model != null)
+        {
+            string modelPath = Path.GetFullPath(Path.Combine(_fuseResPath, mapObj.Model));
+            if (!_meshCache.TryGetValue(modelPath, out var mesh))
+            {
+                var model = _assets.GetModel(modelPath, mapObj.ModelScale);
+                mesh = model?.Mesh;
+                _meshCache[modelPath] = mesh;
+            }
+            return mesh;
+        }
+        else if (mapObj.Mesh != null)
+        {
+            if (!_meshCache.TryGetValue(mapObj.Mesh, out var mesh))
+            {
+                mesh = _assets.GetMesh(mapObj.Mesh);
+                _meshCache[mapObj.Mesh] = mesh;
+            }
+            return mesh;
+        }
+        return null;
+    }
+
+    public uint GetOrCreateTexture(string textureRelPath)
+    {
+        if (string.IsNullOrEmpty(textureRelPath))
+            return 0;
+
+        if (_texCache.TryGetValue(textureRelPath, out var cachedTex))
+            return cachedTex;
+
+        string rel = textureRelPath;
+        if (rel.StartsWith("res/") || rel.StartsWith("res\\"))
+            rel = rel[4..];
+            
+        string texPath = Path.GetFullPath(Path.Combine(_fuseResPath, rel));
+        if (File.Exists(texPath))
+        {
+            var texture = new Texture(_gl, texPath);
+            _texCache[textureRelPath] = texture.ID;
+            return texture.ID;
+        }
+        
+        _texCache[textureRelPath] = 0;
+        Logger.Warn($"Texture not found: {texPath}");
+        return 0;
+    }
+
+    public void Dispose()
+    {
+        foreach (var texId in _texCache.Values)
+        {
+            if (texId != 0) _gl.DeleteTexture(texId);
+        }
+        if (_defaultTex != 0) _gl.DeleteTexture(_defaultTex);
+        _assets.Clear();
+    }
+}

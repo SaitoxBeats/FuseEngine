@@ -5,6 +5,10 @@
       "id": "ground",
       "visible": true,
       "mesh": "ground",
+      "uv_scale": [
+        200,
+        200
+      ],
       "texture": "res/Textures/dev_measurecrate01.bmp",
       "body": {
         "shape": "box",
@@ -24,7 +28,7 @@
         "restitution": 0.3,
         "half_extents": [
           100,
-          0,
+          0.1,
           100
         ]
       }
@@ -39,14 +43,14 @@
         "shape": "box",
         "position": [
           -0.01390525,
-          0.49999997,
+          0.5,
           -2.746499
         ],
         "rotation": [
-          0.7094055,
-          -3.744924E-08,
-          0.70480067,
-          6.4988654E-09
+          1,
+          0,
+          0,
+          0
         ],
         "mass": 10,
         "friction": 0.5,
@@ -102,6 +106,60 @@
         "friction": 0.5,
         "restitution": 0.3
       }
+    },
+    {
+      "id": "new_box",
+      "visible": true,
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          -2.9081728,
+          1.85,
+          -4.6974134
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box02",
+      "visible": true,
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          -0.50613165,
+          1,
+          -5.5534997
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
     }
   ],
   "player_spawn": {
@@ -110,7 +168,7 @@
       1.4000001,
       0
     ],
-    "yaw": -90.0,
-    "pitch": 0.0
+    "yaw": -90,
+    "pitch": 0
   }
 }
