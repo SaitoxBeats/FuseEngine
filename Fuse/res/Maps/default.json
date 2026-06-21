@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "objects": [
+    {
+      "id": "ground",
+      "visible": true,
+      "mesh": "ground",
+      "texture": "res/Textures/dev_measurecrate01.bmp",
+      "body": {
+        "shape": "box",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0.8,
+        "restitution": 0.3,
+        "half_extents": [
+          20,
+          0,
+          20
+        ]
+      }
+    },
+    {
+      "id": "cube",
+      "visible": true,
+      "mesh": "cube",
+      "texture": "res/Textures/dev_measurecrate01.bmp",
+      "interactable": "CubeInteract",
+      "body": {
+        "shape": "box",
+        "position": [
+          0.0008097672,
+          0.49999997,
+          -2.9997883
+        ],
+        "rotation": [
+          0.707702,
+          -4.7744834E-08,
+          0.7065111,
+          7.872586E-09
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0.4,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "ramp",
+      "visible": true,
+      "model": "Models/prototype.obj",
+      "body": {
+        "shape": "trimesh",
+        "position": [
+          3,
+          0,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0.5,
+        "restitution": 0.3
+      }
+    },
+    {
+      "id": "block",
+      "visible": true,
+      "model": "Models/block.obj",
+      "interactable": "ButtonInteract",
+      "body": {
+        "shape": "trimesh",
+        "position": [
+          0,
+          0,
+          -10
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0.5,
+        "restitution": 0.3
+      }
+    }
+  ]
+}

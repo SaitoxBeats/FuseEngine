@@ -1,0 +1,83 @@
+using System.Numerics;
+using Silk.NET.OpenGL;
+using Fuse.Core;
+
+namespace Fuse.AssetManagement;
+
+public class AssetManager
+{
+    private readonly GL _gl;
+    private readonly Dictionary<string, Renderer.Texture> _textures = [];
+    private readonly Dictionary<string, Renderer.Shader> _shaders = [];
+    private readonly Dictionary<string, Renderer.Mesh> _meshes = [];
+    private readonly Dictionary<string, Renderer.LoadedModel> _models = [];
+
+    public AssetManager(GL gl)
+    {
+        _gl = gl;
+    }
+
+    public Renderer.Texture GetTexture(string path)
+    {
+        if (_textures.TryGetValue(path, out var tex))
+            return tex;
+        tex = new Renderer.Texture(_gl, path);
+        _textures[path] = tex;
+        return tex;
+    }
+
+    public Renderer.Shader GetShader(string vertPath, string fragPath)
+    {
+        string key = ShaderKey(vertPath, fragPath);
+        if (_shaders.TryGetValue(key, out var shader))
+            return shader;
+        shader = Renderer.Shader.FromFile(_gl, vertPath, fragPath);
+        _shaders[key] = shader;
+        return shader;
+    }
+
+    public Renderer.Mesh? GetMesh(string key)
+    {
+        if (_meshes.TryGetValue(key, out var mesh))
+            return mesh;
+
+        mesh = key switch
+        {
+            "cube" => Renderer.Mesh.CreateCube(_gl),
+            "ground" => Renderer.Mesh.CreateGround(_gl, 40.0f, 20.0f),
+            _ => null
+        };
+
+        if (mesh != null)
+            _meshes[key] = mesh;
+        return mesh;
+    }
+
+    public Renderer.LoadedModel? GetModel(string path, float scale = 1.0f)
+    {
+        if (_models.TryGetValue(path, out var model))
+            return model;
+
+        var loaded = Renderer.ModelLoader.Load(_gl, path, scale);
+        _models[path] = loaded!;
+        return loaded;
+    }
+
+    public void Clear()
+    {
+        foreach (var t in _textures.Values) t.Dispose();
+        foreach (var s in _shaders.Values) s.Dispose();
+        foreach (var m in _meshes.Values) m.Dispose();
+        foreach (var m in _models.Values)
+        {
+            if (m.Mesh != null)
+                m.Mesh.Dispose();
+        }
+        _textures.Clear();
+        _shaders.Clear();
+        _meshes.Clear();
+        _models.Clear();
+    }
+
+    private static string ShaderKey(string v, string f) => $"{v}|{f}";
+}
