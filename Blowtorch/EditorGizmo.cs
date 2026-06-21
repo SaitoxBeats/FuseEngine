@@ -89,11 +89,20 @@ public static class EditorGizmo
             float currentOffset = GetRayAxisIntersection(mouseRay, _dragStartObjectPos, axes[_activeAxis], view);
             
             float delta = currentOffset - _dragStartOffset;
-            if (snapAmount > 0.0f) delta = MathF.Round(delta / snapAmount) * snapAmount;
+            newPos = _dragStartObjectPos + axes[_activeAxis] * delta;
 
-            if (delta != 0.0f)
+            if (snapAmount > 0.0f)
             {
-                newPos = _dragStartObjectPos + axes[_activeAxis] * delta;
+                if (_activeAxis == 0) // X
+                    newPos.X = MathF.Round(newPos.X / snapAmount) * snapAmount;
+                else if (_activeAxis == 1) // Y
+                    newPos.Y = MathF.Round(newPos.Y / snapAmount) * snapAmount;
+                else if (_activeAxis == 2) // Z
+                    newPos.Z = MathF.Round(newPos.Z / snapAmount) * snapAmount;
+            }
+
+            if (newPos != objectPos)
+            {
                 changed = true;
             }
         }
@@ -177,14 +186,24 @@ public static class EditorGizmo
             float currentOffset = GetRayAxisIntersection(mouseRay, objectPos, axes[_activeAxis], view);
             
             float delta = currentOffset - _dragStartOffset;
-            if (snapAmount > 0.0f) delta = MathF.Round(delta / snapAmount) * snapAmount;
+            newScale = _dragStartObjectScale + axes[_activeAxis] * delta;
 
-            if (delta != 0.0f)
+            if (snapAmount > 0.0f)
             {
-                newScale = _dragStartObjectScale + axes[_activeAxis] * delta;
-                newScale.X = MathF.Max(0.01f, newScale.X);
-                newScale.Y = MathF.Max(0.01f, newScale.Y);
-                newScale.Z = MathF.Max(0.01f, newScale.Z);
+                if (_activeAxis == 0) // X
+                    newScale.X = MathF.Round(newScale.X / snapAmount) * snapAmount;
+                else if (_activeAxis == 1) // Y
+                    newScale.Y = MathF.Round(newScale.Y / snapAmount) * snapAmount;
+                else if (_activeAxis == 2) // Z
+                    newScale.Z = MathF.Round(newScale.Z / snapAmount) * snapAmount;
+            }
+
+            newScale.X = MathF.Max(0.01f, newScale.X);
+            newScale.Y = MathF.Max(0.01f, newScale.Y);
+            newScale.Z = MathF.Max(0.01f, newScale.Z);
+
+            if (newScale != objectScale)
+            {
                 changed = true;
             }
         }
@@ -347,16 +366,34 @@ public static class EditorGizmo
         Matrix4x4.Invert(proj, out Matrix4x4 invProj);
         Matrix4x4.Invert(view, out Matrix4x4 invView);
 
-        Vector4 rayEye = Vector4.Transform(new Vector4(x, y, -1.0f, 1.0f), invProj);
-        rayEye.Z = -1.0f;
-        rayEye.W = 0.0f;
+        bool isOrtho = MathF.Abs(proj.M44 - 1.0f) < 0.0001f;
 
-        Vector4 rayWorld = Vector4.Transform(rayEye, invView);
-        Vector3 rayDir = Vector3.Normalize(new Vector3(rayWorld.X, rayWorld.Y, rayWorld.Z));
+        if (isOrtho)
+        {
+            Vector4 clipPos = new Vector4(x, y, -1.0f, 1.0f);
+            Vector4 eyePos = Vector4.Transform(clipPos, invProj);
+            Vector4 worldPos = Vector4.Transform(eyePos, invView);
+            Vector3 rayOrigin = new Vector3(worldPos.X, worldPos.Y, worldPos.Z);
 
-        Vector3 rayOrigin = new Vector3(invView.M41, invView.M42, invView.M43);
+            Vector4 eyeDir = new Vector4(0, 0, -1.0f, 0.0f);
+            Vector4 worldDir = Vector4.Transform(eyeDir, invView);
+            Vector3 rayDir = Vector3.Normalize(new Vector3(worldDir.X, worldDir.Y, worldDir.Z));
 
-        return new Ray { Origin = rayOrigin, Direction = rayDir };
+            return new Ray { Origin = rayOrigin, Direction = rayDir };
+        }
+        else
+        {
+            Vector4 rayEye = Vector4.Transform(new Vector4(x, y, -1.0f, 1.0f), invProj);
+            rayEye.Z = -1.0f;
+            rayEye.W = 0.0f;
+
+            Vector4 rayWorld = Vector4.Transform(rayEye, invView);
+            Vector3 rayDir = Vector3.Normalize(new Vector3(rayWorld.X, rayWorld.Y, rayWorld.Z));
+
+            Vector3 rayOrigin = new Vector3(invView.M41, invView.M42, invView.M43);
+
+            return new Ray { Origin = rayOrigin, Direction = rayDir };
+        }
     }
 
     private static float GetRayAxisIntersection(Ray ray, Vector3 axisOrigin, Vector3 axisDir, Matrix4x4 view)

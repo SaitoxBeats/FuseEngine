@@ -38,6 +38,8 @@ public unsafe class Application : IDisposable
     private Renderer.Texture _crosshairInteractTexture = null!;
 
     // Scene
+    //public string mapPath = $"{Fuse.ResPath.Path}/Maps/default.json";
+    public string mapPath = null!;
     private Renderer.Scene _scene = null!;
     private readonly List<Physics.RigidBody> _bodies = [];
 
@@ -148,7 +150,6 @@ public unsafe class Application : IDisposable
     private void InitScene()
     {
         _scene = new Renderer.Scene();
-        string mapPath = $"{Fuse.ResPath.Path}/Maps/default.json";
 
         var loaded = Fuse.Scene.MapSerializer.LoadFromFile(mapPath, _scene, _physics, _assets, out var spawn, Fuse.ResPath.Path);
         if (loaded != null)
@@ -159,6 +160,7 @@ public unsafe class Application : IDisposable
                 _player.NativeCharacter.Position = spawn.Value.Position;
                 _player.Camera.SetRotation(spawn.Value.Yaw, spawn.Value.Pitch);
             }
+            Logger.Info($"Map: {mapPath}");
         }
         else
         {
@@ -216,6 +218,7 @@ public unsafe class Application : IDisposable
             if (key == KeyCodes.Escape)
             {
                 _paused = !_paused;
+                _window.CursorCaptureEnabled = !_paused;
                 if (_paused)
                     Input.Input.ShowCursor();
                 else

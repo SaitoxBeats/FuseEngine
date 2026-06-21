@@ -28,12 +28,12 @@ public unsafe class EditorViewport : IDisposable
     private bool _isOrbiting;
     private bool _isPanning;
 
-    public EditorViewport(GL gl)
+    public EditorViewport(GL gl, CameraViewType viewType)
     {
         _gl = gl;
         _fbo = _gl.GenFramebuffer();
-        _camera = new ViewportCamera();
-        _gridMesh = CreateGridMesh(_gl, 20, 1.0f);
+        _camera = new ViewportCamera { ViewType = viewType };
+        _gridMesh = CreateGridMesh(_gl, 40, 1.0f);
         _debugDrawer = new Fuse.Debug.DebugDrawer(_gl) { Enabled = true };
         CreateFbo(800, 600);
     }
@@ -111,7 +111,17 @@ public unsafe class EditorViewport : IDisposable
         _gl.Disable(EnableCap.CullFace);
         shader.SetBool("uUseTexture", false);
         shader.SetVec3("uColor", new Vector3(0.3f, 0.3f, 0.35f));
-        shader.SetMat4("uModel", Matrix4x4.Identity);
+        
+        Matrix4x4 model = Matrix4x4.Identity;
+        if (_camera.ViewType == CameraViewType.Front)
+        {
+            model = Matrix4x4.CreateRotationX(MathF.PI / 2.0f);
+        }
+        else if (_camera.ViewType == CameraViewType.Side)
+        {
+            model = Matrix4x4.CreateRotationZ(MathF.PI / 2.0f);
+        }
+        shader.SetMat4("uModel", model);
         _gridMesh.Draw(PrimitiveType.Lines);
         _gl.Enable(EnableCap.CullFace);
 
@@ -212,33 +222,53 @@ public unsafe class EditorViewport : IDisposable
         if (ImGuiNET.ImGui.IsMouseDown(ImGuiNET.ImGuiMouseButton.Right))
         {
             var mouse = io.MousePos;
-            if (!_isOrbiting)
+            if (_camera.IsOrthographic)
             {
-                _isOrbiting = true;
-                _lastMouse = mouse;
+                if (!_isPanning)
+                {
+                    _isPanning = true;
+                    _lastMouse = mouse;
+                }
+                else
+                {
+                    float dx = mouse.X - _lastMouse.X;
+                    float dy = mouse.Y - _lastMouse.Y;
+                    _camera.Pan(dx, dy);
+                    _lastMouse = mouse;
+                }
             }
             else
             {
-                float dx = mouse.X - _lastMouse.X;
-                float dy = mouse.Y - _lastMouse.Y;
-                _camera.Orbit(dx, dy);
-                _lastMouse = mouse;
+                if (!_isOrbiting)
+                {
+                    _isOrbiting = true;
+                    _lastMouse = mouse;
+                }
+                else
+                {
+                    float dx = mouse.X - _lastMouse.X;
+                    float dy = mouse.Y - _lastMouse.Y;
+                    _camera.Orbit(dx, dy);
+                    _lastMouse = mouse;
+                }
+
+                float fwd = 0, right = 0, up = 0;
+                if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.W)) fwd += 1;
+                if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.S)) fwd -= 1;
+                if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.D)) right += 1;
+                if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.A)) right -= 1;
+                if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.E)) up += 1;
+                if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.Q)) up -= 1;
+
+                if (fwd != 0 || right != 0 || up != 0)
+                    _camera.Fly(fwd, right, up, dt);
             }
-
-            float fwd = 0, right = 0, up = 0;
-            if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.W)) fwd += 1;
-            if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.S)) fwd -= 1;
-            if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.D)) right += 1;
-            if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.A)) right -= 1;
-            if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.E)) up += 1;
-            if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.Q)) up -= 1;
-
-            if (fwd != 0 || right != 0 || up != 0)
-                _camera.Fly(fwd, right, up, dt);
         }
         else
         {
             _isOrbiting = false;
+            if (_camera.IsOrthographic)
+                _isPanning = false;
         }
 
         if (ImGuiNET.ImGui.IsMouseDown(ImGuiNET.ImGuiMouseButton.Middle))

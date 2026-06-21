@@ -10,7 +10,10 @@ public unsafe class EditorApplication : IDisposable
     private ImGuiBackEnd _imgui = null!;
     private EditorAssetService _assetService = null!;
     private EditorSceneService _sceneService = null!;
-    private EditorViewport _viewport = null!;
+    private EditorViewport _viewport3D = null!;
+    private EditorViewport _viewportTop = null!;
+    private EditorViewport _viewportFront = null!;
+    private EditorViewport _viewportSide = null!;
     private EditorUI _ui = null!;
     private CommandHistory _history = null!;
 
@@ -44,7 +47,10 @@ public unsafe class EditorApplication : IDisposable
         _sceneService.LoadMap(_assetService.FuseResPath);
         _sceneService.PopulateScene(_assetService);
 
-        _viewport = new EditorViewport(gl);
+        _viewport3D = new EditorViewport(gl, CameraViewType.Perspective3D);
+        _viewportTop = new EditorViewport(gl, CameraViewType.Top);
+        _viewportFront = new EditorViewport(gl, CameraViewType.Front);
+        _viewportSide = new EditorViewport(gl, CameraViewType.Side);
         _ui = new EditorUI();
         _history = new CommandHistory();
 
@@ -70,14 +76,29 @@ public unsafe class EditorApplication : IDisposable
             _inputService.Update();
             _imgui.NewFrame(dt, fbWidth, fbHeight);
 
-            // Render Viewport
-            _viewport.BeginRender();
-            _viewport.RenderScene(_assetService, _sceneService);
-            _viewport.RenderDebug(_assetService, _sceneService);
-            _viewport.EndRender(fbWidth, fbHeight);
+            // Render Viewports
+            _viewport3D.BeginRender();
+            _viewport3D.RenderScene(_assetService, _sceneService);
+            _viewport3D.RenderDebug(_assetService, _sceneService);
+            _viewport3D.EndRender(fbWidth, fbHeight);
+
+            _viewportTop.BeginRender();
+            _viewportTop.RenderScene(_assetService, _sceneService);
+            _viewportTop.RenderDebug(_assetService, _sceneService);
+            _viewportTop.EndRender(fbWidth, fbHeight);
+
+            _viewportFront.BeginRender();
+            _viewportFront.RenderScene(_assetService, _sceneService);
+            _viewportFront.RenderDebug(_assetService, _sceneService);
+            _viewportFront.EndRender(fbWidth, fbHeight);
+
+            _viewportSide.BeginRender();
+            _viewportSide.RenderScene(_assetService, _sceneService);
+            _viewportSide.RenderDebug(_assetService, _sceneService);
+            _viewportSide.EndRender(fbWidth, fbHeight);
 
             // Render UI
-            _ui.Draw(_window, _viewport, _sceneService, _assetService, _history);
+            _ui.Draw(_window, _viewport3D, _viewportTop, _viewportFront, _viewportSide, _sceneService, _assetService, _history);
 
             _imgui.Render();
             _window.SwapBuffers();
@@ -87,9 +108,13 @@ public unsafe class EditorApplication : IDisposable
 
     public void Dispose()
     {
-        _viewport.Dispose();
+        _viewport3D.Dispose();
+        _viewportTop.Dispose();
+        _viewportFront.Dispose();
+        _viewportSide.Dispose();
         _assetService.Dispose();
         _imgui.Dispose();
         _window.Dispose();
     }
 }
+

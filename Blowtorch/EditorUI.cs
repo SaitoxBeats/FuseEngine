@@ -28,18 +28,49 @@ public class EditorUI
     private GizmoOperation _gizmoOperation = GizmoOperation.Translate;
     private MapObject? _selectedObject;
     private bool _wasUsingGizmo = false;
+    private EditorViewport? _activeDraggingViewport;
+
 
     public bool ShowMapWindow => _showMapWindow;
     public bool ShowJsonWindow => _showJsonWindow;
 
-    public void Draw(EditorWindow window, EditorViewport viewport, EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
+    public void Draw(EditorWindow window, EditorViewport viewport3D, EditorViewport viewportTop, EditorViewport viewportFront, EditorViewport viewportSide, EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
     {
         _frameBeginState = sceneService.Document.Serialize();
 
+        if (!ImGui.IsMouseDown(ImGuiMouseButton.Left))
+        {
+            _activeDraggingViewport = null;
+        }
+
         HandleKeyboardShortcuts(history);
 
+        // --- Dockspace Fullscreen ---
+        var mainViewport = ImGui.GetMainViewport();
+        ImGui.SetNextWindowPos(mainViewport.WorkPos);
+        ImGui.SetNextWindowSize(mainViewport.WorkSize);
+        ImGui.SetNextWindowViewport(mainViewport.ID);
+        
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0.0f);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 0.0f);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
+
+        ImGuiWindowFlags dockWindowFlags = ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoDocking;
+        dockWindowFlags |= ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove;
+        dockWindowFlags |= ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoNavFocus;
+
+        ImGui.Begin("MainDockSpaceWindow", dockWindowFlags);
+        ImGui.PopStyleVar(3);
+
+        uint dockspaceId = ImGui.GetID("MainDockSpace");
+        ImGui.DockSpace(dockspaceId, Vector2.Zero, ImGuiDockNodeFlags.None);
+
+
+
         DrawMenuBar(window, sceneService, assetService, history);
-        DrawViewportWindow(viewport, sceneService, assetService, history);
+        ImGui.End();
+
+        DrawViewportWindow(viewport3D, viewportTop, viewportFront, viewportSide, sceneService, assetService, history);
 
         if (_showMapWindow)
             DrawMapWindow(sceneService, assetService, history);
@@ -55,6 +86,15 @@ public class EditorUI
         {
             if (ImGui.IsKeyPressed(ImGuiKey.Z)) history.Undo();
             if (ImGui.IsKeyPressed(ImGuiKey.Y)) history.Redo();
+        }
+
+        if (ImGui.IsKeyPressed(ImGuiKey.LeftBracket))
+        {
+            _snapGrid = MathF.Max(0.0625f, _snapGrid * 0.5f);
+        }
+        if (ImGui.IsKeyPressed(ImGuiKey.RightBracket))
+        {
+            _snapGrid = MathF.Min(64.0f, _snapGrid * 2.0f);
         }
     }
 
@@ -89,20 +129,18 @@ public class EditorUI
         }
     }
 
-    private void DrawViewportWindow(EditorViewport viewport, EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
+    private void DrawViewportWindow(
+        EditorViewport viewport3D, 
+        EditorViewport viewportTop, 
+        EditorViewport viewportFront, 
+        EditorViewport viewportSide, 
+        EditorSceneService sceneService, 
+        EditorAssetService assetService, 
+        CommandHistory history)
     {
-        var mainViewport = ImGui.GetMainViewport();
-        var workPos = mainViewport.WorkPos;
-        var workSize = mainViewport.WorkSize;
-        ImGui.SetNextWindowPos(workPos);
-        ImGui.SetNextWindowSize(workSize);
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 0);
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0);
 
-        if (ImGui.Begin("Scene Viewport", ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove |
-            ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoBringToFrontOnFocus |
-            ImGuiWindowFlags.NoNavFocus))
+        if (ImGui.Begin("Scene Viewports", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
         {
             if (ImGui.RadioButton("Translate (W)", _gizmoOperation == GizmoOperation.Translate)) _gizmoOperation = GizmoOperation.Translate;
             ImGui.SameLine();
@@ -117,34 +155,69 @@ public class EditorUI
                 if (ImGui.IsKeyPressed(ImGuiKey.R)) _gizmoOperation = GizmoOperation.Scale;
             }
 
-            var vpPos = ImGui.GetWindowPos();
-            var vpSize = ImGui.GetContentRegionAvail();
-            
-            if (vpSize.X > 0 && vpSize.Y > 0 &&
-                ((int)vpSize.X != viewport.Width || (int)vpSize.Y != viewport.Height))
+            var availSize = ImGui.GetContentRegionAvail();
+            var size = new Vector2(availSize.X / 2f - 4, availSize.Y / 2f - 4);
+
+            // Row 1: Top & Front
+            DrawSubViewport(viewportTop, "Top (X/Z)", size, sceneService, assetService, history);
+            ImGui.SameLine();
+            DrawSubViewport(viewportFront, "Front (X/Y)", size, sceneService, assetService, history);
+
+            // Row 2: Side & 3D Perspective
+            DrawSubViewport(viewportSide, "Side (Z/Y)", size, sceneService, assetService, history);
+            ImGui.SameLine();
+            DrawSubViewport(viewport3D, "Camera 3D", size, sceneService, assetService, history);
+        }
+        ImGui.End();
+        ImGui.PopStyleVar(1);
+    }
+
+    private void DrawSubViewport(
+        EditorViewport viewport, 
+        string title, 
+        Vector2 size, 
+        EditorSceneService sceneService, 
+        EditorAssetService assetService, 
+        CommandHistory history)
+    {
+        ImGui.BeginChild(title, size, ImGuiChildFlags.Borders, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
+        
+        ImGui.Text(title);
+
+        var vpPos = ImGui.GetCursorScreenPos();
+        var vpSize = ImGui.GetContentRegionAvail();
+
+        if (vpSize.X > 0 && vpSize.Y > 0 &&
+            ((int)vpSize.X != viewport.Width || (int)vpSize.Y != viewport.Height))
+        {
+            viewport.CreateFbo((int)vpSize.X, (int)vpSize.Y);
+        }
+
+        ImGui.Image((IntPtr)viewport.ColorTexture, vpSize, new Vector2(0, 1), new Vector2(1, 0));
+
+        bool isHovered = ImGui.IsItemHovered();
+
+        if (_selectedObject != null && _selectedObject.Body != null && sceneService.Document.Objects.Contains(_selectedObject))
+        {
+            var body = _selectedObject.Body;
+            var view = viewport.Camera.ViewMatrix;
+            var proj = viewport.Camera.ProjectionMatrix(vpSize.X / vpSize.Y);
+
+            bool isUsing = EditorGizmo.IsUsing();
+            if (isUsing && !_wasUsingGizmo) _preEditState = _frameBeginState;
+
+            float snapVal = _snapEnabled ? _snapGrid : 0.0f;
+            float angleSnap = _snapEnabled ? _snapAngle : 0.0f;
+            bool changed = false;
+
+            bool canManipulate = (isHovered && _activeDraggingViewport == null) || (_activeDraggingViewport == viewport);
+
+            if (canManipulate)
             {
-                viewport.CreateFbo((int)vpSize.X, (int)vpSize.Y);
-            }
-
-            ImGui.Image((IntPtr)viewport.ColorTexture, vpSize, new Vector2(0, 1), new Vector2(1, 0));
-
-            if (ImGui.IsWindowHovered() && !EditorGizmo.IsUsing())
-            {
-                // We will handle picking and input after gizmo
-            }
-
-            if (_selectedObject != null && _selectedObject.Body != null && sceneService.Document.Objects.Contains(_selectedObject))
-            {
-                var body = _selectedObject.Body;
-                var view = viewport.Camera.ViewMatrix;
-                var proj = viewport.Camera.ProjectionMatrix(vpSize.X / vpSize.Y);
-
-                bool isUsing = EditorGizmo.IsUsing();
-                if (isUsing && !_wasUsingGizmo) _preEditState = _frameBeginState;
-
-                float snapVal = _snapEnabled ? _snapGrid : 0.0f;
-                float angleSnap = _snapEnabled ? _snapAngle : 0.0f;
-                bool changed = false;
+                if (isUsing && _activeDraggingViewport == null)
+                {
+                    _activeDraggingViewport = viewport;
+                }
 
                 if (_gizmoOperation == GizmoOperation.Translate)
                 {
@@ -156,10 +229,13 @@ public class EditorUI
                 }
                 else if (_gizmoOperation == GizmoOperation.Rotate)
                 {
-                    if (EditorGizmo.ManipulateRotation(body.Position, body.Rotation, view, proj, vpPos, vpSize, out Quaternion newRot, angleSnap))
+                    if (viewport.Camera.ViewType == CameraViewType.Perspective3D)
                     {
-                        body.Rotation = Quaternion.Normalize(newRot);
-                        changed = true;
+                        if (EditorGizmo.ManipulateRotation(body.Position, body.Rotation, view, proj, vpPos, vpSize, out Quaternion newRot, angleSnap))
+                        {
+                            body.Rotation = Quaternion.Normalize(newRot);
+                            changed = true;
+                        }
                     }
                 }
                 else if (_gizmoOperation == GizmoOperation.Scale)
@@ -202,25 +278,25 @@ public class EditorUI
                 }
                 _wasUsingGizmo = isUsing;
             }
+        }
 
-            if (ImGui.IsWindowHovered() && !EditorGizmo.IsUsing() && !EditorGizmo.IsHovered)
+        if (isHovered && !EditorGizmo.IsUsing() && !EditorGizmo.IsHovered)
+        {
+            viewport.HandleInput(ImGui.GetIO(), ImGui.GetIO().DeltaTime);
+
+            if (ImGui.IsMouseClicked(ImGuiMouseButton.Left))
             {
-                viewport.HandleInput(ImGui.GetIO(), ImGui.GetIO().DeltaTime);
-
-                if (ImGui.IsMouseClicked(ImGuiMouseButton.Left))
+                EditorGizmo.GetMouseRay(ImGui.GetIO().MousePos, viewport.Camera.ViewMatrix, viewport.Camera.ProjectionMatrix(vpSize.X / vpSize.Y), vpPos, vpSize, out Vector3 rayOrigin, out Vector3 rayDir);
+                
+                MapObject? hitObj = PickObject(rayOrigin, rayDir, sceneService);
+                if (hitObj != null)
                 {
-                    EditorGizmo.GetMouseRay(ImGui.GetIO().MousePos, viewport.Camera.ViewMatrix, viewport.Camera.ProjectionMatrix(vpSize.X / vpSize.Y), vpPos, vpSize, out Vector3 rayOrigin, out Vector3 rayDir);
-                    
-                    MapObject? hitObj = PickObject(rayOrigin, rayDir, sceneService);
-                    if (hitObj != null)
-                    {
-                        _selectedObject = hitObj;
-                    }
+                    _selectedObject = hitObj;
                 }
             }
         }
-        ImGui.End();
-        ImGui.PopStyleVar(3);
+
+        ImGui.EndChild();
     }
 
     private MapObject? PickObject(Vector3 rayOrigin, Vector3 rayDir, EditorSceneService sceneService)
@@ -371,7 +447,19 @@ public class EditorUI
         ImGui.Checkbox("Enable Snapping", ref _snapEnabled);
         if (_snapEnabled)
         {
-            ImGui.DragFloat("Grid Snap", ref _snapGrid, 0.1f, 0.1f, 10.0f);
+            float[] gridSizes = { 0.0625f, 0.125f, 0.25f, 0.5f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 64.0f };
+            int currentIdx = Array.IndexOf(gridSizes, _snapGrid);
+            if (currentIdx == -1) currentIdx = 3; // Default 0.5
+            
+            string[] gridSizeLabels = gridSizes.Select(g => g.ToString("0.0000").TrimEnd('0').TrimEnd(',').TrimEnd('.')).ToArray();
+            ImGui.SetNextItemWidth(120);
+            if (ImGui.Combo("Grid Snap", ref currentIdx, gridSizeLabels, gridSizeLabels.Length))
+            {
+                _snapGrid = gridSizes[currentIdx];
+            }
+            ImGui.SameLine();
+            ImGui.Text("[Halve with [, Double with ]]");
+
             ImGui.DragFloat("Angle Snap", ref _snapAngle, 1.0f, 1.0f, 90.0f);
         }
         ImGui.Separator();

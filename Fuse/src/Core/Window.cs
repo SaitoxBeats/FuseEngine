@@ -194,7 +194,7 @@ public unsafe class Window : IDisposable
             bool isDisabled = win._glfw.GetInputMode(w, CursorStateAttribute.Cursor) == (int)CursorModeValue.CursorDisabled;
             if (isDisabled && ImGuiNET.ImGui.GetIO().WantCaptureMouse)
                 win._glfw.SetInputMode(w, CursorStateAttribute.Cursor, CursorModeValue.CursorNormal);
-            else if (!isDisabled && !ImGuiNET.ImGui.GetIO().WantCaptureMouse)
+            else if (!isDisabled && !ImGuiNET.ImGui.GetIO().WantCaptureMouse && win.CursorCaptureEnabled)
             {
                 win.SetFirstMouse(true);
                 win._glfw.SetInputMode(w, CursorStateAttribute.Cursor, CursorModeValue.CursorDisabled);

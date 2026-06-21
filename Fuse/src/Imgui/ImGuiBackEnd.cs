@@ -24,8 +24,8 @@ public unsafe class ImGuiBackEnd : IDisposable
         ImGui.CreateContext();
         var io = ImGui.GetIO();
         io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
+        io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
         io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
-        io.NativePtr->IniFilename = null;
 
         CreateDeviceObjects();
     }

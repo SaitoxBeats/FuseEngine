@@ -3,7 +3,7 @@ using System.IO;
 
 internal static class Program
 {
-    private static void Main()
+    private static void Main(string[] args)
     {
         string splashPath = Path.Combine(Fuse.ResPath.Path, "splash.txt");
         if (File.Exists(splashPath))
@@ -15,6 +15,8 @@ internal static class Program
         }
 
         Application app = new();
+        string mapNameArg = args.Length > 0 ? args[0] : "default.json";
+        app.mapPath = $"{Fuse.ResPath.Path}/Maps/{mapNameArg}";
         if (!app.Init()) return;
         app.Run();
     }
