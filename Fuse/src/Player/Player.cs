@@ -286,26 +286,19 @@ public class Player : IDisposable
         else if (!wantsCrouch && _isCrouching)
         {
             var pos = _character.Position;
-            float standHalfH = _standCapsuleH * 0.5f;
             float crouchHalfH = _crouchCapsuleH * 0.5f;
+            float standHalfH = _standCapsuleH * 0.5f;
 
-            float standHalfHCheck = _standCapsuleH * 0.5f;
-            float checkHeight = (_standCapsuleH - _crouchCapsuleH) * 0.5f;
-
-            using var capsule = new CapsuleShape(standHalfHCheck, _capsuleRadius);
-            var com = Matrix4x4.CreateTranslation(new Vector3(pos.X, (float)pos.Y + _crouchCapsuleH, pos.Z));
-            var dir = new Vector3(0, checkHeight, 0);
-            var baseOff = Vector3.Zero;
-            var castSettings = new ShapeCastSettings { UseShrunkenShapeAndConvexRadius = true };
+            float topY = (float)pos.Y + crouchHalfH + _capsuleRadius;
+            float checkDist = standHalfH - crouchHalfH;
+            var origin = new Vector3(pos.X, topY, pos.Z);
+            var dir = new Vector3(0, 1, 0) * checkDist;
+            Ray ray = new(ref origin, ref dir);
 
             using var bpFilter = new Physics.DefaultBroadPhaseLayerFilter();
             using var olFilter = new Physics.DefaultObjectLayerFilter();
             using var bodyFilter = new Physics.DefaultBodyFilter();
-            var results = new List<ShapeCastResult>();
-            bool blocked = _world.NarrowPhaseQuery.CastShape(
-                capsule, ref com, ref dir, castSettings, ref baseOff,
-                CollisionCollectorType.AnyHit, results,
-                bpFilter, olFilter, bodyFilter, null);
+            bool blocked = _world.NarrowPhaseQuery.CastRay(ray, out _, bpFilter, olFilter, bodyFilter);
 
             if (!blocked)
             {

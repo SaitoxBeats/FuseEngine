@@ -128,29 +128,13 @@ public unsafe class Application : IDisposable
         return true;
     }
 
-    private sealed class CubeInteract : IInteractable
-    {
-        public void OnInteract() => Logger.Info("CUBE INTERACT!");
-    }
-
-    private sealed class ButtonInteract : IInteractable
-    {
-        public void OnInteract() => Logger.Info("BUTTON INTERACT!");
-    }
-
     private void RegisterInteractables()
     {
         foreach (var entity in _scene.Entities)
         {
             if (entity.Body != null && entity.Body.IsBuilt && !string.IsNullOrEmpty(entity.InteractableType))
             {
-                IInteractable? interactable = entity.InteractableType switch
-                {
-                    "CubeInteract" => new CubeInteract(),
-                    "ButtonInteract" => new ButtonInteract(),
-                    _ => null
-                };
-
+                var interactable = Interaction.InteractionSystem.CreateInteractable(entity.InteractableType);
                 if (interactable != null)
                 {
                     var gcHandle = GCHandle.Alloc(interactable);
@@ -166,10 +150,15 @@ public unsafe class Application : IDisposable
         _scene = new Renderer.Scene();
         string mapPath = $"{Fuse.ResPath.Path}/Maps/default.json";
 
-        var loaded = Fuse.Scene.MapSerializer.LoadFromFile(mapPath, _scene, _physics, _assets, Fuse.ResPath.Path);
+        var loaded = Fuse.Scene.MapSerializer.LoadFromFile(mapPath, _scene, _physics, _assets, out var spawn, Fuse.ResPath.Path);
         if (loaded != null)
         {
             _bodies.AddRange(loaded);
+            if (spawn.HasValue)
+            {
+                _player.NativeCharacter.Position = spawn.Value.Position;
+                _player.Camera.SetRotation(spawn.Value.Yaw, spawn.Value.Pitch);
+            }
         }
         else
         {
@@ -292,29 +281,33 @@ public unsafe class Application : IDisposable
 
     private void HandleInput()
     {
-        if (Input.Input.KeyPressed(KeyCodes.F5))
-        {
-            foreach (var entity in _scene.Entities)
-            {
-                if (entity.Id == "cube" && entity.Body != null && entity.Body.IsBuilt)
-                {
-                    _physics.SetBodyPosition(entity.Body.Native, new Vector3(0, 1, -3));
-                    _physics.BodyInterface.SetLinearVelocity(entity.Body.Native, Vector3.Zero);
-                    _physics.BodyInterface.SetAngularVelocity(entity.Body.Native, Vector3.Zero);
-                }
-            }
-
-            _player.NativeCharacter.Position = new Vector3(0,2,0);
-            _player.NativeCharacter.LinearVelocity = Vector3.Zero;
-        }
+        //if (Input.Input.KeyPressed(KeyCodes.F5))
+        //{
+        //    foreach (var entity in _scene.Entities)
+        //    {
+        //        if (entity.Id == "cube" && entity.Body != null && entity.Body.IsBuilt)
+        //        {
+        //            _physics.SetBodyPosition(entity.Body.Native, new Vector3(0, 1, -3));
+        //            _physics.BodyInterface.SetLinearVelocity(entity.Body.Native, Vector3.Zero);
+        //            _physics.BodyInterface.SetAngularVelocity(entity.Body.Native, Vector3.Zero);
+        //        }
+        //    }
+        //
+        //    _player.NativeCharacter.Position = new Vector3(0,2,0);
+        //    _player.NativeCharacter.LinearVelocity = Vector3.Zero;
+        //}
 
         if (Input.Input.KeyPressed(KeyCodes.F6))
         {
             string savePath = $"{Fuse.ResPath.Path}/Maps/default.json";
-            Fuse.Scene.MapSerializer.SaveToFile(_scene, _physics, savePath);
+            var spawn = new Fuse.Scene.PlayerSpawn(
+                _player.NativeCharacter.Position,
+                _player.Camera.Yaw,
+                _player.Camera.Pitch);
+            Fuse.Scene.MapSerializer.SaveToFile(_scene, _physics, savePath, spawn);
         }
 
-        if (Input.Input.KeyPressed(KeyCodes.F7))
+        if (Input.Input.KeyPressed(KeyCodes.F5))
         {
             string loadPath = $"{Fuse.ResPath.Path}/Maps/default.json";
             foreach (var b in _bodies)
@@ -327,9 +320,17 @@ public unsafe class Application : IDisposable
                 handle.Free();
             _interactableHandles.Clear();
 
-            var loaded = Fuse.Scene.MapSerializer.LoadFromFile(loadPath, _scene, _physics, _assets, Fuse.ResPath.Path);
+            var loaded = Fuse.Scene.MapSerializer.LoadFromFile(loadPath, _scene, _physics, _assets, out var spawn, Fuse.ResPath.Path);
             if (loaded != null)
+            {
                 _bodies.AddRange(loaded);
+                if (spawn.HasValue)
+                {
+                    _player.NativeCharacter.Position = spawn.Value.Position;
+                    _player.NativeCharacter.LinearVelocity = Vector3.Zero;
+                    _player.Camera.SetRotation(spawn.Value.Yaw, spawn.Value.Pitch);
+                }
+            }
 
             RegisterInteractables();
         }

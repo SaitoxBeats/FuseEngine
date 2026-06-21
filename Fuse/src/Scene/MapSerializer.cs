@@ -6,6 +6,8 @@ using Fuse.Physics;
 
 namespace Fuse.Scene;
 
+public record struct PlayerSpawn(Vector3 Position, float Yaw, float Pitch);
+
 public static class MapSerializer
 {
     private static Vector3 Vec3FromJson(JsonArray arr)
@@ -84,13 +86,25 @@ public static class MapSerializer
         return bj;
     }
 
-    public static string SerializeScene(Renderer.Scene scene, PhysicsWorld physics)
+    public static string SerializeScene(Renderer.Scene scene, PhysicsWorld physics,
+        PlayerSpawn? playerSpawn = null)
     {
         var j = new JsonObject
         {
             ["version"] = 1,
             ["objects"] = new JsonArray()
         };
+
+        if (playerSpawn.HasValue)
+        {
+            var ps = playerSpawn.Value;
+            j["player_spawn"] = new JsonObject
+            {
+                ["position"] = Vec3ToJson(ps.Position),
+                ["yaw"] = ps.Yaw,
+                ["pitch"] = ps.Pitch
+            };
+        }
 
         var objects = (JsonArray)j["objects"]!;
         foreach (var e in scene.Entities)
@@ -130,8 +144,10 @@ public static class MapSerializer
     public static List<RigidBody>? DeserializeScene(string json,
         Renderer.Scene scene, PhysicsWorld physics,
         AssetManagement.AssetManager assets,
+        out PlayerSpawn? playerSpawn,
         string? resPath = null)
     {
+        playerSpawn = null;
         scene.Clear();
         var createdBodies = new List<RigidBody>();
 
@@ -160,6 +176,15 @@ public static class MapSerializer
         {
             Logger.Error($"Unknown map version: {version}");
             return null;
+        }
+
+        if (root.TryGetPropertyValue("player_spawn", out var spawnNode))
+        {
+            var sj = spawnNode!.AsObject();
+            playerSpawn = new PlayerSpawn(
+                Vec3FromJson(sj["position"]!.AsArray()),
+                (float)sj["yaw"]!,
+                (float)sj["pitch"]!);
         }
 
         var objects = root["objects"]!.AsArray();
@@ -276,9 +301,10 @@ public static class MapSerializer
             body.SetRestitution((float)restToken!);
     }
 
-    public static bool SaveToFile(Renderer.Scene scene, PhysicsWorld physics, string filepath)
+    public static bool SaveToFile(Renderer.Scene scene, PhysicsWorld physics, string filepath,
+        PlayerSpawn? playerSpawn = null)
     {
-        string json = SerializeScene(scene, physics);
+        string json = SerializeScene(scene, physics, playerSpawn);
         try
         {
             File.WriteAllText(filepath, json);
@@ -295,8 +321,10 @@ public static class MapSerializer
     public static List<RigidBody>? LoadFromFile(string filepath,
         Renderer.Scene scene, PhysicsWorld physics,
         AssetManagement.AssetManager assets,
+        out PlayerSpawn? playerSpawn,
         string? resPath = null)
     {
+        playerSpawn = null;
         if (!File.Exists(filepath))
         {
             Logger.Error($"Failed to load map: {filepath}");
@@ -304,6 +332,6 @@ public static class MapSerializer
         }
 
         string json = File.ReadAllText(filepath);
-        return DeserializeScene(json, scene, physics, assets, resPath);
+        return DeserializeScene(json, scene, physics, assets, out playerSpawn, resPath);
     }
 }

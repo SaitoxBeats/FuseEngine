@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using JoltPhysicsSharp;
 using Fuse.Physics;
@@ -7,6 +8,25 @@ namespace Fuse.Interaction;
 
 public static class InteractionSystem
 {
+    private static readonly Dictionary<string, Type> _interactableTypes;
+
+    static InteractionSystem()
+    {
+        _interactableTypes = [];
+        foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
+        {
+            var attr = type.GetCustomAttribute<InteractableTypeAttribute>();
+            if (attr != null && typeof(IInteractable).IsAssignableFrom(type))
+                _interactableTypes[attr.TypeName] = type;
+        }
+    }
+
+    public static IInteractable? CreateInteractable(string typeName)
+    {
+        if (_interactableTypes.TryGetValue(typeName, out var type))
+            return Activator.CreateInstance(type) as IInteractable;
+        return null;
+    }
     public static GCHandle RegisterInteractable(BodyInterface bi, BodyID bodyId, IInteractable interactable)
     {
         var gcHandle = GCHandle.Alloc(interactable);
