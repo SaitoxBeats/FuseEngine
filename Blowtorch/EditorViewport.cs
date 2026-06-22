@@ -24,9 +24,11 @@ public unsafe class EditorViewport : IDisposable
     private readonly ViewportCamera _camera;
     private readonly Mesh _gridMesh;
     private readonly Fuse.Debug.DebugDrawer _debugDrawer;
-    private Vector2 _lastMouse = Vector2.Zero;
+    private Vector2 _lastMouse;
     private bool _isOrbiting;
     private bool _isPanning;
+    private bool _firstMove;
+    public static EditorViewport? ActiveViewport;
 
     public EditorViewport(GL gl, CameraViewType viewType)
     {
@@ -237,8 +239,11 @@ public unsafe class EditorViewport : IDisposable
         _debugDrawer.Render(view, proj);
     }
 
-    public void HandleInput(ImGuiNET.ImGuiIOPtr io, float dt)
+    public void HandleInput(ImGuiNET.ImGuiIOPtr io, float dt, Silk.NET.GLFW.Glfw? glfw = null, Silk.NET.GLFW.WindowHandle* win = null, System.Numerics.Vector2 vpPos = default, System.Numerics.Vector2 vpSize = default)
     {
+        if (glfw != null && win != null && !ImGuiNET.ImGui.IsMouseDown(ImGuiNET.ImGuiMouseButton.Right) && !ImGuiNET.ImGui.IsMouseDown(ImGuiNET.ImGuiMouseButton.Middle))
+            glfw.SetInputMode(win, Silk.NET.GLFW.CursorStateAttribute.Cursor, Silk.NET.GLFW.CursorModeValue.CursorNormal);
+
         float scroll = io.MouseWheel;
         if (scroll != 0)
             _camera.Zoom(scroll);
@@ -257,41 +262,78 @@ public unsafe class EditorViewport : IDisposable
             wantPan = ImGuiNET.ImGui.IsMouseDown(ImGuiNET.ImGuiMouseButton.Middle);
         }
 
+        if (ActiveViewport != null && ActiveViewport != this)
+        {
+            wantPan = false;
+            wantOrbit = false;
+        }
+
         if (wantPan)
         {
-            var mouse = io.MousePos;
             if (!_isPanning)
             {
                 _isPanning = true;
-                _lastMouse = mouse;
+                _firstMove = true;
+                ActiveViewport = this;
+                if (glfw != null && win != null)
+                    glfw.SetInputMode(win, Silk.NET.GLFW.CursorStateAttribute.Cursor, Silk.NET.GLFW.CursorModeValue.CursorHidden);
             }
             else
             {
+                if (_firstMove)
+                {
+                    _firstMove = false;
+                    _lastMouse = io.MousePos;
+                }
+                Vector2 mouse = io.MousePos;
                 float dx = mouse.X - _lastMouse.X;
                 float dy = mouse.Y - _lastMouse.Y;
                 _camera.Pan(dx, dy);
                 _lastMouse = mouse;
+                if (glfw != null && win != null)
+                {
+                    float cx = MathF.Round(vpPos.X + vpSize.X * 0.5f);
+                    float cy = MathF.Round(vpPos.Y + vpSize.Y * 0.5f);
+                    glfw.SetCursorPos(win, cx, cy);
+                    _lastMouse = new Vector2(cx, cy);
+                }
             }
         }
         else
         {
             _isPanning = false;
+            if (ActiveViewport == this) ActiveViewport = null;
         }
 
         if (wantOrbit)
         {
-            var mouse = io.MousePos;
             if (!_isOrbiting)
             {
                 _isOrbiting = true;
-                _lastMouse = mouse;
+                _firstMove = true;
+                ActiveViewport = this;
+                if (glfw != null && win != null)
+                    glfw.SetInputMode(win, Silk.NET.GLFW.CursorStateAttribute.Cursor, Silk.NET.GLFW.CursorModeValue.CursorHidden);
             }
             else
             {
+                if (_firstMove)
+                {
+                    _firstMove = false;
+                    _lastMouse = io.MousePos;
+                }
+                Vector2 mouse = io.MousePos;
                 float dx = mouse.X - _lastMouse.X;
                 float dy = mouse.Y - _lastMouse.Y;
                 _camera.Orbit(dx, dy);
                 _lastMouse = mouse;
+                if (glfw != null && win != null)
+                {
+                    float cx = MathF.Round(vpPos.X + vpSize.X * 0.5f);
+                    float cy = MathF.Round(vpPos.Y + vpSize.Y * 0.5f);
+                    glfw.SetCursorPos(win, cx, cy);
+                    _lastMouse = new Vector2(cx, cy);
+                }
             }
 
             // Keyboard navigation in 3D
@@ -312,6 +354,7 @@ public unsafe class EditorViewport : IDisposable
         else
         {
             _isOrbiting = false;
+            if (ActiveViewport == this) ActiveViewport = null;
         }
     }
 

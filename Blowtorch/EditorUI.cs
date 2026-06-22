@@ -9,7 +9,7 @@ using Fuse.Core;
 
 namespace Blowtorch;
 
-public class EditorUI
+public unsafe class EditorUI
 {
     private bool _showMapWindow = true;
     private bool _showJsonWindow = false;
@@ -135,7 +135,7 @@ public class EditorUI
         DrawMenuBar(window, sceneService, assetService, history);
         ImGui.End();
 
-        DrawViewportWindow(viewport3D, viewportTop, viewportFront, viewportSide, sceneService, assetService, history);
+        DrawViewportWindow(window, viewport3D, viewportTop, viewportFront, viewportSide, sceneService, assetService, history);
 
         if (_showMapWindow)
             DrawMapWindow(sceneService, assetService, history);
@@ -335,6 +335,7 @@ public class EditorUI
     }
 
     private void DrawViewportWindow(
+        EditorWindow window,
         EditorViewport viewport3D, 
         EditorViewport viewportTop, 
         EditorViewport viewportFront, 
@@ -377,20 +378,21 @@ public class EditorUI
             var size = new Vector2(availSize.X / 2f - 4, availSize.Y / 2f - 4);
 
             // Row 1: Top & Front
-            DrawSubViewport(viewportTop, "Top (X/Z)", size, sceneService, assetService, history);
+            DrawSubViewport(window, viewportTop, "Top (X/Z)", size, sceneService, assetService, history);
             ImGui.SameLine();
-            DrawSubViewport(viewportFront, "Front (X/Y)", size, sceneService, assetService, history);
+            DrawSubViewport(window, viewportFront, "Front (X/Y)", size, sceneService, assetService, history);
 
             // Row 2: Side & 3D Perspective
-            DrawSubViewport(viewportSide, "Side (Z/Y)", size, sceneService, assetService, history);
+            DrawSubViewport(window, viewportSide, "Side (Z/Y)", size, sceneService, assetService, history);
             ImGui.SameLine();
-            DrawSubViewport(viewport3D, "Camera 3D", size, sceneService, assetService, history);
+            DrawSubViewport(window, viewport3D, "Camera 3D", size, sceneService, assetService, history);
         }
         ImGui.End();
         ImGui.PopStyleVar(1);
     }
 
     private void DrawSubViewport(
+        EditorWindow window,
         EditorViewport viewport, 
         string title, 
         Vector2 size, 
@@ -664,7 +666,7 @@ public class EditorUI
         {
             if (_currentMode == EditorMode.Select)
             {
-                viewport.HandleInput(ImGui.GetIO(), ImGui.GetIO().DeltaTime);
+                    viewport.HandleInput(ImGui.GetIO(), ImGui.GetIO().DeltaTime, window.Glfw, window.Handle, vpPos, vpSize);
 
                 if (ImGui.IsMouseClicked(ImGuiMouseButton.Left))
                 {
@@ -710,7 +712,7 @@ public class EditorUI
             {
                 // Let right click still navigate the camera
                 if (ImGui.IsMouseDown(ImGuiMouseButton.Right) || ImGui.IsMouseDown(ImGuiMouseButton.Middle))
-                    viewport.HandleInput(ImGui.GetIO(), ImGui.GetIO().DeltaTime);
+                viewport.HandleInput(ImGui.GetIO(), ImGui.GetIO().DeltaTime, window.Glfw, window.Handle, vpPos, vpSize);
 
                 if (viewport.Camera.IsOrthographic)
                 {
