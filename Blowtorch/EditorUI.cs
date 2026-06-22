@@ -15,8 +15,8 @@ public class EditorUI
     private bool _showJsonWindow = false;
 
     // Snapping
-    private bool _snapEnabled = false;
-    private float _snapGrid = 0.5f;
+    private bool _snapEnabled = true;
+    private float _snapGrid = 1.0f;
     private float _snapAngle = 15.0f;
 
     // Undo/Redo state
@@ -31,6 +31,10 @@ public class EditorUI
     private GizmoOperation _gizmoOperation = GizmoOperation.Translate;
     private MapObject? _selectedObject;
     private HashSet<MapObject> _selectedObjects = new();
+    private bool _showModelImportDialog = false;
+    private List<string> _modelFiles = new();
+    private int _selectedModelIndex = -1;
+    private string? _detectedTexturePath = null;
     private bool _wasUsingGizmo = false;
     private EditorViewport? _activeDraggingViewport;
 
@@ -284,6 +288,14 @@ public class EditorUI
                 if (ImGui.MenuItem("Save", "Ctrl+S"))
                 {
                     sceneService.SaveMap();
+                }
+                ImGui.Separator();
+                if (ImGui.MenuItem("Play", "F5"))
+                {
+                    sceneService.SaveMap();
+                    string mapFile = Path.GetFileName(sceneService.MapPath);
+                    string fuseExe = Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\Fuse\bin\Debug\net10.0\Fuse.exe");
+                    System.Diagnostics.Process.Start(fuseExe, mapFile);
                 }
                 ImGui.Separator();
                 if (ImGui.MenuItem("Exit")) window.Close();
@@ -1080,6 +1092,12 @@ public class EditorUI
         if (ImGui.Button("Add Sphere")) AddNewObject(sceneService, assetService, history, MapShapeType.Sphere);
         ImGui.SameLine();
         if (ImGui.Button("Add Capsule")) AddNewObject(sceneService, assetService, history, MapShapeType.Capsule);
+        ImGui.SameLine();
+        if (ImGui.Button("Add Model"))
+        {
+            _showModelImportDialog = true;
+            RefreshModelFileList(assetService.FuseResPath);
+        }
 
         ImGui.Text($"Objects: {doc.Objects.Count}");
         ImGui.Separator();
@@ -1349,6 +1367,8 @@ public class EditorUI
             DuplicateObject(objectToDuplicate, sceneService, assetService, history);
         }
 
+        DrawModelImportDialog(sceneService, assetService, history);
+
         ImGui.End();
     }
 
@@ -1419,6 +1439,188 @@ public class EditorUI
         var post = sceneService.Document.Serialize();
         history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
         sceneService.PopulateScene(assetService);
+    }
+
+    private void RefreshModelFileList(string fuseResPath)
+    {
+        _modelFiles.Clear();
+        _selectedModelIndex = -1;
+        _detectedTexturePath = null;
+
+        string modelsDir = Path.Combine(fuseResPath, "Models");
+        if (Directory.Exists(modelsDir))
+        {
+            var files = Directory.GetFiles(modelsDir, "*.obj");
+            foreach (var f in files)
+            {
+                _modelFiles.Add(Path.GetFileName(f));
+            }
+        }
+    }
+
+    private string? FindTextureInModel(string objFullPath, string fuseResPath)
+    {
+        try
+        {
+            if (!File.Exists(objFullPath)) return null;
+
+            string mtlFilename = null!;
+            foreach (var line in File.ReadLines(objFullPath))
+            {
+                var trimmed = line.Trim();
+                if (trimmed.StartsWith("mtllib ", StringComparison.OrdinalIgnoreCase))
+                {
+                    mtlFilename = trimmed.Substring(7).Trim();
+                    break;
+                }
+            }
+
+            if (string.IsNullOrEmpty(mtlFilename)) return null;
+
+            string mtlFullPath = Path.Combine(Path.GetDirectoryName(objFullPath) ?? "", mtlFilename);
+            if (!File.Exists(mtlFullPath)) return null;
+
+            string textureFilename = null!;
+            foreach (var line in File.ReadLines(mtlFullPath))
+            {
+                var trimmed = line.Trim();
+                if (trimmed.StartsWith("map_Kd ", StringComparison.OrdinalIgnoreCase))
+                {
+                    textureFilename = trimmed.Substring(7).Trim();
+                    break;
+                }
+            }
+
+            if (string.IsNullOrEmpty(textureFilename)) return null;
+
+            string nameOnly = Path.GetFileName(textureFilename);
+            string targetTexturePath = Path.Combine(fuseResPath, "Textures", nameOnly);
+
+            if (File.Exists(targetTexturePath))
+            {
+                return $"Textures/{nameOnly}";
+            }
+            else
+            {
+                Logger.Warn($"Model import: Texture '{nameOnly}' defined in mtl but not found in '{targetTexturePath}'");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Error($"Error parsing model for texture: {ex.Message}");
+        }
+
+        return null;
+    }
+
+    private void ImportSelectedModel(string filename, string? texturePath, EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
+    {
+        var doc = sceneService.Document;
+        var pre = doc.Serialize();
+
+        var obj = new MapObject
+        {
+            Id = Path.GetFileNameWithoutExtension(filename),
+            Visible = true,
+            Model = $"Models/{filename}",
+            ModelScale = 1.0f,
+            Body = new MapBody
+            {
+                Shape = MapShapeType.Trimesh,
+                Position = new Vector3(0, 1, 0),
+                Rotation = Quaternion.Identity,
+                Mass = 0,
+                Friction = 0.5f,
+                Restitution = 0.0f
+            }
+        };
+
+        if (!string.IsNullOrEmpty(texturePath))
+        {
+            obj.Texture = texturePath;
+        }
+
+        doc.Objects.Add(obj);
+        SceneNameManager.EnsureAllUnique(doc);
+        
+        _selectedObject = obj;
+        _selectedObjects.Clear();
+        _selectedObjects.Add(obj);
+
+        var post = doc.Serialize();
+        history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
+        sceneService.PopulateScene(assetService);
+    }
+
+    private void DrawModelImportDialog(EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
+    {
+        if (!_showModelImportDialog) return;
+
+        ImGui.OpenPopup("Import Model");
+        
+        bool open = true;
+        if (ImGui.BeginPopupModal("Import Model", ref open, ImGuiWindowFlags.AlwaysAutoResize))
+        {
+            ImGui.Text("Select a model file from the Models directory:");
+            ImGui.Separator();
+
+            if (_modelFiles.Count == 0)
+            {
+                ImGui.TextColored(new Vector4(1, 0, 0, 1), "No .obj files found in Models/ directory.");
+            }
+            else
+            {
+                string[] filesArray = _modelFiles.ToArray();
+                if (ImGui.ListBox("##ModelsList", ref _selectedModelIndex, filesArray, filesArray.Length, 6))
+                {
+                    if (_selectedModelIndex >= 0 && _selectedModelIndex < _modelFiles.Count)
+                    {
+                        string selectedFile = _modelFiles[_selectedModelIndex];
+                        string modelFullPath = Path.Combine(assetService.FuseResPath, "Models", selectedFile);
+                        _detectedTexturePath = FindTextureInModel(modelFullPath, assetService.FuseResPath);
+                    }
+                }
+            }
+
+            ImGui.Separator();
+
+            if (_selectedModelIndex >= 0 && _selectedModelIndex < _modelFiles.Count)
+            {
+                ImGui.Text($"Selected: {_modelFiles[_selectedModelIndex]}");
+                if (!string.IsNullOrEmpty(_detectedTexturePath))
+                {
+                    ImGui.TextColored(new Vector4(0, 1, 0, 1), $"Texture found: {_detectedTexturePath}");
+                }
+                else
+                {
+                    ImGui.TextColored(new Vector4(1, 1, 0, 1), "No texture associated (or not found in res/Textures).");
+                }
+            }
+
+            ImGui.Separator();
+
+            ImGui.BeginDisabled(_selectedModelIndex < 0);
+            if (ImGui.Button("Import", new Vector2(120, 0)))
+            {
+                string selectedFile = _modelFiles[_selectedModelIndex];
+                ImportSelectedModel(selectedFile, _detectedTexturePath, sceneService, assetService, history);
+                _showModelImportDialog = false;
+            }
+            ImGui.EndDisabled();
+
+            ImGui.SameLine();
+            if (ImGui.Button("Cancel", new Vector2(120, 0)))
+            {
+                _showModelImportDialog = false;
+            }
+
+            ImGui.EndPopup();
+        }
+
+        if (!open)
+        {
+            _showModelImportDialog = false;
+        }
     }
 
     private void DrawJsonWindow(MapDocument? doc)

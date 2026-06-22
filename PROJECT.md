@@ -20,6 +20,9 @@ The project is structured as a single C# solution (`FuseEngine.slnx`) targeting 
 * **ImGui.NET**: C# wrapper for Dear ImGui. Used for the developer console in the game, and the entire user interface of the editor.
 * **StbImageSharp**: Image loading library for reading texture files (BMP, PNG, JPEG, etc.).
 
+### Aesthetic & Rendering Style
+* Textures are mapped using nearest-neighbor filtering (`GLEnum.NearestMipmapNearest` and `GLEnum.Nearest`) instead of linear interpolation, providing a retro pixelated aesthetic.
+
 ---
 
 ## 2. Directory Structure
@@ -63,14 +66,17 @@ FuseEngine/
 
 The game client lifecycle is managed by [Application.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Core/Application.cs).
 
+* **Resource Paths (`ResPath.cs`)**:
+  * Includes a search algorithm that scans parent paths for the `res` directory. It recursively searches within subdirectories of candidate paths if needed, allowing robust execution regardless of the working directory structure.
 * **Initialization (`Init()`)**:
-  1. Instantiates a [Window](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Core/Window.cs), initializing GLFW and modern OpenGL context.
-  2. Sets up the [AssetManager](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/AssetManagement/AssetManager.cs), [DebugDrawer](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Debug/DebugDrawer.cs), and [UIRenderer](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/UIRenderer.cs).
-  3. Initializes [PhysicsWorld](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Physics/PhysicsWorld.cs) (establishing Jolt system parameters and filters).
-  4. Spawns the [Player](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Player/Player.cs) character and registers the [PickupController](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Player/PickupController.cs) for object lifting.
-  5. Pre-loads shaders, textures, and default primitives (cube, ground).
-  6. Loads the active map from file via [MapSerializer](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Scene/MapSerializer.cs).
-  7. Registers window resizing, scrolling, and mouse movements event listeners.
+  1. Outputs a Blue ascii logo console splash if `res/splash.txt` exists.
+  2. Instantiates a [Window](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Core/Window.cs), initializing GLFW and modern OpenGL context.
+  3. Sets up the [AssetManager](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/AssetManagement/AssetManager.cs), [DebugDrawer](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Debug/DebugDrawer.cs), and [UIRenderer](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/UIRenderer.cs).
+  4. Initializes [PhysicsWorld](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Physics/PhysicsWorld.cs) (establishing Jolt system parameters and filters).
+  5. Spawns the [Player](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Player/Player.cs) character and registers the [PickupController](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Player/PickupController.cs) for object lifting.
+  6. Pre-loads shaders, textures, and default primitives (cube, ground).
+  7. Loads the active map from file via [MapSerializer](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Scene/MapSerializer.cs).
+  8. Registers window resizing, scrolling, and mouse movements event listeners.
 * **Game Loop (`Run()`)**:
   * Runs a continuous `while (!_window.ShouldClose)` loop.
   * Calculates delta-time (`dt`) via [Engine.Tick](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Core/Engine.cs).
@@ -79,6 +85,7 @@ The game client lifecycle is managed by [Application.cs](file:///e:/DEV/Csharp/F
     * Updates physics-driven object carrying (`_pickup.PhysicsUpdate(dt)`).
     * Steps the physics simulation (`_physics.Step(dt)`).
     * Updates player movements, crouching constraints, and camera matrix updates (`_player.Update(dt)`).
+    * Updates active interactable scripts (`interactable.Update(dt)`).
     * Resolves general input commands (e.g. toggles pause, console, debug wires, saves map).
   * Performs the rendering pipeline:
     1. Clears buffers.
@@ -86,15 +93,15 @@ The game client lifecycle is managed by [Application.cs](file:///e:/DEV/Csharp/F
     3. Renders visible scene geometries using the primary lighting shaders.
     4. Renders physics collider skeletons if the debug drawer (`F9`) is active.
     5. Renders 2D HUD (crosshairs, active frame-rate, paused overlay) with blend configurations.
-    6. Renders Dear ImGui elements (developer console, player inspector).
+    6. Renders Dear ImGui elements (developer console, player inspector with custom FOV slider control).
     7. Swaps display buffers and queries OS event updates.
 
 ### 3.2. Rendering System (`Fuse.Renderer`)
 
 * **[Mesh.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/Mesh.cs)**: Wraps an OpenGL Vertex Array Object (VAO), Vertex Buffer Object (VBO), and Element Buffer Object (EBO). Vertices are mapped using the `Vertex` struct (Position, TexCoord, Normal). It provides utilities to generate basic primitive visual shapes (cubes, tiled ground panels).
 * **[Shader.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/Shader.cs)**: Compiles GLSL vertex and fragment source files. Includes methods to locate and set shader parameters (e.g. `SetMat4`, `SetVec3`, `SetFloat`).
-* **[Texture.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/Texture.cs)**: Loads local files into memory using `StbImageSharp`, configures filtering parameters (Linear interpolation, Mipmapping), and uploads pixels to modern GPU textures.
-* **[Camera.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/Camera.cs)**: Manages camera matrices. Generates perspective projection matrices based on Field of View (FOV) and aspect ratios, and constructs Look-At View matrices based on yaw/pitch rotations.
+* **[Texture.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/Texture.cs)**: Loads local files into memory using `StbImageSharp`, configures filtering parameters (Nearest neighbor filtering for retro pixelated looks), and uploads pixels to modern GPU textures.
+* **[Camera.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/Camera.cs)**: Manages camera matrices. Generates perspective projection matrices based on Field of View (FOV) and aspect ratios, and constructs Look-At View matrices. Supports configurable near and far plane properties (`NearPlane`, `FarPlane`), defaulting the far clipping plane to `1000.0f` to prevent environment clipping in large maps.
 * **[Scene.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/Scene.cs)** & **[Entity.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/Scene.cs#L18)**: Establishes a scene tree containing active rendering nodes. Entities map visual models (`Mesh`), textures, positions/scales (`Transform`), and physical wrappers (`RigidBody`). During scene rendering, Entity transformations are matched to their corresponding physics body positions.
 
 ### 3.3. Input Handling (`Fuse.Input`)
@@ -132,7 +139,22 @@ Managed by [Input.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Input/Input.cs).
 ### 3.6. Interaction System (`Fuse.Interaction`)
 
 * **[InteractionSystem.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Interaction/InteractionSystem.cs)**: Bridges Jolt Physics bodies and C# class instances. Jolt bodies contain a 64-bit `UserData` pointer. When a rigid body is registered as interactable, the system allocates a C# Garbage Collector handle (`GCHandle.Alloc`) pointing to the [IInteractable](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Interaction/Interactable.cs) interface instance, storing its raw address within the Jolt body.
-* **Look-at Raycast**: Every frame, the client casts a short ray (5.0 units) along the camera's center axis. If it hits an interactable body, the crosshair texture changes. Pressing `E` dereferences the GC pointer and calls `OnInteract()` on the target instance (e.g., [ButtonInteract.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Interaction/ButtonInteract.cs), [CubeInteract.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Interaction/CubeInteract.cs)).
+* **[IInteractable.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Interaction/Interactable.cs)**: The interface requires the following contract:
+  ```csharp
+  public interface IInteractable
+  {
+      void OnInteract();
+      void Update(float dt);
+      Renderer.Entity? Entity { get; set; }
+      Physics.PhysicsWorld? World { get; set; }
+  }
+  ```
+  * Active interactables are tracked by `Application` and receive frame updates (`Update(dt)`).
+  * Default interactables include:
+    * `ButtonInteract`: Prints debug console notifications.
+    * `CubeInteract`: Prints debug console notifications.
+    * `DoorInteract`: Implements a smooth door opening/closing rotation animation using quaternions (`Quaternion.Slerp`). Opening applies an Ease-out cubic curve, and closing applies an Ease-in quadratic curve. It modifies the physical rigid body position and rotation using `World.SetBodyPositionAndRotation`.
+* **Look-at Raycast**: Every frame, the client casts a short ray (5.0 units) along the camera's center axis. If it hits an interactable body, the crosshair texture changes. Pressing `E` dereferences the GC pointer and calls `OnInteract()` on the target instance.
 * **Memory Management**: When destroying scenes, you must call `Free()` on the allocated `GCHandle` pointers to prevent memory leaks and dangling pointer crashes.
 
 ### 3.7. Map Serialization & Brushes (`Fuse.Scene` & `Model`)
@@ -140,7 +162,7 @@ Managed by [Input.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Input/Input.cs).
 The file format for game levels is JSON, processed by [MapSerializer.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Scene/MapSerializer.cs) and parsed into [MapDocument.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Scene/Model/MapDocument.cs).
 
 * **Primitives vs. Brushes**:
-  * **Primitives**: Predefined meshes (e.g., `cube`, `ground`) imported from models or procedural assets.
+  * **Primitives**: Predefined meshes imported from models or procedural assets.
   * **Brushes**: Convex shapes defined using planes (Constructive Solid Geometry/CSG), similar to level formats used in classic games (like Quake).
 * **[Brush.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Scene/Model/Brush.cs) & [Face.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Scene/Model/Face.cs)**: A brush consists of a list of `Face` definitions. Each face defines a math plane equation:
   $$\text{Normal} \cdot \vec{P} + D = 0$$
@@ -160,11 +182,12 @@ The file format for game levels is JSON, processed by [MapSerializer.cs](file://
 The map editor lifecycle is controlled by [EditorApplication.cs](file:///e:/DEV/Csharp/FuseEngine/Blowtorch/EditorApplication.cs).
 
 * **Initialization**:
-  1. Instantiates the [EditorWindow](file:///e:/DEV/Csharp/FuseEngine/Blowtorch/EditorWindow.cs).
-  2. Starts [EditorInputService](file:///e:/DEV/Csharp/FuseEngine/Blowtorch/EditorInputService.cs), capturing and directing key/mouse inputs to ImGui.
-  3. Initializes [ImGuiBackEnd](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Imgui/ImGuiBackEnd.cs) to draw overlays.
-  4. Launches [EditorAssetService](file:///e:/DEV/Csharp/FuseEngine/Blowtorch/EditorAssetService.cs) to cache textures and meshes, and [EditorSceneService](file:///e:/DEV/Csharp/FuseEngine/Blowtorch/EditorSceneService.cs) to load the active level document.
-  5. Instantiates four separate [EditorViewport](file:///e:/DEV/Csharp/FuseEngine/Blowtorch/EditorViewport.cs) contexts (Perspective 3D, Top Ortho, Front Ortho, Side Ortho) and a [CommandHistory](file:///e:/DEV/Csharp/FuseEngine/Blowtorch/CommandHistory.cs) manager.
+  1. Outputs a Blue ascii logo console splash if `res/splash.txt` exists.
+  2. Instantiates the [EditorWindow](file:///e:/DEV/Csharp/FuseEngine/Blowtorch/EditorWindow.cs).
+  3. Starts [EditorInputService](file:///e:/DEV/Csharp/FuseEngine/Blowtorch/EditorInputService.cs), capturing and directing key/mouse inputs to ImGui.
+  4. Initializes [ImGuiBackEnd](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Imgui/ImGuiBackEnd.cs) to draw overlays.
+  5. Launches [EditorAssetService](file:///e:/DEV/Csharp/FuseEngine/Blowtorch/EditorAssetService.cs) to cache textures and meshes, and [EditorSceneService](file:///e:/DEV/Csharp/FuseEngine/Blowtorch/EditorSceneService.cs) to load the active level document.
+  6. Instantiates four separate [EditorViewport](file:///e:/DEV/Csharp/FuseEngine/Blowtorch/EditorViewport.cs) contexts (Perspective 3D, Top Ortho, Front Ortho, Side Ortho) and a [CommandHistory](file:///e:/DEV/Csharp/FuseEngine/Blowtorch/CommandHistory.cs) manager.
 * **Loop**:
   * Calculates frame delta time.
   * Captures input states.
@@ -202,8 +225,15 @@ Undo and redo functionality is implemented using the Command pattern in [Command
 ### 4.5. Editor UI Panels (`EditorUI.cs`)
 
 The editor layout is built using ImGui:
-* **Menu Bar**: File management (New, Load, Save, Exit), Undo/Redo triggers, and viewport display options.
-* **Scene Hierarchy**: Lists all entities in the `MapDocument`. Left-clicking selects an object; right-clicking opens a context menu to add, rename, duplicate, or delete entities.
+* **Menu Bar**: File management (New, Load, Save, Play standalone `F5`, Exit), Undo/Redo triggers, and viewport display options.
+  * **Play standalone (`F5`)**: Automatically saves the active map, locates the standalone compiled game binary (`Fuse.exe`), and starts it in a separate process, loading the editor map directly.
+* **Scene Hierarchy / Model Importer**: Lists all entities in the `MapDocument`. Left-clicking selects an object; right-clicking opens a context menu.
+  * **Import Model Dialogue**: Clicking "Add Model" displays a modal pop-up list scanning `res/Models/` for `.obj` files.
+    1. Selects the `.obj` file.
+    2. Parses the file header to automatically detect `.mtl` material files (`mtllib`).
+    3. Scans `.mtl` descriptors to identify diffuse maps (`map_Kd`).
+    4. Automatically verifies texture availability inside `res/Textures/` and configures texture mapping properties dynamically.
+    5. Spawns the imported model configured by default as a static `MapShapeType.Trimesh` physics collision body with zero mass.
 * **Properties Inspector**: Edit properties of the selected object: name, position, rotation, scale, visibility, mesh keys, texture paths, interactable scripts, and physical parameters (mass, friction, restitution).
 * **Brush Builder**: Edit plane offsets for convex brushes. Provides tools to resize brush half-extents and compile brushes into visual/collision meshes.
 * **Raw JSON Viewer**: Shows the current JSON representation of the level document in real-time. Helpful for checking structural syntax.
@@ -214,11 +244,12 @@ The editor layout is built using ImGui:
 
 ### 5.1. Adding a New Interactable Object
 
-Follow these steps to create a new interactive object (e.g. a door or a treasure chest):
+Follow these steps to create a new interactive object (e.g. an animated door):
 
 1. **Create the Script**: Create a C# file in [Fuse/src/Interaction/](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Interaction) (e.g., `DoorInteract.cs`).
-2. **Implement `IInteractable`**: Implement the interface and add the `InteractableTypeAttribute`:
+2. **Implement `IInteractable`**: Implement the interface, define properties, and add the `InteractableTypeAttribute`:
    ```csharp
+   using System.Numerics;
    using Fuse.Core;
 
    namespace Fuse.Interaction;
@@ -226,10 +257,53 @@ Follow these steps to create a new interactive object (e.g. a door or a treasure
    [InteractableType("DoorInteract")]
    public sealed class DoorInteract : IInteractable
    {
+       public Renderer.Entity? Entity { get; set; }
+       public Physics.PhysicsWorld? World { get; set; }
+
+       private Quaternion _baseRot;
+       private bool _baseSet;
+       private bool _open;
+       private bool _animating;
+       private float _elapsed;
+       private float _duration = 1.0f;
+       private Quaternion _from;
+       private Quaternion _to;
+
        public void OnInteract()
        {
-           Logger.Info("Door opened!");
-           // Add door logic here (e.g., play sounds or modify physics constraints)
+           if (Entity?.Body == null || !Entity.Body.IsBuilt || World == null || _animating)
+               return;
+
+           if (!_baseSet)
+           {
+               _baseRot = Entity.Body.Rotation(World);
+               _baseSet = true;
+           }
+
+           _open = !_open;
+           _animating = true;
+           _elapsed = 0f;
+           _from = Entity.Body.Rotation(World);
+           _to = _baseRot * Quaternion.CreateFromAxisAngle(Vector3.UnitY, _open ? 1.57f : 0f);
+       }
+
+       public void Update(float dt)
+       {
+           if (!_animating || Entity?.Body == null || !Entity.Body.IsBuilt || World == null)
+               return;
+
+           _elapsed += dt;
+           float t = float.Clamp(_elapsed / _duration, 0f, 1f);
+           float eased = _open ? 1f - MathF.Pow(1f - t, 3f) : t * t; // ease-out/ease-in curves
+
+           var rot = Quaternion.Slerp(_from, _to, eased);
+           World.SetBodyPositionAndRotation(Entity.Body.Native, Entity.Body.Position(World), rot);
+
+           if (t >= 1f)
+           {
+               _animating = false;
+               World.BodyInterface.SetAngularVelocity(Entity.Body.Native, Vector3.Zero);
+           }
        }
    }
    ```

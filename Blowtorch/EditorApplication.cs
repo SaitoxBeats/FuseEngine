@@ -21,7 +21,7 @@ public unsafe class EditorApplication : IDisposable
     {
         try
         {
-            _window = new EditorWindow("Blowtorch Map Editor", 1280, 800);
+            _window = new EditorWindow("Blowtorch", 1280, 800);
         }
         catch (Exception ex)
         {

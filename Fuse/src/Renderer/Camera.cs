@@ -40,10 +40,16 @@ public class Camera
         return Matrix4x4.CreateLookAt(_position, _position + _front, _up);
     }
 
-    public Matrix4x4 GetProjectionMatrix(float aspect, float nearPlane = 0.1f, float farPlane = 100.0f)
+    private float _nearPlane = 0.1f;
+    private float _farPlane = 1000.0f;
+
+    public float NearPlane { get => _nearPlane; set => _nearPlane = value; }
+    public float FarPlane { get => _farPlane; set => _farPlane = value;  }
+
+    public Matrix4x4 GetProjectionMatrix(float aspect)
     {
         return Matrix4x4.CreatePerspectiveFieldOfView(
-            float.DegreesToRadians(_fov), aspect, nearPlane, farPlane);
+            float.DegreesToRadians(_fov), aspect, _nearPlane, _farPlane);
     }
 
     public Vector3 Front => _front;

@@ -26,6 +26,17 @@ public static class ResPath
                 Path = candidate;
                 return;
             }
+
+            foreach (var sub in dir.GetDirectories())
+            {
+                string subCandidate = System.IO.Path.Combine(sub.FullName, "res");
+                if (System.IO.Directory.Exists(subCandidate))
+                {
+                    Path = subCandidate;
+                    return;
+                }
+            }
+
             dir = dir.Parent;
         }
 

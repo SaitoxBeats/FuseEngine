@@ -57,6 +57,7 @@ public unsafe class Application : IDisposable
     private Imgui.Console _console = null!;
 
     // Interaction
+    private readonly List<IInteractable> _interactables = [];
     private Interaction.IInteractable? _lookingAt;
     private readonly Dictionary<JoltPhysicsSharp.BodyID, GCHandle> _interactableHandles = [];
 
@@ -139,6 +140,9 @@ public unsafe class Application : IDisposable
                 var interactable = Interaction.InteractionSystem.CreateInteractable(entity.InteractableType);
                 if (interactable != null)
                 {
+                    interactable.Entity = entity;
+                    interactable.World = _physics;
+                    _interactables.Add(interactable);
                     var gcHandle = GCHandle.Alloc(interactable);
                     _interactableHandles[entity.Body.Native] = gcHandle;
                     _physics.BodyInterface.SetUserData(entity.Body.Native, (ulong)GCHandle.ToIntPtr(gcHandle));
@@ -160,32 +164,32 @@ public unsafe class Application : IDisposable
                 _player.NativeCharacter.Position = spawn.Value.Position;
                 _player.Camera.SetRotation(spawn.Value.Yaw, spawn.Value.Pitch);
             }
-            Logger.Info($"Map: {mapPath}");
+            Logger.Warn($"CURRENT MAP LOADED: {mapPath}");
         }
-        else
-        {
-            Logger.Warn("Falling back to procedural scene");
-            var groundBody = new Physics.RigidBody()
-                .SetBox(new Vector3(20.0f, 0.5f, 20.0f))
-                .SetPosition(new Vector3(0, 0, 0))
-                .SetMass(0)
-                .SetFriction(0.8f);
-            groundBody.Build(_physics);
-            _bodies.Add(groundBody);
-            _scene.Add(_groundMesh, "ground", groundBody);
-
-            var cubeBody = new Physics.RigidBody()
-                .SetBox(new Vector3(0.5f, 0.5f, 0.5f))
-                .SetPosition(new Vector3(0, 1, -3))
-                .SetMass(10.0f)
-                .SetFriction(0.5f)
-                .SetRestitution(0.4f);
-            cubeBody.Build(_physics);
-            _bodies.Add(cubeBody);
-
-            var entity = _scene.Add(_cubeMesh, "cube", cubeBody);
-            entity.InteractableType = "CubeInteract";
-        }
+        //else
+        //{
+        //    Logger.Warn("Falling back to procedural scene");
+        //    var groundBody = new Physics.RigidBody()
+        //        .SetBox(new Vector3(20.0f, 0.5f, 20.0f))
+        //        .SetPosition(new Vector3(0, 0, 0))
+        //        .SetMass(0)
+        //        .SetFriction(0.8f);
+        //    groundBody.Build(_physics);
+        //    _bodies.Add(groundBody);
+        //    _scene.Add(_groundMesh, "ground", groundBody);
+        //
+        //    var cubeBody = new Physics.RigidBody()
+        //        .SetBox(new Vector3(0.5f, 0.5f, 0.5f))
+        //        .SetPosition(new Vector3(0, 1, -3))
+        //        .SetMass(10.0f)
+        //        .SetFriction(0.5f)
+        //        .SetRestitution(0.4f);
+        //    cubeBody.Build(_physics);
+        //    _bodies.Add(cubeBody);
+        //
+        //    var entity = _scene.Add(_cubeMesh, "cube", cubeBody);
+        //    entity.InteractableType = "CubeInteract";
+        //}
     }
 
     private void RegisterWindowCallbacks()
@@ -251,6 +255,8 @@ public unsafe class Application : IDisposable
                     _physics.Step(float.Min(dt, 0.0333f));
                     _player.Update(dt);
                     _pickup.Update(dt);
+                    foreach (var interactable in _interactables)
+                        interactable.Update(dt);
                 }
 
                 HandleInput();
@@ -312,6 +318,7 @@ public unsafe class Application : IDisposable
 
         if (Input.Input.KeyPressed(KeyCodes.F5))
         {
+            _interactables.Clear();
             string loadPath = $"{Fuse.ResPath.Path}/Maps/default.json";
             foreach (var b in _bodies)
             {

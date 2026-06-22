@@ -35,8 +35,9 @@ public class EditorAssetService : IDisposable
 
     public void Initialize(string baseDirectory)
     {
-        _fuseResPath = Path.GetFullPath(Path.Combine(baseDirectory, @"..\..\..\..\Fuse\res"));
-        
+        //_fuseResPath = Path.GetFullPath(Path.Combine(baseDirectory, @"..\..\..\..\Fuse\res"));
+        _fuseResPath = Fuse.ResPath.Path;
+
         _shader = _assets.GetShader(
             Path.Combine(_fuseResPath, "Shaders", "default.vert"),
             Path.Combine(_fuseResPath, "Shaders", "default.frag"));
