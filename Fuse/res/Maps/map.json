@@ -166,8 +166,8 @@
           0
         ],
         "mass": 0,
-        "friction": 0,
-        "restitution": 0,
+        "friction": 0.8,
+        "restitution": 0.3,
         "half_extents": [
           20,
           0.5,
@@ -178,6 +178,7 @@
     {
       "id": "brush_b9c503ad",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -186,7 +187,7 @@
             0,
             1
           ],
-          "d": -0.5,
+          "d": -0.25,
           "texture": "default",
           "u_axis": [
             1,
@@ -210,7 +211,7 @@
             0,
             -1
           ],
-          "d": -0.5,
+          "d": -0.25,
           "texture": "default",
           "u_axis": [
             1,
@@ -282,7 +283,7 @@
             0,
             0
           ],
-          "d": -3,
+          "d": -3.5,
           "texture": "default",
           "u_axis": [
             0,
@@ -306,7 +307,7 @@
             0,
             0
           ],
-          "d": -3,
+          "d": -3.5,
           "texture": "default",
           "u_axis": [
             0,
@@ -331,7 +332,7 @@
         "position": [
           0,
           2.5,
-          -3.5
+          -3.75
         ],
         "rotation": [
           1,
@@ -343,15 +344,16 @@
         "friction": 0,
         "restitution": 0,
         "half_extents": [
-          3,
+          3.5,
           2.5,
-          0.5
+          0.25
         ]
       }
     },
     {
       "id": "brush_ec5ce605",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -456,7 +458,7 @@
             0,
             0
           ],
-          "d": -0.5,
+          "d": -0.25,
           "texture": "default",
           "u_axis": [
             0,
@@ -480,7 +482,7 @@
             0,
             0
           ],
-          "d": -0.5,
+          "d": -0.25,
           "texture": "default",
           "u_axis": [
             0,
@@ -503,7 +505,7 @@
       "body": {
         "shape": "box",
         "position": [
-          3.5,
+          3.75,
           2.5,
           -2.5
         ],
@@ -517,7 +519,7 @@
         "friction": 0,
         "restitution": 0,
         "half_extents": [
-          0.5,
+          0.25,
           2.5,
           1.5
         ]
@@ -526,6 +528,7 @@
     {
       "id": "brush_68c29043",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -630,7 +633,7 @@
             0,
             0
           ],
-          "d": -0.5,
+          "d": -0.25,
           "texture": "default",
           "u_axis": [
             0,
@@ -654,7 +657,7 @@
             0,
             0
           ],
-          "d": -0.5,
+          "d": -0.25,
           "texture": "default",
           "u_axis": [
             0,
@@ -677,7 +680,7 @@
       "body": {
         "shape": "box",
         "position": [
-          3.5,
+          3.75,
           2.5,
           2.5
         ],
@@ -691,7 +694,7 @@
         "friction": 0,
         "restitution": 0,
         "half_extents": [
-          0.5,
+          0.25,
           2.5,
           1.5
         ]
@@ -700,6 +703,7 @@
     {
       "id": "brush_fe29d225",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -708,7 +712,7 @@
             0,
             1
           ],
-          "d": -0.5,
+          "d": -0.25,
           "texture": "default",
           "u_axis": [
             1,
@@ -732,7 +736,7 @@
             0,
             -1
           ],
-          "d": -0.5,
+          "d": -0.25,
           "texture": "default",
           "u_axis": [
             1,
@@ -804,7 +808,7 @@
             0,
             0
           ],
-          "d": -3,
+          "d": -3.5,
           "texture": "default",
           "u_axis": [
             0,
@@ -828,7 +832,7 @@
             0,
             0
           ],
-          "d": -3,
+          "d": -3.5,
           "texture": "default",
           "u_axis": [
             0,
@@ -853,7 +857,7 @@
         "position": [
           0,
           2.5,
-          3.5
+          3.75
         ],
         "rotation": [
           1,
@@ -865,15 +869,16 @@
         "friction": 0,
         "restitution": 0,
         "half_extents": [
-          3,
+          3.5,
           2.5,
-          0.5
+          0.25
         ]
       }
     },
     {
       "id": "brush_dc25dc29",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -978,7 +983,7 @@
             0,
             0
           ],
-          "d": -0.5,
+          "d": -0.25,
           "texture": "default",
           "u_axis": [
             0,
@@ -1002,7 +1007,7 @@
             0,
             0
           ],
-          "d": -0.5,
+          "d": -0.25,
           "texture": "default",
           "u_axis": [
             0,
@@ -1025,7 +1030,7 @@
       "body": {
         "shape": "box",
         "position": [
-          -3.5,
+          -3.75,
           2.5,
           0
         ],
@@ -1039,7 +1044,7 @@
         "friction": 0,
         "restitution": 0,
         "half_extents": [
-          0.5,
+          0.25,
           2.5,
           4
         ]
@@ -1048,6 +1053,7 @@
     {
       "id": "brush_4264c7cc",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -1104,7 +1110,7 @@
             1,
             0
           ],
-          "d": -1,
+          "d": -0.875,
           "texture": "default",
           "u_axis": [
             1,
@@ -1128,7 +1134,7 @@
             -1,
             0
           ],
-          "d": -1,
+          "d": -0.875,
           "texture": "default",
           "u_axis": [
             1,
@@ -1152,7 +1158,7 @@
             0,
             0
           ],
-          "d": -0.5,
+          "d": -0.25,
           "texture": "default",
           "u_axis": [
             0,
@@ -1176,7 +1182,7 @@
             0,
             0
           ],
-          "d": -0.5,
+          "d": -0.25,
           "texture": "default",
           "u_axis": [
             0,
@@ -1199,7 +1205,1258 @@
       "body": {
         "shape": "box",
         "position": [
-          3.5,
+          3.75,
+          4.125,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0,
+        "restitution": 0,
+        "half_extents": [
+          0.25,
+          0.875,
+          1
+        ]
+      }
+    },
+    {
+      "id": "brush_95b207de",
+      "visible": true,
+      "parent": "group_1",
+      "type": "brush",
+      "faces": [
+        {
+          "normal": [
+            0,
+            0,
+            1
+          ],
+          "d": -1,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            0,
+            -1
+          ],
+          "d": -1,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            1,
+            0
+          ],
+          "d": -0.125,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            -1,
+            0
+          ],
+          "d": -0.125,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            1,
+            0,
+            0
+          ],
+          "d": -0.125,
+          "texture": "default",
+          "u_axis": [
+            0,
+            0,
+            1
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            -1,
+            0,
+            0
+          ],
+          "d": -0.125,
+          "texture": "default",
+          "u_axis": [
+            0,
+            0,
+            1
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        }
+      ],
+      "texture": "Textures/dev_measurecrate01.bmp",
+      "body": {
+        "shape": "box",
+        "position": [
+          3.625,
+          3.125,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0,
+        "restitution": 0,
+        "half_extents": [
+          0.125,
+          0.125,
+          1
+        ]
+      }
+    },
+    {
+      "id": "brush_95ff23bd",
+      "visible": true,
+      "parent": "group_1",
+      "type": "brush",
+      "faces": [
+        {
+          "normal": [
+            0,
+            0,
+            1
+          ],
+          "d": -0.125,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            0,
+            -1
+          ],
+          "d": -0.125,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            1,
+            0
+          ],
+          "d": -1.5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            -1,
+            0
+          ],
+          "d": -1.5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            1,
+            0,
+            0
+          ],
+          "d": -0.125,
+          "texture": "default",
+          "u_axis": [
+            0,
+            0,
+            1
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            -1,
+            0,
+            0
+          ],
+          "d": -0.125,
+          "texture": "default",
+          "u_axis": [
+            0,
+            0,
+            1
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        }
+      ],
+      "texture": "Textures/dev_measurecrate01.bmp",
+      "body": {
+        "shape": "box",
+        "position": [
+          3.625,
+          1.5,
+          -0.875
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0,
+        "restitution": 0,
+        "half_extents": [
+          0.125,
+          1.5,
+          0.125
+        ]
+      }
+    },
+    {
+      "id": "brush_95ff23bd_copy",
+      "visible": true,
+      "parent": "group_1",
+      "type": "brush",
+      "faces": [
+        {
+          "normal": [
+            0,
+            0,
+            1
+          ],
+          "d": -0.125,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            0,
+            -1
+          ],
+          "d": -0.125,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            1,
+            0
+          ],
+          "d": -1.5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            -1,
+            0
+          ],
+          "d": -1.5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            1,
+            0,
+            0
+          ],
+          "d": -0.125,
+          "texture": "default",
+          "u_axis": [
+            0,
+            0,
+            1
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            -1,
+            0,
+            0
+          ],
+          "d": -0.125,
+          "texture": "default",
+          "u_axis": [
+            0,
+            0,
+            1
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        }
+      ],
+      "texture": "Textures/dev_measurecrate01.bmp",
+      "body": {
+        "shape": "box",
+        "position": [
+          3.625,
+          1.5,
+          0.875
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0,
+        "restitution": 0,
+        "half_extents": [
+          0.125,
+          1.5,
+          0.125
+        ]
+      }
+    },
+    {
+      "id": "group_1",
+      "visible": true,
+      "body": {
+        "shape": "none",
+        "position": [
+          2.0416667,
+          2.5972223,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0,
+        "restitution": 0
+      }
+    },
+    {
+      "id": "door",
+      "visible": true,
+      "model": "Models/door.obj",
+      "texture": "Textures/door01a_skin3.bmp",
+      "interactable": "DoorInteract",
+      "body": {
+        "shape": "trimesh",
+        "position": [
+          3.625,
+          0,
+          0.75
+        ],
+        "rotation": [
+          0.7071068,
+          0,
+          0.7071068,
+          0
+        ],
+        "mass": 0,
+        "friction": 0.5,
+        "restitution": 0
+      }
+    },
+    {
+      "id": "new_box",
+      "visible": true,
+      "parent": "group_2",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          9,
+          1,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy",
+      "visible": true,
+      "parent": "group_2",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          8,
+          1,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1",
+      "visible": true,
+      "parent": "group_2",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          11,
+          1,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy",
+      "visible": true,
+      "parent": "group_2",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          10,
+          1,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_1",
+      "visible": true,
+      "parent": "group_2",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          12,
+          1,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_1_copy",
+      "visible": true,
+      "parent": "group_2",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          13,
+          1,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_1_copy_copy",
+      "visible": true,
+      "parent": "group_2",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          14,
+          1,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "group_2",
+      "visible": true,
+      "parent": "group_3",
+      "body": {
+        "shape": "none",
+        "position": [
+          11,
+          1,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0,
+        "restitution": 0
+      }
+    },
+    {
+      "id": "group_2_copy",
+      "visible": true,
+      "parent": "group_3",
+      "body": {
+        "shape": "none",
+        "position": [
+          11,
+          2,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0,
+        "restitution": 0
+      }
+    },
+    {
+      "id": "new_box_copy_2",
+      "visible": true,
+      "parent": "group_2_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          9,
+          2,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          8,
+          2,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_2",
+      "visible": true,
+      "parent": "group_2_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          11,
+          2,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          10,
+          2,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_1_copy_1",
+      "visible": true,
+      "parent": "group_2_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          12,
+          2,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_1_copy_copy_1",
+      "visible": true,
+      "parent": "group_2_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          13,
+          2,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_1_copy_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          14,
+          2,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "group_2_copy_copy",
+      "visible": true,
+      "parent": "group_3",
+      "body": {
+        "shape": "none",
+        "position": [
+          11,
+          3,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0,
+        "restitution": 0
+      }
+    },
+    {
+      "id": "new_box_copy_2_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          9,
+          3,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          8,
+          3,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_2_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          11,
+          3,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          10,
+          3,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_1_copy_1_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          12,
+          3,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_1_copy_copy_1_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          13,
+          3,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_1_copy_copy_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          14,
+          3,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "group_2_copy_copy_copy",
+      "visible": true,
+      "parent": "group_3",
+      "body": {
+        "shape": "none",
+        "position": [
+          11,
           4,
           0
         ],
@@ -1211,12 +2468,660 @@
         ],
         "mass": 0,
         "friction": 0,
+        "restitution": 0
+      }
+    },
+    {
+      "id": "new_box_copy_2_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          9,
+          4,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
         "restitution": 0,
         "half_extents": [
           0.5,
-          1,
-          1
+          0.5,
+          0.5
         ]
+      }
+    },
+    {
+      "id": "new_box_copy_copy_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          8,
+          4,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_2_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          11,
+          4,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_copy_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          10,
+          4,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_1_copy_1_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          12,
+          4,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_1_copy_copy_1_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          13,
+          4,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_1_copy_copy_copy_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          14,
+          4,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "group_2_copy_copy_copy_copy",
+      "visible": true,
+      "parent": "group_3",
+      "body": {
+        "shape": "none",
+        "position": [
+          11,
+          5,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0,
+        "restitution": 0
+      }
+    },
+    {
+      "id": "new_box_copy_2_copy_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          9,
+          5,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_copy_copy_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          8,
+          5,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_2_copy_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          11,
+          5,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_copy_copy_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          10,
+          5,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_1_copy_1_copy_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          12,
+          5,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_1_copy_copy_1_copy_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          13,
+          5,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_1_copy_copy_copy_copy_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          14,
+          5,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "group_2_copy_copy_copy_copy_copy",
+      "visible": true,
+      "parent": "group_3",
+      "body": {
+        "shape": "none",
+        "position": [
+          11,
+          6,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0,
+        "restitution": 0
+      }
+    },
+    {
+      "id": "new_box_copy_2_copy_copy_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy_copy_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          9,
+          6,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_copy_copy_copy_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy_copy_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          8,
+          6,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_2_copy_copy_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy_copy_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          11,
+          6,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_copy_copy_copy_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy_copy_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          10,
+          6,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_1_copy_1_copy_copy_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy_copy_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          12,
+          6,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_1_copy_copy_1_copy_copy_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy_copy_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          13,
+          6,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "new_box_copy_1_copy_1_copy_copy_copy_copy_copy_copy_copy",
+      "visible": true,
+      "parent": "group_2_copy_copy_copy_copy_copy",
+      "mesh": "cube",
+      "body": {
+        "shape": "box",
+        "position": [
+          14,
+          6,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "group_3",
+      "visible": true,
+      "body": {
+        "shape": "none",
+        "position": [
+          11,
+          3.5,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0,
+        "restitution": 0
       }
     }
   ],

@@ -308,7 +308,7 @@ public unsafe class Application : IDisposable
 
         if (Input.Input.KeyPressed(KeyCodes.F6))
         {
-            string savePath = $"{Fuse.ResPath.Path}/Maps/default.json";
+            string savePath = mapPath;
             var spawn = new Fuse.Scene.PlayerSpawn(
                 _player.NativeCharacter.Position,
                 _player.Camera.Yaw,
@@ -319,7 +319,7 @@ public unsafe class Application : IDisposable
         if (Input.Input.KeyPressed(KeyCodes.F5))
         {
             _interactables.Clear();
-            string loadPath = $"{Fuse.ResPath.Path}/Maps/default.json";
+            string loadPath = mapPath;
             foreach (var b in _bodies)
             {
                 if (b.IsBuilt)
