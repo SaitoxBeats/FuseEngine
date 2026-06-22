@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Fuse.Core;
 using Fuse.Physics;
+using Fuse.Scene.Model;
 
 namespace Fuse.Scene;
 
@@ -199,6 +200,7 @@ public static class MapSerializer
                 ? (string)idNode! : "unnamed";
 
             bool isModel = obj.TryGetPropertyValue("model", out var modelNode);
+            bool isBrush = obj.TryGetPropertyValue("type", out var typeNode) && (string)typeNode! == "brush";
             string meshKey = isModel
                 ? (string)modelNode!
                 : (obj.TryGetPropertyValue("mesh", out var meshNode)
@@ -222,7 +224,13 @@ public static class MapSerializer
             if (resPath != null && isModel && !Path.IsPathRooted(meshKey))
                 modelPath = Path.GetFullPath(Path.Combine(resPath, meshKey));
 
-            if (isModel)
+            if (isBrush)
+            {
+                var brushObj = (Brush)MapDocument.ParseObject(obj);
+                var meshData = MeshGenerator.Generate(brushObj);
+                mesh = new Renderer.Mesh(assets.Gl, meshData.Vertices, meshData.Indices);
+            }
+            else if (isModel)
             {
                 var model = assets.GetModel(modelPath, modelScale);
                 if (model != null) mesh = model.Mesh;
@@ -243,6 +251,36 @@ public static class MapSerializer
             entity.TexturePath = texturePath;
             entity.ModelScale = modelScale;
             entity.UvScale = uvScale;
+
+            if (!string.IsNullOrEmpty(texturePath))
+            {
+                string texPath = texturePath;
+                if (texPath.StartsWith("res/"))
+                {
+                    texPath = texPath.Substring(4);
+                }
+                if (resPath != null && !Path.IsPathRooted(texPath))
+                {
+                    texPath = Path.GetFullPath(Path.Combine(resPath, texPath));
+                }
+                
+                if (File.Exists(texPath))
+                {
+                    try
+                    {
+                        entity.Texture = assets.GetTexture(texPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Warn($"Map load: failed to load texture '{texturePath}' for '{id}' - {ex.Message}");
+                    }
+                }
+                else
+                {
+                    Logger.Warn($"Map load: texture file not found '{texPath}' for '{id}' - using fallback");
+                    entity.Texture = null;
+                }
+            }
 
             if (obj.TryGetPropertyValue("interactable", out var interactableNode))
                 entity.InteractableType = (string)interactableNode!;
@@ -268,7 +306,9 @@ public static class MapSerializer
                 body.Build(physics);
                 entity.Body = body;
                 
-                if (body.Type == RigidBody.ShapeType.Box)
+                if (isBrush)
+                    entity.Transform.Scale = Vector3.One;
+                else if (body.Type == RigidBody.ShapeType.Box)
                     entity.Transform.Scale = body.BoxHalfExtents * 2.0f;
                 else if (body.Type == RigidBody.ShapeType.Sphere)
                     entity.Transform.Scale = new Vector3(body.SphereRadius * 2.0f);
@@ -279,7 +319,7 @@ public static class MapSerializer
             }
             else
             {
-                entity.Transform.Scale = new Vector3(modelScale);
+                entity.Transform.Scale = isBrush ? Vector3.One : new Vector3(modelScale);
             }
         }
 

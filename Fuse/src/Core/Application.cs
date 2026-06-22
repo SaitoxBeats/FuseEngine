@@ -440,8 +440,7 @@ public unsafe class Application : IDisposable
             _shader.SetBool("uUseTexture", true);
             _shader.SetInt("uTexture", 0);
 
-            _crateTexture.Bind(0);
-            _scene.Render(_shader, _physics);
+            _scene.Render(_shader, _physics, _crateTexture);
         }
     }
 

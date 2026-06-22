@@ -1,0 +1,238 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using Fuse.Renderer;
+
+namespace Fuse.Scene.Model;
+
+public static class MeshGenerator
+{
+    private const float Epsilon = 0.001f;
+
+    public static MeshData Generate(Brush brush)
+    {
+        // Correct degenerate UV projection axes (e.g. U/V parallel to the normal)
+        foreach (var face in brush.Faces)
+        {
+            if (System.Math.Abs(Vector3.Dot(face.Plane.Normal, face.UAxis)) > 0.9f ||
+                System.Math.Abs(Vector3.Dot(face.Plane.Normal, face.VAxis)) > 0.9f)
+            {
+                var normal = face.Plane.Normal;
+                float nx = System.Math.Abs(normal.X);
+                float ny = System.Math.Abs(normal.Y);
+                float nz = System.Math.Abs(normal.Z);
+
+                if (nx > ny && nx > nz)
+                {
+                    face.UAxis = Vector3.UnitZ;
+                    face.VAxis = -Vector3.UnitY;
+                }
+                else if (ny > nx && ny > nz)
+                {
+                    face.UAxis = Vector3.UnitX;
+                    face.VAxis = -Vector3.UnitZ;
+                }
+                else
+                {
+                    face.UAxis = Vector3.UnitX;
+                    face.VAxis = -Vector3.UnitY;
+                }
+            }
+        }
+
+        var vertices = new List<Vertex>();
+        var indices = new List<uint>();
+        
+        var faces = brush.Faces;
+        int numFaces = faces.Count;
+        
+        // Map each face to its generated vertices
+        var faceVertices = new Dictionary<Face, List<Vector3>>();
+        foreach (var face in faces)
+        {
+            faceVertices[face] = new List<Vector3>();
+        }
+
+        // 1. Find all valid intersection points of 3 planes
+        for (int i = 0; i < numFaces - 2; i++)
+        {
+            for (int j = i + 1; j < numFaces - 1; j++)
+            {
+                for (int k = j + 1; k < numFaces; k++)
+                {
+                    if (TryGetIntersection(faces[i].Plane, faces[j].Plane, faces[k].Plane, out Vector3 p))
+                    {
+                        // Check if p is inside all other planes
+                        bool valid = true;
+                        for (int m = 0; m < numFaces; m++)
+                        {
+                            if (m == i || m == j || m == k) continue;
+                            
+                            // Distance from point to plane
+                            float dist = Vector3.Dot(faces[m].Plane.Normal, p) + faces[m].Plane.D;
+                            if (dist > Epsilon)
+                            {
+                                valid = false;
+                                break;
+                            }
+                        }
+
+                        if (valid)
+                        {
+                            // Add vertex to the faces that share it
+                            AddUniqueVertex(faceVertices[faces[i]], p);
+                            AddUniqueVertex(faceVertices[faces[j]], p);
+                            AddUniqueVertex(faceVertices[faces[k]], p);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Find minCorner of the brush in local space
+        Vector3 minCorner = Vector3.Zero;
+        bool hasVerts = false;
+        foreach (var polyVerts in faceVertices.Values)
+        {
+            foreach (var v in polyVerts)
+            {
+                if (!hasVerts)
+                {
+                    minCorner = v;
+                    hasVerts = true;
+                }
+                else
+                {
+                    minCorner = Vector3.Min(minCorner, v);
+                }
+            }
+        }
+
+        // 2. Sort vertices for each face and triangulate
+        uint currentIndex = 0;
+
+        foreach (var face in faces)
+        {
+            var polyVerts = faceVertices[face];
+            if (polyVerts.Count < 3) continue;
+
+            // Calculate center of polygon
+            Vector3 center = Vector3.Zero;
+            foreach (var v in polyVerts)
+            {
+                center += v;
+            }
+            center /= polyVerts.Count;
+
+            // Sort vertices counter-clockwise based on face normal
+            var normal = face.Plane.Normal;
+            
+            // Create a local coordinate system for the face
+            Vector3 uDir, vDir;
+            if (System.Math.Abs(normal.Y) > 0.999f)
+            {
+                uDir = Vector3.Normalize(Vector3.Cross(normal, Vector3.UnitX));
+            }
+            else
+            {
+                uDir = Vector3.Normalize(Vector3.Cross(normal, Vector3.UnitY));
+            }
+            vDir = Vector3.Cross(normal, uDir);
+
+            polyVerts.Sort((a, b) =>
+            {
+                Vector3 da = a - center;
+                Vector3 db = b - center;
+                float angleA = (float)System.Math.Atan2(Vector3.Dot(da, vDir), Vector3.Dot(da, uDir));
+                float angleB = (float)System.Math.Atan2(Vector3.Dot(db, vDir), Vector3.Dot(db, uDir));
+                return angleA.CompareTo(angleB);
+            });
+
+            // Calculate UVs and add to global vertex list
+            uint startIndex = currentIndex;
+            for (int i = 0; i < polyVerts.Count; i++)
+            {
+                Vector3 pos = polyVerts[i];
+                
+                // Handle UV rotation, scale, offset relative to minCorner
+                float u = Vector3.Dot(pos - minCorner, face.UAxis) / face.UScale + face.UOffset;
+                float v = Vector3.Dot(pos - minCorner, face.VAxis) / face.VScale + face.VOffset;
+                
+                // If there's rotation, we'd apply a 2D rotation matrix here to (u,v).
+                if (System.Math.Abs(face.Rotation) > 0.001f)
+                {
+                    float rad = face.Rotation * (float)System.Math.PI / 180f;
+                    float cos = (float)System.Math.Cos(rad);
+                    float sin = (float)System.Math.Sin(rad);
+                    float nu = u * cos - v * sin;
+                    float nv = u * sin + v * cos;
+                    u = nu;
+                    v = nv;
+                }
+
+                vertices.Add(new Vertex
+                {
+                    Position = pos,
+                    Normal = normal,
+                    TexCoord = new Vector2(u, v)
+                });
+                currentIndex++;
+            }
+
+            // Triangulate (triangle fan from the first vertex)
+            for (uint i = 1; i < polyVerts.Count - 1; i++)
+            {
+                indices.Add(startIndex);
+                indices.Add(startIndex + i);
+                indices.Add(startIndex + i + 1);
+            }
+        }
+
+        return new MeshData(vertices.ToArray(), indices.ToArray());
+    }
+
+    private static void AddUniqueVertex(List<Vector3> list, Vector3 v)
+    {
+        foreach (var item in list)
+        {
+            if (Vector3.DistanceSquared(item, v) < Epsilon * Epsilon)
+            {
+                return;
+            }
+        }
+        list.Add(v);
+    }
+
+    private static bool TryGetIntersection(Plane p1, Plane p2, Plane p3, out Vector3 result)
+    {
+        result = Vector3.Zero;
+        
+        Vector3 n1 = p1.Normal;
+        Vector3 n2 = p2.Normal;
+        Vector3 n3 = p3.Normal;
+
+        float det = Vector3.Dot(n1, Vector3.Cross(n2, n3));
+        
+        // If determinant is near zero, planes are parallel or intersect in a line
+        if (System.Math.Abs(det) < Epsilon)
+        {
+            return false;
+        }
+
+        result = (-p1.D * Vector3.Cross(n2, n3) - p2.D * Vector3.Cross(n3, n1) - p3.D * Vector3.Cross(n1, n2)) / det;
+        return true;
+    }
+}
+
+public class MeshData
+{
+    public Vertex[] Vertices { get; }
+    public uint[] Indices { get; }
+
+    public MeshData(Vertex[] vertices, uint[] indices)
+    {
+        Vertices = vertices;
+        Indices = indices;
+    }
+}

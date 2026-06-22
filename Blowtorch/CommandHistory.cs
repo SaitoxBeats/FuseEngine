@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Blowtorch.Model;
+using Fuse.Scene.Model;
 
 namespace Blowtorch;
 
@@ -40,6 +40,7 @@ public class SnapshotCommand : ICommand
         var doc = MapDocument.Parse(json);
         if (doc != null)
         {
+            _assetService.ClearBrushMeshes();
             _sceneService.SetDocument(doc);
             _sceneService.PopulateScene(_assetService);
         }

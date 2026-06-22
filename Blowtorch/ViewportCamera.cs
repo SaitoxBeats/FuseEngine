@@ -77,7 +77,7 @@ public class ViewportCamera
                     up = Vector3.UnitY;
                     break;
                 case CameraViewType.Side:
-                    right = Vector3.UnitZ;
+                    right = -Vector3.UnitZ;
                     up = Vector3.UnitY;
                     break;
                 default:

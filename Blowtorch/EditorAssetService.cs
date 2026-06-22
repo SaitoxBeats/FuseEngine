@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using Silk.NET.OpenGL;
-using Blowtorch.Model;
+using Fuse.Scene.Model;
 using Fuse.AssetManagement;
 using Fuse.Renderer;
 using Fuse.Core;
@@ -51,7 +51,17 @@ public class EditorAssetService : IDisposable
 
     public Mesh? GetOrCreateMesh(MapObject mapObj)
     {
-        if (mapObj.IsModel && mapObj.Model != null)
+        if (mapObj is Brush brush)
+        {
+            if (!_meshCache.TryGetValue(brush.Id, out var mesh))
+            {
+                var meshData = MeshGenerator.Generate(brush);
+                mesh = new Mesh(_gl, meshData.Vertices, meshData.Indices);
+                _meshCache[brush.Id] = mesh;
+            }
+            return mesh;
+        }
+        else if (mapObj.IsModel && mapObj.Model != null)
         {
             string modelPath = Path.GetFullPath(Path.Combine(_fuseResPath, mapObj.Model));
             if (!_meshCache.TryGetValue(modelPath, out var mesh))
@@ -97,6 +107,32 @@ public class EditorAssetService : IDisposable
         _texCache[textureRelPath] = 0;
         Logger.Warn($"Texture not found: {texPath}");
         return 0;
+    }
+
+    public void InvalidateMesh(string key)
+    {
+        if (_meshCache.TryGetValue(key, out var mesh))
+        {
+            mesh?.Dispose();
+            _meshCache.Remove(key);
+        }
+    }
+
+    public void ClearBrushMeshes()
+    {
+        var keysToRemove = new List<string>();
+        foreach (var pair in _meshCache)
+        {
+            if (pair.Key.StartsWith("brush_"))
+            {
+                pair.Value?.Dispose();
+                keysToRemove.Add(pair.Key);
+            }
+        }
+        foreach (var key in keysToRemove)
+        {
+            _meshCache.Remove(key);
+        }
     }
 
     public void Dispose()

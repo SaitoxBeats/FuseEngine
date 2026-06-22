@@ -2,7 +2,7 @@ using System.Numerics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace Blowtorch.Model;
+namespace Fuse.Scene.Model;
 
 public class MapDocument
 {
@@ -58,6 +58,8 @@ public class MapDocument
             }
         }
 
+        SceneNameManager.EnsureAllUnique(doc);
+
         return doc;
     }
 
@@ -86,22 +88,35 @@ public class MapDocument
         return root.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
     }
 
-    private static MapObject ParseObject(JsonObject obj)
+    public static MapObject ParseObject(JsonObject obj)
     {
-        var mo = new MapObject
-        {
-            Id = obj.TryGetPropertyValue("id", out var idNode) ? (string)idNode! : "unnamed",
-            Visible = obj.TryGetPropertyValue("visible", out var visNode) ? (bool)visNode! : true,
-            Mesh = obj.TryGetPropertyValue("mesh", out var meshNode) ? (string)meshNode! : null,
-            Model = obj.TryGetPropertyValue("model", out var modelNode) ? (string)modelNode! : null,
-            ModelScale = obj.TryGetPropertyValue("model_scale", out var scaleNode) ? (float)scaleNode! : 1.0f,
-            UvScale = obj.TryGetPropertyValue("uv_scale", out var uvNode) ? Vec2FromJson(uvNode!.AsArray()) : Vector2.One,
-            Texture = obj.TryGetPropertyValue("texture", out var texNode) ? (string)texNode! : null,
-            Interactable = obj.TryGetPropertyValue("interactable", out var interactNode) ? (string)interactNode! : null,
-        };
+        bool isBrush = obj.TryGetPropertyValue("type", out var typeNode) && (string)typeNode! == "brush";
+        
+        MapObject mo = isBrush ? new Brush() : new MapObject();
+
+        mo.Id = obj.TryGetPropertyValue("id", out var idNode) ? (string)idNode! : "unnamed";
+        mo.Visible = obj.TryGetPropertyValue("visible", out var visNode) ? (bool)visNode! : true;
+        mo.Mesh = obj.TryGetPropertyValue("mesh", out var meshNode) ? (string)meshNode! : null;
+        mo.Model = obj.TryGetPropertyValue("model", out var modelNode) ? (string)modelNode! : null;
+        mo.ModelScale = obj.TryGetPropertyValue("model_scale", out var scaleNode) ? (float)scaleNode! : 1.0f;
+        mo.UvScale = obj.TryGetPropertyValue("uv_scale", out var uvNode) ? Vec2FromJson(uvNode!.AsArray()) : Vector2.One;
+        mo.Texture = obj.TryGetPropertyValue("texture", out var texNode) ? (string)texNode! : null;
+        mo.Interactable = obj.TryGetPropertyValue("interactable", out var interactNode) ? (string)interactNode! : null;
 
         if (obj.TryGetPropertyValue("body", out var bodyNode))
             mo.Body = ParseBody(bodyNode!.AsObject());
+
+        if (isBrush && mo is Brush brush)
+        {
+            if (obj.TryGetPropertyValue("faces", out var facesNode))
+            {
+                foreach (var faceNode in facesNode!.AsArray())
+                {
+                    if (faceNode == null) continue;
+                    brush.AddFace(ParseFace(faceNode.AsObject()));
+                }
+            }
+        }
 
         return mo;
     }
@@ -155,6 +170,17 @@ public class MapDocument
             ["id"] = obj.Id,
             ["visible"] = obj.Visible
         };
+
+        if (obj is Brush brush)
+        {
+            j["type"] = "brush";
+            var facesArray = new JsonArray();
+            foreach (var face in brush.Faces)
+            {
+                facesArray.Add(SerializeFace(face));
+            }
+            j["faces"] = facesArray;
+        }
 
         if (obj.IsModel)
         {
@@ -217,6 +243,41 @@ public class MapDocument
         }
 
         return bj;
+    }
+
+    private static Face ParseFace(JsonObject fj)
+    {
+        var normal = fj.TryGetPropertyValue("normal", out var nNode) ? Vec3FromJson(nNode!.AsArray()) : Vector3.UnitY;
+        var d = fj.TryGetPropertyValue("d", out var dNode) ? (float)dNode! : 0f;
+        var face = new Face(new Plane(normal, d));
+
+        if (fj.TryGetPropertyValue("texture", out var tNode)) face.Texture = (string)tNode!;
+        if (fj.TryGetPropertyValue("u_axis", out var uaNode)) face.UAxis = Vec3FromJson(uaNode!.AsArray());
+        if (fj.TryGetPropertyValue("v_axis", out var vaNode)) face.VAxis = Vec3FromJson(vaNode!.AsArray());
+        if (fj.TryGetPropertyValue("u_scale", out var usNode)) face.UScale = (float)usNode!;
+        if (fj.TryGetPropertyValue("v_scale", out var vsNode)) face.VScale = (float)vsNode!;
+        if (fj.TryGetPropertyValue("u_offset", out var uoNode)) face.UOffset = (float)uoNode!;
+        if (fj.TryGetPropertyValue("v_offset", out var voNode)) face.VOffset = (float)voNode!;
+        if (fj.TryGetPropertyValue("rotation", out var rNode)) face.Rotation = (float)rNode!;
+
+        return face;
+    }
+
+    private static JsonObject SerializeFace(Face face)
+    {
+        return new JsonObject
+        {
+            ["normal"] = Vec3ToJson(face.Plane.Normal),
+            ["d"] = face.Plane.D,
+            ["texture"] = face.Texture,
+            ["u_axis"] = Vec3ToJson(face.UAxis),
+            ["v_axis"] = Vec3ToJson(face.VAxis),
+            ["u_scale"] = face.UScale,
+            ["v_scale"] = face.VScale,
+            ["u_offset"] = face.UOffset,
+            ["v_offset"] = face.VOffset,
+            ["rotation"] = face.Rotation
+        };
     }
 
     private static Vector3 Vec3FromJson(JsonArray arr) => new(

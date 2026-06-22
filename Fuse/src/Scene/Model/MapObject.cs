@@ -1,4 +1,4 @@
-namespace Blowtorch.Model;
+namespace Fuse.Scene.Model;
 
 public class MapObject
 {

@@ -3,7 +3,7 @@ using System.IO;
 using System.Numerics;
 using System.Collections.Generic;
 using Silk.NET.OpenGL;
-using Blowtorch.Model;
+using Fuse.Scene.Model;
 using Fuse.Renderer;
 using Fuse.AssetManagement;
 using Fuse.Core;
@@ -126,7 +126,18 @@ public unsafe class EditorViewport : IDisposable
         _gl.Enable(EnableCap.CullFace);
 
         // Draw Entities
-        shader.SetVec3("uColor", Vector3.One);
+        bool isWireframe = _camera.IsOrthographic;
+        if (isWireframe)
+        {
+            _gl.PolygonMode(GLEnum.FrontAndBack, GLEnum.Line);
+            shader.SetBool("uUseTexture", false);
+            shader.SetVec3("uColor", new Vector3(0.8f, 0.8f, 0.8f));
+        }
+        else
+        {
+            shader.SetVec3("uColor", Vector3.One);
+        }
+
         foreach (var entity in scene.Entities)
         {
             if (!entity.Visible || entity.Mesh == null) continue;
@@ -134,16 +145,23 @@ public unsafe class EditorViewport : IDisposable
             shader.SetMat4("uModel", entity.Transform.Matrix);
             shader.SetVec2("uUvScale", entity.UvScale);
 
-            uint texId = assetService.GetOrCreateTexture(entity.TexturePath);
-            if (texId == 0)
-                texId = assetService.DefaultTexture;
-
-            if (texId != 0)
+            if (!isWireframe)
             {
-                shader.SetBool("uUseTexture", true);
-                shader.SetInt("uTexture", 0);
-                _gl.ActiveTexture(TextureUnit.Texture0);
-                _gl.BindTexture(TextureTarget.Texture2D, texId);
+                uint texId = assetService.GetOrCreateTexture(entity.TexturePath);
+                if (texId == 0)
+                    texId = assetService.DefaultTexture;
+
+                if (texId != 0)
+                {
+                    shader.SetBool("uUseTexture", true);
+                    shader.SetInt("uTexture", 0);
+                    _gl.ActiveTexture(TextureUnit.Texture0);
+                    _gl.BindTexture(TextureTarget.Texture2D, texId);
+                }
+                else
+                {
+                    shader.SetBool("uUseTexture", false);
+                }
             }
             else
             {
@@ -152,9 +170,14 @@ public unsafe class EditorViewport : IDisposable
 
             entity.Mesh.Draw();
         }
+
+        if (isWireframe)
+        {
+            _gl.PolygonMode(GLEnum.FrontAndBack, GLEnum.Fill);
+        }
     }
 
-    public void RenderDebug(EditorAssetService assetService, EditorSceneService sceneService)
+    public void RenderDebug(EditorAssetService assetService, EditorSceneService sceneService, Action<Fuse.Debug.DebugDrawer>? onDrawDebug = null)
     {
         var view = _camera.ViewMatrix;
         var proj = _camera.ProjectionMatrix((float)_width / _height);
@@ -193,7 +216,6 @@ public unsafe class EditorViewport : IDisposable
             }
         }
 
-        // Player spawn
         if (doc.PlayerSpawn != null)
         {
             var sp = doc.PlayerSpawn;
@@ -210,6 +232,8 @@ public unsafe class EditorViewport : IDisposable
             _debugDrawer.PushLine(eyePos, eyePos + fwd * 1.5f, new Vector3(0, 1, 1));
         }
 
+        onDrawDebug?.Invoke(_debugDrawer);
+
         _debugDrawer.Render(view, proj);
     }
 
@@ -219,59 +243,21 @@ public unsafe class EditorViewport : IDisposable
         if (scroll != 0)
             _camera.Zoom(scroll);
 
-        if (ImGuiNET.ImGui.IsMouseDown(ImGuiNET.ImGuiMouseButton.Right))
+        bool wantPan = false;
+        bool wantOrbit = false;
+
+        if (_camera.IsOrthographic)
         {
-            var mouse = io.MousePos;
-            if (_camera.IsOrthographic)
-            {
-                if (!_isPanning)
-                {
-                    _isPanning = true;
-                    _lastMouse = mouse;
-                }
-                else
-                {
-                    float dx = mouse.X - _lastMouse.X;
-                    float dy = mouse.Y - _lastMouse.Y;
-                    _camera.Pan(dx, dy);
-                    _lastMouse = mouse;
-                }
-            }
-            else
-            {
-                if (!_isOrbiting)
-                {
-                    _isOrbiting = true;
-                    _lastMouse = mouse;
-                }
-                else
-                {
-                    float dx = mouse.X - _lastMouse.X;
-                    float dy = mouse.Y - _lastMouse.Y;
-                    _camera.Orbit(dx, dy);
-                    _lastMouse = mouse;
-                }
-
-                float fwd = 0, right = 0, up = 0;
-                if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.W)) fwd += 1;
-                if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.S)) fwd -= 1;
-                if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.D)) right += 1;
-                if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.A)) right -= 1;
-                if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.E)) up += 1;
-                if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.Q)) up -= 1;
-
-                if (fwd != 0 || right != 0 || up != 0)
-                    _camera.Fly(fwd, right, up, dt);
-            }
+            wantPan = ImGuiNET.ImGui.IsMouseDown(ImGuiNET.ImGuiMouseButton.Right) ||
+                      ImGuiNET.ImGui.IsMouseDown(ImGuiNET.ImGuiMouseButton.Middle);
         }
         else
         {
-            _isOrbiting = false;
-            if (_camera.IsOrthographic)
-                _isPanning = false;
+            wantOrbit = ImGuiNET.ImGui.IsMouseDown(ImGuiNET.ImGuiMouseButton.Right);
+            wantPan = ImGuiNET.ImGui.IsMouseDown(ImGuiNET.ImGuiMouseButton.Middle);
         }
 
-        if (ImGuiNET.ImGui.IsMouseDown(ImGuiNET.ImGuiMouseButton.Middle))
+        if (wantPan)
         {
             var mouse = io.MousePos;
             if (!_isPanning)
@@ -290,6 +276,42 @@ public unsafe class EditorViewport : IDisposable
         else
         {
             _isPanning = false;
+        }
+
+        if (wantOrbit)
+        {
+            var mouse = io.MousePos;
+            if (!_isOrbiting)
+            {
+                _isOrbiting = true;
+                _lastMouse = mouse;
+            }
+            else
+            {
+                float dx = mouse.X - _lastMouse.X;
+                float dy = mouse.Y - _lastMouse.Y;
+                _camera.Orbit(dx, dy);
+                _lastMouse = mouse;
+            }
+
+            // Keyboard navigation in 3D
+            if (!_camera.IsOrthographic)
+            {
+                float fwd = 0, right = 0, up = 0;
+                if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.W)) fwd += 1;
+                if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.S)) fwd -= 1;
+                if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.D)) right += 1;
+                if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.A)) right -= 1;
+                if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.E)) up += 1;
+                if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.Q)) up -= 1;
+
+                if (fwd != 0 || right != 0 || up != 0)
+                    _camera.Fly(fwd, right, up, dt);
+            }
+        }
+        else
+        {
+            _isOrbiting = false;
         }
     }
 

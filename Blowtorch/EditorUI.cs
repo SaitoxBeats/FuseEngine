@@ -3,7 +3,7 @@ using System.IO;
 using System.Numerics;
 using System.Linq;
 using ImGuiNET;
-using Blowtorch.Model;
+using Fuse.Scene.Model;
 using Fuse.Renderer;
 using Fuse.Core;
 
@@ -23,19 +23,72 @@ public class EditorUI
     private string _preEditState = "";
     private string _frameBeginState = "";
 
-    // Selection
+    // Selection & Modes
+    public enum EditorMode { Select, DrawBrush }
     public enum GizmoOperation { Translate, Rotate, Scale }
+    
+    private EditorMode _currentMode = EditorMode.Select;
     private GizmoOperation _gizmoOperation = GizmoOperation.Translate;
     private MapObject? _selectedObject;
+    private HashSet<MapObject> _selectedObjects = new();
     private bool _wasUsingGizmo = false;
     private EditorViewport? _activeDraggingViewport;
 
+    // Brush Tool State
+    private bool _isDrawingBrush = false;
+    private bool _hasPreviewBrush = false;
+    private Vector3 _previewBrushMin;
+    private Vector3 _previewBrushMax;
+    private EditorViewport? _drawingViewport;
+
+    // Handle Dragging State
+    public enum HandleType
+    {
+        None,
+        Left,
+        Right,
+        Top,
+        Bottom,
+        TopLeft,
+        TopRight,
+        BottomLeft,
+        BottomRight
+    }
+    private bool _isDraggingHandle = false;
+    private HandleType _activeHandle = HandleType.None;
+    private EditorViewport? _draggingHandleViewport;
+    private bool _draggingHandleIsPreview = false;
+    private void SyncSelection(MapDocument doc)
+    {
+        if (_selectedObject != null && !doc.Objects.Contains(_selectedObject))
+        {
+            _selectedObject = doc.Objects.FirstOrDefault(o => o.Id == _selectedObject.Id);
+        }
+        var newSelectedObjects = new HashSet<MapObject>();
+        foreach (var obj in _selectedObjects)
+        {
+            if (doc.Objects.Contains(obj))
+            {
+                newSelectedObjects.Add(obj);
+            }
+            else
+            {
+                var matched = doc.Objects.FirstOrDefault(o => o.Id == obj.Id);
+                if (matched != null)
+                {
+                    newSelectedObjects.Add(matched);
+                }
+            }
+        }
+        _selectedObjects = newSelectedObjects;
+    }
 
     public bool ShowMapWindow => _showMapWindow;
     public bool ShowJsonWindow => _showJsonWindow;
 
     public void Draw(EditorWindow window, EditorViewport viewport3D, EditorViewport viewportTop, EditorViewport viewportFront, EditorViewport viewportSide, EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
     {
+        SyncSelection(sceneService.Document);
         _frameBeginState = sceneService.Document.Serialize();
 
         if (!ImGui.IsMouseDown(ImGuiMouseButton.Left))
@@ -43,7 +96,7 @@ public class EditorUI
             _activeDraggingViewport = null;
         }
 
-        HandleKeyboardShortcuts(history);
+        HandleKeyboardShortcuts(sceneService, assetService, history);
 
         // --- Dockspace Fullscreen ---
         var mainViewport = ImGui.GetMainViewport();
@@ -79,13 +132,136 @@ public class EditorUI
             DrawJsonWindow(sceneService.Document);
     }
 
-    private void HandleKeyboardShortcuts(CommandHistory history)
+    private void DuplicateObject(MapObject obj, EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
+    {
+        if (obj == null) return;
+        var doc = sceneService.Document;
+        var pre = doc.Serialize();
+        var cloneDoc = MapDocument.Parse(doc.Serialize());
+        int index = doc.Objects.IndexOf(obj);
+        if (cloneDoc != null && index >= 0 && index < cloneDoc.Objects.Count)
+        {
+            var clone = cloneDoc.Objects[index];
+            clone.Id += "_copy";
+            doc.Objects.Insert(index + 1, clone);
+            SceneNameManager.EnsureAllUnique(doc);
+            _selectedObject = doc.Objects[index + 1]; // Auto select duplicate
+            _selectedObjects.Clear();
+            _selectedObjects.Add(_selectedObject);
+            var post = doc.Serialize();
+            history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
+            sceneService.PopulateScene(assetService);
+        }
+    }
+
+    private void DeleteObject(MapObject obj, EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
+    {
+        if (obj == null) return;
+        var doc = sceneService.Document;
+        var pre = doc.Serialize();
+        doc.Objects.Remove(obj);
+        _selectedObjects.Remove(obj);
+        if (_selectedObject == obj) _selectedObject = _selectedObjects.FirstOrDefault();
+        var post = doc.Serialize();
+        history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
+        sceneService.PopulateScene(assetService);
+    }
+
+    private void DuplicateObjects(List<MapObject> objs, EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
+    {
+        if (objs == null || objs.Count == 0) return;
+        var doc = sceneService.Document;
+        var pre = doc.Serialize();
+        
+        var cloneDoc = MapDocument.Parse(doc.Serialize());
+        if (cloneDoc == null) return;
+
+        var duplicates = new List<MapObject>();
+        foreach (var obj in objs)
+        {
+            int index = doc.Objects.IndexOf(obj);
+            if (index >= 0 && index < cloneDoc.Objects.Count)
+            {
+                var clone = cloneDoc.Objects[index];
+                clone.Id += "_copy";
+                doc.Objects.Insert(index + 1, clone);
+                duplicates.Add(clone);
+            }
+        }
+
+        if (duplicates.Count > 0)
+        {
+            SceneNameManager.EnsureAllUnique(doc);
+            
+            _selectedObjects.Clear();
+            foreach (var dup in duplicates)
+            {
+                _selectedObjects.Add(dup);
+            }
+            _selectedObject = duplicates.LastOrDefault();
+            
+            var post = doc.Serialize();
+            history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
+            sceneService.PopulateScene(assetService);
+        }
+    }
+
+    private void DeleteObjects(List<MapObject> objs, EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
+    {
+        if (objs == null || objs.Count == 0) return;
+        var doc = sceneService.Document;
+        var pre = doc.Serialize();
+        
+        bool anyRemoved = false;
+        foreach (var obj in objs)
+        {
+            if (doc.Objects.Remove(obj))
+            {
+                _selectedObjects.Remove(obj);
+                anyRemoved = true;
+            }
+        }
+        
+        if (anyRemoved)
+        {
+            if (_selectedObject != null && !doc.Objects.Contains(_selectedObject))
+            {
+                _selectedObject = _selectedObjects.FirstOrDefault();
+            }
+            var post = doc.Serialize();
+            history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
+            sceneService.PopulateScene(assetService);
+        }
+    }
+
+    private void HandleKeyboardShortcuts(EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
     {
         var io = ImGui.GetIO();
+        
+        // Handle shortcuts only if we're not typing in text inputs
+        if (io.WantTextInput) return;
+
         if (io.KeyCtrl)
         {
             if (ImGui.IsKeyPressed(ImGuiKey.Z)) history.Undo();
             if (ImGui.IsKeyPressed(ImGuiKey.Y)) history.Redo();
+            if (ImGui.IsKeyPressed(ImGuiKey.S)) sceneService.SaveMap();
+            if (ImGui.IsKeyPressed(ImGuiKey.D) && _selectedObjects.Count > 0)
+            {
+                DuplicateObjects(_selectedObjects.ToList(), sceneService, assetService, history);
+            }
+        }
+        else if (io.KeyShift)
+        {
+            if (ImGui.IsKeyPressed(ImGuiKey.D) && _selectedObjects.Count > 0)
+            {
+                DuplicateObjects(_selectedObjects.ToList(), sceneService, assetService, history);
+            }
+        }
+
+        if (ImGui.IsKeyPressed(ImGuiKey.Delete) && _selectedObjects.Count > 0)
+        {
+            DeleteObjects(_selectedObjects.ToList(), sceneService, assetService, history);
         }
 
         if (ImGui.IsKeyPressed(ImGuiKey.LeftBracket))
@@ -142,17 +318,30 @@ public class EditorUI
 
         if (ImGui.Begin("Scene Viewports", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
         {
+            if (ImGui.RadioButton("Select (Esc)", _currentMode == EditorMode.Select)) _currentMode = EditorMode.Select;
+            ImGui.SameLine();
+            if (ImGui.RadioButton("Brush (B)", _currentMode == EditorMode.DrawBrush)) _currentMode = EditorMode.DrawBrush;
+            ImGui.SameLine();
+            ImGui.Text("|");
+            ImGui.SameLine();
             if (ImGui.RadioButton("Translate (W)", _gizmoOperation == GizmoOperation.Translate)) _gizmoOperation = GizmoOperation.Translate;
             ImGui.SameLine();
             if (ImGui.RadioButton("Rotate (E)", _gizmoOperation == GizmoOperation.Rotate)) _gizmoOperation = GizmoOperation.Rotate;
             ImGui.SameLine();
             if (ImGui.RadioButton("Scale (R)", _gizmoOperation == GizmoOperation.Scale)) _gizmoOperation = GizmoOperation.Scale;
 
-            if (!ImGui.IsMouseDown(ImGuiMouseButton.Right))
+            if (!ImGui.IsMouseDown(ImGuiMouseButton.Right) && !ImGui.GetIO().WantTextInput)
             {
+                if (ImGui.IsKeyPressed(ImGuiKey.Escape)) { _currentMode = EditorMode.Select; _hasPreviewBrush = false; }
+                if (ImGui.IsKeyPressed(ImGuiKey.B)) _currentMode = EditorMode.DrawBrush;
                 if (ImGui.IsKeyPressed(ImGuiKey.W)) _gizmoOperation = GizmoOperation.Translate;
                 if (ImGui.IsKeyPressed(ImGuiKey.E)) _gizmoOperation = GizmoOperation.Rotate;
                 if (ImGui.IsKeyPressed(ImGuiKey.R)) _gizmoOperation = GizmoOperation.Scale;
+                
+                if (_currentMode == EditorMode.DrawBrush && _hasPreviewBrush && ImGui.IsKeyPressed(ImGuiKey.Enter))
+                {
+                    CommitBrush(sceneService, assetService, history);
+                }
             }
 
             var availSize = ImGui.GetContentRegionAvail();
@@ -187,17 +376,103 @@ public class EditorUI
         var vpPos = ImGui.GetCursorScreenPos();
         var vpSize = ImGui.GetContentRegionAvail();
 
-        if (vpSize.X > 0 && vpSize.Y > 0 &&
-            ((int)vpSize.X != viewport.Width || (int)vpSize.Y != viewport.Height))
+        int targetWidth = Math.Max(8, ((int)vpSize.X + 3) & ~3);
+        int targetHeight = Math.Max(8, ((int)vpSize.Y + 3) & ~3);
+
+        if (targetWidth != viewport.Width || targetHeight != viewport.Height)
         {
-            viewport.CreateFbo((int)vpSize.X, (int)vpSize.Y);
+            viewport.CreateFbo(targetWidth, targetHeight);
         }
 
         ImGui.Image((IntPtr)viewport.ColorTexture, vpSize, new Vector2(0, 1), new Vector2(1, 0));
 
         bool isHovered = ImGui.IsItemHovered();
 
-        if (_selectedObject != null && _selectedObject.Body != null && sceneService.Document.Objects.Contains(_selectedObject))
+        // 2D Handle Detection & State Setup
+        bool showHandles = false;
+        Vector3 boxMin = Vector3.Zero;
+        Vector3 boxMax = Vector3.Zero;
+        bool isPreview = false;
+        Vector2[] handlePositions = new Vector2[10];
+
+        if (viewport.Camera.IsOrthographic)
+        {
+            if (_currentMode == EditorMode.DrawBrush && _hasPreviewBrush)
+            {
+                showHandles = true;
+                boxMin = Vector3.Min(_previewBrushMin, _previewBrushMax);
+                boxMax = Vector3.Max(_previewBrushMin, _previewBrushMax);
+                isPreview = true;
+            }
+            else if (_currentMode == EditorMode.Select && _selectedObject is Brush brush && brush.Body != null && brush.Body.HalfExtents.HasValue)
+            {
+                showHandles = true;
+                boxMin = brush.Body.Position - brush.Body.HalfExtents.Value;
+                boxMax = brush.Body.Position + brush.Body.HalfExtents.Value;
+                isPreview = false;
+            }
+        }
+
+        if (showHandles)
+        {
+            Vector3[] corners = new Vector3[8]
+            {
+                new Vector3(boxMin.X, boxMin.Y, boxMin.Z),
+                new Vector3(boxMax.X, boxMin.Y, boxMin.Z),
+                new Vector3(boxMin.X, boxMax.Y, boxMin.Z),
+                new Vector3(boxMax.X, boxMax.Y, boxMin.Z),
+                new Vector3(boxMin.X, boxMin.Y, boxMax.Z),
+                new Vector3(boxMax.X, boxMin.Y, boxMax.Z),
+                new Vector3(boxMin.X, boxMax.Y, boxMax.Z),
+                new Vector3(boxMax.X, boxMax.Y, boxMax.Z)
+            };
+
+            float sMinX = float.MaxValue, sMinY = float.MaxValue;
+            float sMaxX = float.MinValue, sMaxY = float.MinValue;
+            foreach (var c in corners)
+            {
+                Vector2 screenPos = WorldToScreen(c, viewport, vpPos, vpSize);
+                if (screenPos.X < sMinX) sMinX = screenPos.X;
+                if (screenPos.Y < sMinY) sMinY = screenPos.Y;
+                if (screenPos.X > sMaxX) sMaxX = screenPos.X;
+                if (screenPos.Y > sMaxY) sMaxY = screenPos.Y;
+            }
+
+            handlePositions[(int)HandleType.Left] = new Vector2(sMinX, (sMinY + sMaxY) * 0.5f);
+            handlePositions[(int)HandleType.Right] = new Vector2(sMaxX, (sMinY + sMaxY) * 0.5f);
+            handlePositions[(int)HandleType.Top] = new Vector2((sMinX + sMaxX) * 0.5f, sMinY);
+            handlePositions[(int)HandleType.Bottom] = new Vector2((sMinX + sMaxX) * 0.5f, sMaxY);
+            handlePositions[(int)HandleType.TopLeft] = new Vector2(sMinX, sMinY);
+            handlePositions[(int)HandleType.TopRight] = new Vector2(sMaxX, sMinY);
+            handlePositions[(int)HandleType.BottomLeft] = new Vector2(sMinX, sMaxY);
+            handlePositions[(int)HandleType.BottomRight] = new Vector2(sMaxX, sMaxY);
+
+            // Handle hover and click interaction BEFORE picking or drawing code
+            var mousePos = ImGui.GetMousePos();
+            if (!_isDraggingHandle)
+            {
+                if (isHovered && ImGui.IsMouseClicked(ImGuiMouseButton.Left))
+                {
+                    for (int h = 1; h <= 8; h++)
+                    {
+                        if (Vector2.Distance(mousePos, handlePositions[h]) < 8f)
+                        {
+                            _isDraggingHandle = true;
+                            _activeHandle = (HandleType)h;
+                            _draggingHandleViewport = viewport;
+                            _draggingHandleIsPreview = isPreview;
+                            _preEditState = sceneService.Document.Serialize();
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        bool isDraggingActiveInThisViewport = _isDraggingHandle && _draggingHandleViewport == viewport;
+        bool normalInteractionAllowed = isHovered && !EditorGizmo.IsUsing() && !EditorGizmo.IsHovered && !_isDraggingHandle;
+
+        if (_selectedObject != null && _selectedObject.Body != null && sceneService.Document.Objects.Contains(_selectedObject) && !_isDraggingHandle)
         {
             var body = _selectedObject.Body;
             var view = viewport.Camera.ViewMatrix;
@@ -223,8 +498,18 @@ public class EditorUI
                 {
                     if (EditorGizmo.ManipulateTranslation(body.Position, view, proj, vpPos, vpSize, out Vector3 newPos, snapVal))
                     {
-                        body.Position = newPos;
-                        changed = true;
+                        Vector3 delta = newPos - body.Position;
+                        if (delta.LengthSquared() > 0.00001f)
+                        {
+                            foreach (var obj in _selectedObjects)
+                            {
+                                if (obj.Body != null)
+                                {
+                                    obj.Body.Position += delta;
+                                }
+                            }
+                            changed = true;
+                        }
                     }
                 }
                 else if (_gizmoOperation == GizmoOperation.Rotate)
@@ -233,7 +518,23 @@ public class EditorUI
                     {
                         if (EditorGizmo.ManipulateRotation(body.Position, body.Rotation, view, proj, vpPos, vpSize, out Quaternion newRot, angleSnap))
                         {
-                            body.Rotation = Quaternion.Normalize(newRot);
+                            Quaternion normalizedNewRot = Quaternion.Normalize(newRot);
+                            Quaternion deltaRot = normalizedNewRot * Quaternion.Inverse(body.Rotation);
+                            Vector3 pivot = body.Position;
+
+                            foreach (var obj in _selectedObjects)
+                            {
+                                if (obj.Body != null)
+                                {
+                                    if (obj != _selectedObject)
+                                    {
+                                        Vector3 relativePos = obj.Body.Position - pivot;
+                                        Vector3 rotatedPos = Vector3.Transform(relativePos, deltaRot);
+                                        obj.Body.Position = pivot + rotatedPos;
+                                    }
+                                    obj.Body.Rotation = Quaternion.Normalize(deltaRot * obj.Body.Rotation);
+                                }
+                            }
                             changed = true;
                         }
                     }
@@ -247,27 +548,74 @@ public class EditorUI
 
                     if (EditorGizmo.ManipulateScale(body.Position, currentScale, view, proj, vpPos, vpSize, out Vector3 newScale, snapVal))
                     {
-                        if (body.Shape == MapShapeType.Box) body.HalfExtents = newScale * 0.5f;
-                        else if (body.Shape == MapShapeType.Sphere) body.Radius = newScale.X * 0.5f;
-                        else _selectedObject.ModelScale = MathF.Max(newScale.X, MathF.Max(newScale.Y, newScale.Z));
+                        Vector3 scaleMult = new Vector3(
+                            currentScale.X > 0.0001f ? newScale.X / currentScale.X : 1f,
+                            currentScale.Y > 0.0001f ? newScale.Y / currentScale.Y : 1f,
+                            currentScale.Z > 0.0001f ? newScale.Z / currentScale.Z : 1f
+                        );
+
+                        Vector3 pivot = body.Position;
+
+                        foreach (var obj in _selectedObjects)
+                        {
+                            if (obj.Body != null)
+                            {
+                                if (obj != _selectedObject)
+                                {
+                                    Vector3 relativePos = obj.Body.Position - pivot;
+                                    obj.Body.Position = pivot + relativePos * scaleMult;
+                                }
+
+                                if (obj.Body.Shape == MapShapeType.Box && obj.Body.HalfExtents.HasValue)
+                                {
+                                    obj.Body.HalfExtents = Vector3.Max(new Vector3(0.05f), obj.Body.HalfExtents.Value * scaleMult);
+                                }
+                                else if (obj.Body.Shape == MapShapeType.Sphere && obj.Body.Radius.HasValue)
+                                {
+                                    float avgMult = (scaleMult.X + scaleMult.Y + scaleMult.Z) / 3.0f;
+                                    obj.Body.Radius = MathF.Max(0.05f, obj.Body.Radius.Value * avgMult);
+                                }
+                                else
+                                {
+                                    float maxMult = MathF.Max(scaleMult.X, MathF.Max(scaleMult.Y, scaleMult.Z));
+                                    obj.ModelScale = MathF.Max(0.01f, obj.ModelScale * maxMult);
+                                }
+                            }
+                        }
                         changed = true;
                     }
                 }
 
                 if (changed)
                 {
-                    var entity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == _selectedObject.Id);
-                    if (entity != null)
+                    foreach (var obj in _selectedObjects)
                     {
-                        entity.Transform.Position = body.Position;
-                        entity.Transform.Rotation = body.Rotation;
-                        
-                        if (body.Shape == MapShapeType.Box && body.HalfExtents.HasValue)
-                            entity.Transform.Scale = body.HalfExtents.Value * 2.0f;
-                        else if (body.Shape == MapShapeType.Sphere && body.Radius.HasValue)
-                            entity.Transform.Scale = new Vector3(body.Radius.Value * 2.0f);
-                        else
-                            entity.Transform.Scale = new Vector3(_selectedObject.ModelScale);
+                        if (obj.Body == null) continue;
+
+                        if (obj is Brush brush && obj.Body.HalfExtents.HasValue)
+                        {
+                            brush.UpdatePlanesFromHalfExtents(obj.Body.HalfExtents.Value);
+                            assetService.InvalidateMesh(brush.Id);
+                        }
+
+                        var entity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
+                        if (entity != null)
+                        {
+                            entity.Transform.Position = obj.Body.Position;
+                            entity.Transform.Rotation = obj.Body.Rotation;
+                            
+                            if (obj is Brush brushObj)
+                            {
+                                entity.Transform.Scale = Vector3.One;
+                                entity.Mesh = assetService.GetOrCreateMesh(brushObj);
+                            }
+                            else if (obj.Body.Shape == MapShapeType.Box && obj.Body.HalfExtents.HasValue)
+                                entity.Transform.Scale = obj.Body.HalfExtents.Value * 2.0f;
+                            else if (obj.Body.Shape == MapShapeType.Sphere && obj.Body.Radius.HasValue)
+                                entity.Transform.Scale = new Vector3(obj.Body.Radius.Value * 2.0f);
+                            else
+                                entity.Transform.Scale = new Vector3(obj.ModelScale);
+                        }
                     }
                 }
 
@@ -280,19 +628,281 @@ public class EditorUI
             }
         }
 
-        if (isHovered && !EditorGizmo.IsUsing() && !EditorGizmo.IsHovered)
+        if (normalInteractionAllowed)
         {
-            viewport.HandleInput(ImGui.GetIO(), ImGui.GetIO().DeltaTime);
-
-            if (ImGui.IsMouseClicked(ImGuiMouseButton.Left))
+            if (_currentMode == EditorMode.Select)
             {
-                EditorGizmo.GetMouseRay(ImGui.GetIO().MousePos, viewport.Camera.ViewMatrix, viewport.Camera.ProjectionMatrix(vpSize.X / vpSize.Y), vpPos, vpSize, out Vector3 rayOrigin, out Vector3 rayDir);
-                
-                MapObject? hitObj = PickObject(rayOrigin, rayDir, sceneService);
-                if (hitObj != null)
+                viewport.HandleInput(ImGui.GetIO(), ImGui.GetIO().DeltaTime);
+
+                if (ImGui.IsMouseClicked(ImGuiMouseButton.Left))
                 {
-                    _selectedObject = hitObj;
+                    EditorGizmo.GetMouseRay(ImGui.GetIO().MousePos, viewport.Camera.ViewMatrix, viewport.Camera.ProjectionMatrix(vpSize.X / vpSize.Y), vpPos, vpSize, out Vector3 rayOrigin, out Vector3 rayDir);
+                    
+                    MapObject? hitObj = PickObject(rayOrigin, rayDir, sceneService);
+                    if (hitObj != null)
+                    {
+                        if (ImGui.GetIO().KeyCtrl)
+                        {
+                            if (_selectedObjects.Contains(hitObj))
+                            {
+                                _selectedObjects.Remove(hitObj);
+                                if (_selectedObject == hitObj)
+                                {
+                                    _selectedObject = _selectedObjects.FirstOrDefault();
+                                }
+                            }
+                            else
+                            {
+                                _selectedObjects.Add(hitObj);
+                                _selectedObject = hitObj;
+                            }
+                        }
+                        else
+                        {
+                            _selectedObjects.Clear();
+                            _selectedObjects.Add(hitObj);
+                            _selectedObject = hitObj;
+                        }
+                    }
+                    else
+                    {
+                        if (!ImGui.GetIO().KeyCtrl)
+                        {
+                            _selectedObjects.Clear();
+                            _selectedObject = null;
+                        }
+                    }
                 }
+            }
+            else if (_currentMode == EditorMode.DrawBrush)
+            {
+                // Let right click still navigate the camera
+                if (ImGui.IsMouseDown(ImGuiMouseButton.Right) || ImGui.IsMouseDown(ImGuiMouseButton.Middle))
+                    viewport.HandleInput(ImGui.GetIO(), ImGui.GetIO().DeltaTime);
+
+                if (viewport.Camera.IsOrthographic)
+                {
+                    EditorGizmo.GetMouseRay(ImGui.GetIO().MousePos, viewport.Camera.ViewMatrix, viewport.Camera.ProjectionMatrix(vpSize.X / vpSize.Y), vpPos, vpSize, out Vector3 rayOrigin, out Vector3 rayDir);
+                    
+                    Vector3 hitPoint = Vector3.Zero;
+                    float t = 0;
+                    if (viewport.Camera.ViewType == CameraViewType.Top && MathF.Abs(rayDir.Y) > 0.001f) { t = -rayOrigin.Y / rayDir.Y; hitPoint = rayOrigin + rayDir * t; }
+                    else if (viewport.Camera.ViewType == CameraViewType.Front && MathF.Abs(rayDir.Z) > 0.001f) { t = -rayOrigin.Z / rayDir.Z; hitPoint = rayOrigin + rayDir * t; }
+                    else if (viewport.Camera.ViewType == CameraViewType.Side && MathF.Abs(rayDir.X) > 0.001f) { t = -rayOrigin.X / rayDir.X; hitPoint = rayOrigin + rayDir * t; }
+
+                    hitPoint = ApplySnap(hitPoint, _snapGrid);
+
+                    if (ImGui.IsMouseClicked(ImGuiMouseButton.Left))
+                    {
+                        _isDrawingBrush = true;
+                        _drawingViewport = viewport;
+                        
+                        if (!_hasPreviewBrush)
+                        {
+                            _previewBrushMin = hitPoint;
+                            _previewBrushMax = hitPoint;
+                            if (viewport.Camera.ViewType == CameraViewType.Top) { _previewBrushMin.Y = -1; _previewBrushMax.Y = 1; }
+                            if (viewport.Camera.ViewType == CameraViewType.Front) { _previewBrushMin.Z = -1; _previewBrushMax.Z = 1; }
+                            if (viewport.Camera.ViewType == CameraViewType.Side) { _previewBrushMin.X = -1; _previewBrushMax.X = 1; }
+                        }
+                        else
+                        {
+                            if (viewport.Camera.ViewType == CameraViewType.Top) { _previewBrushMin.X = hitPoint.X; _previewBrushMin.Z = hitPoint.Z; }
+                            if (viewport.Camera.ViewType == CameraViewType.Front) { _previewBrushMin.X = hitPoint.X; _previewBrushMin.Y = hitPoint.Y; }
+                            if (viewport.Camera.ViewType == CameraViewType.Side) { _previewBrushMin.Z = hitPoint.Z; _previewBrushMin.Y = hitPoint.Y; }
+                        }
+                    }
+                    
+                    if (_isDrawingBrush && _drawingViewport == viewport)
+                    {
+                        if (viewport.Camera.ViewType == CameraViewType.Top) { _previewBrushMax.X = hitPoint.X; _previewBrushMax.Z = hitPoint.Z; }
+                        if (viewport.Camera.ViewType == CameraViewType.Front) { _previewBrushMax.X = hitPoint.X; _previewBrushMax.Y = hitPoint.Y; }
+                        if (viewport.Camera.ViewType == CameraViewType.Side) { _previewBrushMax.Z = hitPoint.Z; _previewBrushMax.Y = hitPoint.Y; }
+                        _hasPreviewBrush = true;
+                    }
+                }
+            }
+        }
+
+        if (ImGui.IsMouseReleased(ImGuiMouseButton.Left) && _isDrawingBrush)
+        {
+            _isDrawingBrush = false;
+            _drawingViewport = null;
+            Vector3 min = Vector3.Min(_previewBrushMin, _previewBrushMax);
+            Vector3 max = Vector3.Max(_previewBrushMin, _previewBrushMax);
+            _previewBrushMin = min;
+            _previewBrushMax = max;
+        }
+
+        // Handle Dragging Update (Mouse position follow-up)
+        if (isDraggingActiveInThisViewport)
+        {
+            EditorGizmo.GetMouseRay(ImGui.GetIO().MousePos, viewport.Camera.ViewMatrix, viewport.Camera.ProjectionMatrix(vpSize.X / vpSize.Y), vpPos, vpSize, out Vector3 rayOrigin, out Vector3 rayDir);
+            Vector3 hitPoint = Vector3.Zero;
+            float t = 0;
+            if (viewport.Camera.ViewType == CameraViewType.Top && MathF.Abs(rayDir.Y) > 0.001f) { t = -rayOrigin.Y / rayDir.Y; hitPoint = rayOrigin + rayDir * t; }
+            else if (viewport.Camera.ViewType == CameraViewType.Front && MathF.Abs(rayDir.Z) > 0.001f) { t = -rayOrigin.Z / rayDir.Z; hitPoint = rayOrigin + rayDir * t; }
+            else if (viewport.Camera.ViewType == CameraViewType.Side && MathF.Abs(rayDir.X) > 0.001f) { t = -rayOrigin.X / rayDir.X; hitPoint = rayOrigin + rayDir * t; }
+
+            hitPoint = ApplySnap(hitPoint, _snapGrid);
+
+            Vector3 currentMin = boxMin;
+            Vector3 currentMax = boxMax;
+
+            UpdateBoundsFromDrag(viewport.Camera.ViewType, _activeHandle, hitPoint, ref currentMin, ref currentMax);
+
+            if (_draggingHandleIsPreview)
+            {
+                _previewBrushMin = currentMin;
+                _previewBrushMax = currentMax;
+            }
+            else if (_selectedObject is Brush brush && brush.Body != null)
+            {
+                Vector3 newSize = currentMax - currentMin;
+                if (newSize.X > 0.1f && newSize.Y > 0.1f && newSize.Z > 0.1f)
+                {
+                    brush.Body.Position = currentMin + newSize * 0.5f;
+                    brush.Body.HalfExtents = newSize * 0.5f;
+
+                    brush.UpdatePlanesFromHalfExtents(brush.Body.HalfExtents.Value);
+                    assetService.InvalidateMesh(brush.Id);
+
+                    var entity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == brush.Id);
+                    if (entity != null)
+                    {
+                        entity.Transform.Position = brush.Body.Position;
+                        entity.Transform.Scale = Vector3.One;
+                        entity.Mesh = assetService.GetOrCreateMesh(brush);
+                    }
+                }
+            }
+
+            if (ImGui.IsMouseReleased(ImGuiMouseButton.Left))
+            {
+                _isDraggingHandle = false;
+                _activeHandle = HandleType.None;
+                _draggingHandleViewport = null;
+                
+                if (!_draggingHandleIsPreview)
+                {
+                    var postEditState = sceneService.Document.Serialize();
+                    history.PushCommand(new SnapshotCommand(sceneService, assetService, _preEditState, postEditState));
+                }
+            }
+        }
+
+        // Draw selection outlines for all other selected objects
+        if (viewport.Camera.IsOrthographic && _currentMode == EditorMode.Select && _selectedObjects.Count > 1)
+        {
+            var drawList = ImGui.GetWindowDrawList();
+            uint otherSelColor = ImGui.GetColorU32(new Vector4(0.8f, 0.8f, 0.8f, 0.7f));
+
+            foreach (var selObj in _selectedObjects)
+            {
+                if (selObj == _selectedObject) continue;
+                if (selObj.Body == null || !selObj.Visible) continue;
+
+                Vector3 sMin = Vector3.Zero;
+                Vector3 sMax = Vector3.Zero;
+
+                if (selObj.Body.Shape == MapShapeType.Box && selObj.Body.HalfExtents.HasValue)
+                {
+                    sMin = selObj.Body.Position - selObj.Body.HalfExtents.Value;
+                    sMax = selObj.Body.Position + selObj.Body.HalfExtents.Value;
+                }
+                else if (selObj.Body.Shape == MapShapeType.Sphere && selObj.Body.Radius.HasValue)
+                {
+                    float r = selObj.Body.Radius.Value;
+                    sMin = selObj.Body.Position - new Vector3(r);
+                    sMax = selObj.Body.Position + new Vector3(r);
+                }
+                else
+                {
+                    float r = 1.0f;
+                    if (selObj.Body.Shape == MapShapeType.Capsule && selObj.Body.Height.HasValue) r = selObj.Body.Height.Value;
+                    if (selObj.IsModel) r = selObj.ModelScale * 1.5f;
+                    sMin = selObj.Body.Position - new Vector3(r);
+                    sMax = selObj.Body.Position + new Vector3(r);
+                }
+
+                Vector3[] sCorners = new Vector3[8]
+                {
+                    new Vector3(sMin.X, sMin.Y, sMin.Z),
+                    new Vector3(sMax.X, sMin.Y, sMin.Z),
+                    new Vector3(sMin.X, sMax.Y, sMin.Z),
+                    new Vector3(sMax.X, sMax.Y, sMin.Z),
+                    new Vector3(sMin.X, sMin.Y, sMax.Z),
+                    new Vector3(sMax.X, sMin.Y, sMax.Z),
+                    new Vector3(sMin.X, sMax.Y, sMax.Z),
+                    new Vector3(sMax.X, sMax.Y, sMax.Z)
+                };
+
+                float selMinX = float.MaxValue, selMinY = float.MaxValue;
+                float selMaxX = float.MinValue, selMaxY = float.MinValue;
+                foreach (var c in sCorners)
+                {
+                    Vector2 screenPos = WorldToScreen(c, viewport, vpPos, vpSize);
+                    if (screenPos.X < selMinX) selMinX = screenPos.X;
+                    if (screenPos.Y < selMinY) selMinY = screenPos.Y;
+                    if (screenPos.X > selMaxX) selMaxX = screenPos.X;
+                    if (screenPos.Y > selMaxY) selMaxY = screenPos.Y;
+                }
+
+                drawList.AddRect(new Vector2(selMinX, selMinY), new Vector2(selMaxX, selMaxY), otherSelColor, 0f, ImDrawFlags.None, 1.0f);
+            }
+        }
+
+        // Draw Handles & Bounding Box Outline
+        if (showHandles)
+        {
+            Vector3 finalMin = _draggingHandleIsPreview ? _previewBrushMin : (_selectedObject != null && _selectedObject.Body != null && _selectedObject.Body.HalfExtents.HasValue ? _selectedObject.Body.Position - _selectedObject.Body.HalfExtents.Value : boxMin);
+            Vector3 finalMax = _draggingHandleIsPreview ? _previewBrushMax : (_selectedObject != null && _selectedObject.Body != null && _selectedObject.Body.HalfExtents.HasValue ? _selectedObject.Body.Position + _selectedObject.Body.HalfExtents.Value : boxMax);
+            
+            Vector3 orderedMin = Vector3.Min(finalMin, finalMax);
+            Vector3 orderedMax = Vector3.Max(finalMin, finalMax);
+
+            Vector3[] finalCorners = new Vector3[8]
+            {
+                new Vector3(orderedMin.X, orderedMin.Y, orderedMin.Z),
+                new Vector3(orderedMax.X, orderedMin.Y, orderedMin.Z),
+                new Vector3(orderedMin.X, orderedMax.Y, orderedMin.Z),
+                new Vector3(orderedMax.X, orderedMax.Y, orderedMin.Z),
+                new Vector3(orderedMin.X, orderedMin.Y, orderedMax.Z),
+                new Vector3(orderedMax.X, orderedMin.Y, orderedMax.Z),
+                new Vector3(orderedMin.X, orderedMax.Y, orderedMax.Z),
+                new Vector3(orderedMax.X, orderedMax.Y, orderedMax.Z)
+            };
+
+            float sMinX = float.MaxValue, sMinY = float.MaxValue;
+            float sMaxX = float.MinValue, sMaxY = float.MinValue;
+            foreach (var c in finalCorners)
+            {
+                Vector2 screenPos = WorldToScreen(c, viewport, vpPos, vpSize);
+                if (screenPos.X < sMinX) sMinX = screenPos.X;
+                if (screenPos.Y < sMinY) sMinY = screenPos.Y;
+                if (screenPos.X > sMaxX) sMaxX = screenPos.X;
+                if (screenPos.Y > sMaxY) sMaxY = screenPos.Y;
+            }
+
+            var drawList = ImGui.GetWindowDrawList();
+            uint boxColor = isPreview ? ImGui.GetColorU32(new Vector4(0.0f, 1.0f, 1.0f, 1.0f)) : ImGui.GetColorU32(new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+            drawList.AddRect(new Vector2(sMinX, sMinY), new Vector2(sMaxX, sMaxY), boxColor, 0f, ImDrawFlags.None, 1.5f);
+
+            Vector2[] finalHandlePositions = new Vector2[10];
+            finalHandlePositions[(int)HandleType.Left] = new Vector2(sMinX, (sMinY + sMaxY) * 0.5f);
+            finalHandlePositions[(int)HandleType.Right] = new Vector2(sMaxX, (sMinY + sMaxY) * 0.5f);
+            finalHandlePositions[(int)HandleType.Top] = new Vector2((sMinX + sMaxX) * 0.5f, sMinY);
+            finalHandlePositions[(int)HandleType.Bottom] = new Vector2((sMinX + sMaxX) * 0.5f, sMaxY);
+            finalHandlePositions[(int)HandleType.TopLeft] = new Vector2(sMinX, sMinY);
+            finalHandlePositions[(int)HandleType.TopRight] = new Vector2(sMaxX, sMinY);
+            finalHandlePositions[(int)HandleType.BottomLeft] = new Vector2(sMinX, sMaxY);
+            finalHandlePositions[(int)HandleType.BottomRight] = new Vector2(sMaxX, sMaxY);
+
+            for (int h = 1; h <= 8; h++)
+            {
+                Vector2 p = finalHandlePositions[h];
+                drawList.AddRectFilled(p - new Vector2(4), p + new Vector2(4), ImGui.GetColorU32(new Vector4(1.0f, 1.0f, 1.0f, 1.0f)));
+                drawList.AddRect(p - new Vector2(4), p + new Vector2(4), ImGui.GetColorU32(new Vector4(0.0f, 0.0f, 0.0f, 1.0f)));
             }
         }
 
@@ -519,19 +1129,40 @@ public class EditorUI
         for (int i = 0; i < doc.Objects.Count; i++)
         {
             var obj = doc.Objects[i];
-            bool isSelected = _selectedObject == obj;
+            bool isSelected = _selectedObjects.Contains(obj);
             var flags = ImGuiTreeNodeFlags.FramePadding | (isSelected ? ImGuiTreeNodeFlags.Selected : 0);
             
             bool open = ImGui.TreeNodeEx($"##obj{i}", flags, $"{i}: {obj.Id}");
             
             if (ImGui.IsItemClicked())
             {
-                _selectedObject = obj;
+                if (ImGui.GetIO().KeyCtrl)
+                {
+                    if (_selectedObjects.Contains(obj))
+                    {
+                        _selectedObjects.Remove(obj);
+                        if (_selectedObject == obj)
+                        {
+                            _selectedObject = _selectedObjects.FirstOrDefault();
+                        }
+                    }
+                    else
+                    {
+                        _selectedObjects.Add(obj);
+                        _selectedObject = obj;
+                    }
+                }
+                else
+                {
+                    _selectedObjects.Clear();
+                    _selectedObjects.Add(obj);
+                    _selectedObject = obj;
+                }
             }
 
             ImGui.SameLine();
             ImGui.TextColored(obj.Visible ? new Vector4(1, 1, 1, 1) : new Vector4(0.5f, 0.5f, 0.5f, 1),
-                obj.IsModel ? obj.Model : obj.Mesh);
+                obj.IsModel ? obj.Model : (obj.Mesh ?? (obj is Brush ? "brush" : "none")));
 
             if (!open) continue;
 
@@ -547,6 +1178,16 @@ public class EditorUI
                 var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
                 if (entity != null) entity.Id = id;
                 obj.Id = id;
+            }
+            if (ImGui.IsItemDeactivatedAfterEdit())
+            {
+                string uniqueId = SceneNameManager.GetUniqueName(sceneService.Document, obj, obj.Id);
+                if (uniqueId != obj.Id)
+                {
+                    var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
+                    if (entity != null) entity.Id = uniqueId;
+                    obj.Id = uniqueId;
+                }
             }
             HandleUndoEnd(sceneService, assetService, history);
 
@@ -644,8 +1285,22 @@ public class EditorUI
                             {
                                 body.HalfExtents = ApplySnap(he, _snapGrid);
                                 var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
+                                if (obj is Brush brush)
+                                {
+                                    brush.UpdatePlanesFromHalfExtents(body.HalfExtents.Value);
+                                    assetService.InvalidateMesh(brush.Id);
+                                    if (entity != null)
+                                    {
+                                        entity.Mesh = assetService.GetOrCreateMesh(brush);
+                                    }
+                                }
                                 if (entity != null && body.HalfExtents.HasValue) 
-                                    entity.Transform.Scale = body.HalfExtents.Value * 2.0f;
+                                {
+                                    if (obj is Brush)
+                                        entity.Transform.Scale = Vector3.One;
+                                    else
+                                        entity.Transform.Scale = body.HalfExtents.Value * 2.0f;
+                                }
                             }
                             HandleUndoEnd(sceneService, assetService, history);
                             break;
@@ -687,28 +1342,11 @@ public class EditorUI
         // Apply Deletion or Duplication
         if (objectToDelete != null)
         {
-            var pre = sceneService.Document.Serialize();
-            doc.Objects.Remove(objectToDelete);
-            if (_selectedObject == objectToDelete) _selectedObject = null;
-            var post = sceneService.Document.Serialize();
-            history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
-            sceneService.PopulateScene(assetService);
+            DeleteObject(objectToDelete, sceneService, assetService, history);
         }
         else if (objectToDuplicate != null)
         {
-            var pre = sceneService.Document.Serialize();
-            var cloneDoc = MapDocument.Parse(sceneService.Document.Serialize());
-            int index = doc.Objects.IndexOf(objectToDuplicate);
-            if (cloneDoc != null && index >= 0 && index < cloneDoc.Objects.Count)
-            {
-                var clone = cloneDoc.Objects[index];
-                clone.Id += "_copy";
-                doc.Objects.Insert(index + 1, clone);
-                _selectedObject = doc.Objects[index + 1]; // Auto select duplicate
-                var post = sceneService.Document.Serialize();
-                history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
-                sceneService.PopulateScene(assetService);
-            }
+            DuplicateObject(objectToDuplicate, sceneService, assetService, history);
         }
 
         ImGui.End();
@@ -719,7 +1357,8 @@ public class EditorUI
         var pre = sceneService.Document.Serialize();
         var doc = sceneService.Document;
 
-        var obj = new MapObject
+        MapObject obj;
+        obj = new MapObject
         {
             Id = $"new_{shape.ToString().ToLower()}",
             Visible = true,
@@ -740,7 +1379,42 @@ public class EditorUI
         else if (shape == MapShapeType.Capsule) { obj.Body.Radius = 0.5f; obj.Body.Height = 1.0f; obj.Mesh = "capsule"; }
 
         doc.Objects.Add(obj);
+        SceneNameManager.EnsureAllUnique(doc);
         _selectedObject = obj; // Auto select new object
+        _selectedObjects.Clear();
+        _selectedObjects.Add(obj);
+
+        var post = sceneService.Document.Serialize();
+        history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
+        sceneService.PopulateScene(assetService);
+    }
+
+    private void CommitBrush(EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
+    {
+        if (!_hasPreviewBrush) return;
+
+        Vector3 min = Vector3.Min(_previewBrushMin, _previewBrushMax);
+        Vector3 max = Vector3.Max(_previewBrushMin, _previewBrushMax);
+        Vector3 size = max - min;
+        
+        // Prevent flat brushes
+        if (size.X < 0.1f) size.X = 1.0f;
+        if (size.Y < 0.1f) size.Y = 1.0f;
+        if (size.Z < 0.1f) size.Z = 1.0f;
+
+        Vector3 pos = min + size * 0.5f;
+
+        var pre = sceneService.Document.Serialize();
+        var brush = Brush.CreateCube(pos, size);
+        brush.Texture = "Textures/dev_measurecrate01.bmp";
+
+        sceneService.Document.Objects.Add(brush);
+        SceneNameManager.EnsureAllUnique(sceneService.Document);
+        _selectedObject = brush;
+        _selectedObjects.Clear();
+        _selectedObjects.Add(brush);
+        _currentMode = EditorMode.Select;
+        _hasPreviewBrush = false;
 
         var post = sceneService.Document.Serialize();
         history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
@@ -769,5 +1443,114 @@ public class EditorUI
         }
 
         ImGui.End();
+    }
+
+    private Vector2 WorldToScreen(Vector3 worldPos, EditorViewport viewport, Vector2 vpPos, Vector2 vpSize)
+    {
+        var view = viewport.Camera.ViewMatrix;
+        var proj = viewport.Camera.ProjectionMatrix(vpSize.X / vpSize.Y);
+        Vector4 clip = Vector4.Transform(new Vector4(worldPos, 1.0f), view * proj);
+        if (clip.W == 0.0f) return Vector2.Zero;
+        Vector3 ndc = new Vector3(clip.X, clip.Y, clip.Z) / clip.W;
+        float x = vpPos.X + (ndc.X + 1.0f) * 0.5f * vpSize.X;
+        float y = vpPos.Y + (1.0f - ndc.Y) * 0.5f * vpSize.Y;
+        return new Vector2(x, y);
+    }
+
+    private void UpdateBoundsFromDrag(CameraViewType viewType, HandleType handle, Vector3 hitPoint, ref Vector3 min, ref Vector3 max)
+    {
+        int hAxis = 0;
+        int vAxis = 0;
+        bool hInverted = false;
+        bool vInverted = false;
+
+        if (viewType == CameraViewType.Top)
+        {
+            hAxis = 0; // X
+            vAxis = 2; // Z
+            vInverted = false;
+        }
+        else if (viewType == CameraViewType.Front)
+        {
+            hAxis = 0; // X
+            vAxis = 1; // Y
+            vInverted = true; // Top is Max Y
+        }
+        else if (viewType == CameraViewType.Side)
+        {
+            hAxis = 2; // Z
+            vAxis = 1; // Y
+            hInverted = true;
+            vInverted = true; // Top is Max Y
+        }
+
+        bool dragLeft = handle == HandleType.Left || handle == HandleType.TopLeft || handle == HandleType.BottomLeft;
+        bool dragRight = handle == HandleType.Right || handle == HandleType.TopRight || handle == HandleType.BottomRight;
+        bool dragTop = handle == HandleType.Top || handle == HandleType.TopLeft || handle == HandleType.TopRight;
+        bool dragBottom = handle == HandleType.Bottom || handle == HandleType.BottomLeft || handle == HandleType.BottomRight;
+
+        if (dragLeft)
+        {
+            if (hInverted)
+                SetComponent(ref max, hAxis, GetComp(hitPoint, hAxis));
+            else
+                SetComponent(ref min, hAxis, GetComp(hitPoint, hAxis));
+        }
+        if (dragRight)
+        {
+            if (hInverted)
+                SetComponent(ref min, hAxis, GetComp(hitPoint, hAxis));
+            else
+                SetComponent(ref max, hAxis, GetComp(hitPoint, hAxis));
+        }
+
+        if (dragTop)
+        {
+            if (vInverted)
+                SetComponent(ref max, vAxis, GetComp(hitPoint, vAxis));
+            else
+                SetComponent(ref min, vAxis, GetComp(hitPoint, vAxis));
+        }
+        if (dragBottom)
+        {
+            if (vInverted)
+                SetComponent(ref min, vAxis, GetComp(hitPoint, vAxis));
+            else
+                SetComponent(ref max, vAxis, GetComp(hitPoint, vAxis));
+        }
+
+        Vector3 realMin = Vector3.Min(min, max);
+        Vector3 realMax = Vector3.Max(min, max);
+        min = realMin;
+        max = realMax;
+    }
+
+    private float GetComp(Vector3 v, int axis) => axis switch
+    {
+        0 => v.X,
+        1 => v.Y,
+        2 => v.Z,
+        _ => 0
+    };
+
+    private void SetComponent(ref Vector3 v, int axis, float val)
+    {
+        if (axis == 0) v.X = val;
+        else if (axis == 1) v.Y = val;
+        else if (axis == 2) v.Z = val;
+    }
+
+    public void DrawPreviewDebug(Fuse.Debug.DebugDrawer drawer)
+    {
+        if (_hasPreviewBrush)
+        {
+            Vector3 min = Vector3.Min(_previewBrushMin, _previewBrushMax);
+            Vector3 max = Vector3.Max(_previewBrushMin, _previewBrushMax);
+            Vector3 size = max - min;
+            Vector3 pos = min + size * 0.5f;
+
+            // Draw as cyan/light blue outline
+            drawer.DrawBox(pos, Quaternion.Identity, size * 0.5f, new Vector3(0.0f, 1.0f, 1.0f));
+        }
     }
 }

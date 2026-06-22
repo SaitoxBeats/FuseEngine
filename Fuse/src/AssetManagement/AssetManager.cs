@@ -17,6 +17,8 @@ public class AssetManager
         _gl = gl;
     }
 
+    public GL Gl => _gl;
+
     public Renderer.Texture GetTexture(string path)
     {
         if (_textures.TryGetValue(path, out var tex))

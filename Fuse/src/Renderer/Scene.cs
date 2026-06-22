@@ -24,6 +24,7 @@ public class Entity
     public float ModelScale { get; set; } = 1.0f;
     public Vector2 UvScale { get; set; } = Vector2.One;
     public Mesh? Mesh { get; set; }
+    public Texture? Texture { get; set; }
     public RigidBody? Body { get; set; }
     public Transform Transform { get; set; } = new();
     public bool Visible { get; set; } = true;
@@ -53,7 +54,7 @@ public class Scene
 
     public IReadOnlyList<Entity> Entities => _entities;
 
-    public void Render(Shader shader, PhysicsWorld world)
+    public void Render(Shader shader, PhysicsWorld world, Texture defaultTexture)
     {
         foreach (var e in _entities)
         {
@@ -67,6 +68,18 @@ public class Scene
 
             shader.SetMat4("uModel", e.Transform.Matrix);
             shader.SetVec2("uUvScale", e.UvScale);
+
+            var tex = e.Texture ?? defaultTexture;
+            if (tex != null)
+            {
+                shader.SetBool("uUseTexture", true);
+                tex.Bind(0);
+            }
+            else
+            {
+                shader.SetBool("uUseTexture", false);
+            }
+
             e.Mesh.Draw();
         }
     }

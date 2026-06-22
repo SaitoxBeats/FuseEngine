@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace Blowtorch.Model;
+namespace Fuse.Scene.Model;
 
 public class MapPlayerSpawn
 {

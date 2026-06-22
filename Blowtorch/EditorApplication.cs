@@ -68,6 +68,12 @@ public unsafe class EditorApplication : IDisposable
             lastTime = now;
 
             _window.Glfw.GetFramebufferSize(_window.Handle, out int fbWidth, out int fbHeight);
+            if (fbWidth <= 0 || fbHeight <= 0)
+            {
+                _window.PollEvents();
+                System.Threading.Thread.Sleep(16);
+                continue;
+            }
             var gl = _window.GL;
             gl.Viewport(0, 0, (uint)fbWidth, (uint)fbHeight);
             gl.ClearColor(0.12f, 0.12f, 0.14f, 1.0f);
@@ -79,22 +85,22 @@ public unsafe class EditorApplication : IDisposable
             // Render Viewports
             _viewport3D.BeginRender();
             _viewport3D.RenderScene(_assetService, _sceneService);
-            _viewport3D.RenderDebug(_assetService, _sceneService);
+            _viewport3D.RenderDebug(_assetService, _sceneService, _ui.DrawPreviewDebug);
             _viewport3D.EndRender(fbWidth, fbHeight);
 
             _viewportTop.BeginRender();
             _viewportTop.RenderScene(_assetService, _sceneService);
-            _viewportTop.RenderDebug(_assetService, _sceneService);
+            _viewportTop.RenderDebug(_assetService, _sceneService, _ui.DrawPreviewDebug);
             _viewportTop.EndRender(fbWidth, fbHeight);
 
             _viewportFront.BeginRender();
             _viewportFront.RenderScene(_assetService, _sceneService);
-            _viewportFront.RenderDebug(_assetService, _sceneService);
+            _viewportFront.RenderDebug(_assetService, _sceneService, _ui.DrawPreviewDebug);
             _viewportFront.EndRender(fbWidth, fbHeight);
 
             _viewportSide.BeginRender();
             _viewportSide.RenderScene(_assetService, _sceneService);
-            _viewportSide.RenderDebug(_assetService, _sceneService);
+            _viewportSide.RenderDebug(_assetService, _sceneService, _ui.DrawPreviewDebug);
             _viewportSide.EndRender(fbWidth, fbHeight);
 
             // Render UI

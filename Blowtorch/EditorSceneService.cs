@@ -1,5 +1,5 @@
 using System.IO;
-using Blowtorch.Model;
+using Fuse.Scene.Model;
 using Fuse.Renderer;
 using Fuse.Core;
 
@@ -43,7 +43,16 @@ public class EditorSceneService
             entity.ModelScale = mapObj.ModelScale;
             entity.UvScale = mapObj.UvScale;
 
-            if (mapObj.Body != null)
+            if (mapObj is Brush)
+            {
+                entity.Transform.Scale = System.Numerics.Vector3.One;
+                if (mapObj.Body != null)
+                {
+                    entity.Transform.Position = mapObj.Body.Position;
+                    entity.Transform.Rotation = mapObj.Body.Rotation;
+                }
+            }
+            else if (mapObj.Body != null)
             {
                 entity.Transform.Position = mapObj.Body.Position;
                 entity.Transform.Rotation = mapObj.Body.Rotation;
