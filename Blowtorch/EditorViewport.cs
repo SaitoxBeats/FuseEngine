@@ -35,7 +35,7 @@ public unsafe class EditorViewport : IDisposable
         _gl = gl;
         _fbo = _gl.GenFramebuffer();
         _camera = new ViewportCamera { ViewType = viewType };
-        _gridMesh = CreateGridMesh(_gl, 40, 1.0f);
+        _gridMesh = CreateGridMesh(_gl, 4000, 1.0f);
         _debugDrawer = new Fuse.Debug.DebugDrawer(_gl) { Enabled = true };
         CreateFbo(800, 600);
     }
@@ -93,7 +93,7 @@ public unsafe class EditorViewport : IDisposable
         _gl.Viewport(0, 0, (uint)windowWidth, (uint)windowHeight);
     }
 
-    public void RenderScene(EditorAssetService assetService, EditorSceneService sceneService)
+    public void RenderScene(EditorAssetService assetService, EditorSceneService sceneService, float snapGrid = 1.0f)
     {
         var shader = assetService.DefaultShader;
         if (shader.ID == 0) return;
@@ -112,16 +112,18 @@ public unsafe class EditorViewport : IDisposable
         // Draw Grid
         _gl.Disable(EnableCap.CullFace);
         shader.SetBool("uUseTexture", false);
-        shader.SetVec3("uColor", new Vector3(0.3f, 0.3f, 0.35f));
+        shader.SetVec2("uUvScale", Vector2.One);
+        shader.SetFloat("uAmbient", 1.0f);
+        shader.SetVec3("uColor", new Vector3(0.35f, 0.35f, 0.4f));
         
-        Matrix4x4 model = Matrix4x4.Identity;
+        Matrix4x4 model = Matrix4x4.CreateScale(snapGrid);
         if (_camera.ViewType == CameraViewType.Front)
         {
-            model = Matrix4x4.CreateRotationX(MathF.PI / 2.0f);
+            model *= Matrix4x4.CreateRotationX(MathF.PI / 2.0f);
         }
         else if (_camera.ViewType == CameraViewType.Side)
         {
-            model = Matrix4x4.CreateRotationZ(MathF.PI / 2.0f);
+            model *= Matrix4x4.CreateRotationZ(MathF.PI / 2.0f);
         }
         shader.SetMat4("uModel", model);
         _gridMesh.Draw(PrimitiveType.Lines);
@@ -133,10 +135,12 @@ public unsafe class EditorViewport : IDisposable
         {
             _gl.PolygonMode(GLEnum.FrontAndBack, GLEnum.Line);
             shader.SetBool("uUseTexture", false);
+            shader.SetFloat("uAmbient", 1.0f);
             shader.SetVec3("uColor", new Vector3(0.8f, 0.8f, 0.8f));
         }
         else
         {
+            shader.SetFloat("uAmbient", 0.2f);
             shader.SetVec3("uColor", Vector3.One);
         }
 

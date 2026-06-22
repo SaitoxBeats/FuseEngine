@@ -84,22 +84,22 @@ public unsafe class EditorApplication : IDisposable
 
             // Render Viewports
             _viewport3D.BeginRender();
-            _viewport3D.RenderScene(_assetService, _sceneService);
+            _viewport3D.RenderScene(_assetService, _sceneService, _ui.SnapGrid);
             _viewport3D.RenderDebug(_assetService, _sceneService, _ui.DrawPreviewDebug);
             _viewport3D.EndRender(fbWidth, fbHeight);
 
             _viewportTop.BeginRender();
-            _viewportTop.RenderScene(_assetService, _sceneService);
+            _viewportTop.RenderScene(_assetService, _sceneService, _ui.SnapGrid);
             _viewportTop.RenderDebug(_assetService, _sceneService, _ui.DrawPreviewDebug);
             _viewportTop.EndRender(fbWidth, fbHeight);
 
             _viewportFront.BeginRender();
-            _viewportFront.RenderScene(_assetService, _sceneService);
+            _viewportFront.RenderScene(_assetService, _sceneService, _ui.SnapGrid);
             _viewportFront.RenderDebug(_assetService, _sceneService, _ui.DrawPreviewDebug);
             _viewportFront.EndRender(fbWidth, fbHeight);
 
             _viewportSide.BeginRender();
-            _viewportSide.RenderScene(_assetService, _sceneService);
+            _viewportSide.RenderScene(_assetService, _sceneService, _ui.SnapGrid);
             _viewportSide.RenderDebug(_assetService, _sceneService, _ui.DrawPreviewDebug);
             _viewportSide.EndRender(fbWidth, fbHeight);
 

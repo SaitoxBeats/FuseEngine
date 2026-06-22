@@ -16,6 +16,8 @@ public unsafe class EditorUI
     private string[] _availableMaps = [];
     private int _selectedOpenMapIndex = -1;
     private bool _newDocumentRequested;
+    private bool _showSaveAsDialog;
+    private string _saveMapName = "new_map.json";
 
     private bool _showMapWindow = true;
     private bool _showJsonWindow = false;
@@ -23,6 +25,7 @@ public unsafe class EditorUI
     // Snapping
     private bool _snapEnabled = true;
     private float _snapGrid = 1.0f;
+    public float SnapGrid => _snapGrid;
     private float _snapAngle = 15.0f;
 
     // Undo/Redo state
@@ -101,6 +104,12 @@ public unsafe class EditorUI
 
     public void Draw(EditorWindow window, EditorViewport viewport3D, EditorViewport viewportTop, EditorViewport viewportFront, EditorViewport viewportSide, EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
     {
+        if (_currentMode != EditorMode.DrawBrush)
+        {
+            _hasPreviewBrush = false;
+            _isDrawingBrush = false;
+            _drawingViewport = null;
+        }
         SyncSelection(sceneService.Document);
         var currentIds = new HashSet<string>(_selectedObjects.Select(o => o.Id));
         if (!_lastSelectedObjectIds.SetEquals(currentIds))
@@ -142,6 +151,7 @@ public unsafe class EditorUI
         DrawMenuBar(window, sceneService, assetService, history);
 
         DrawOpenDialog(sceneService, assetService);
+        DrawSaveAsDialog(sceneService);
 
         if (_newDocumentRequested)
         {
@@ -571,11 +581,30 @@ public unsafe class EditorUI
         }
     }
 
-    private static void LaunchGame(EditorSceneService sceneService)
+    private void LaunchGame(EditorSceneService sceneService)
     {
+        if (string.IsNullOrEmpty(sceneService.MapPath))
+        {
+            _showSaveAsDialog = true;
+            _saveMapName = "map.json";
+            return;
+        }
         sceneService.SaveMap();
         string mapFile = Path.GetFileName(sceneService.MapPath);
         System.Diagnostics.Process.Start("Fuse.exe", mapFile);
+    }
+
+    private void SaveMapOrPrompt(EditorSceneService sceneService)
+    {
+        if (string.IsNullOrEmpty(sceneService.MapPath))
+        {
+            _showSaveAsDialog = true;
+            _saveMapName = "map.json";
+        }
+        else
+        {
+            sceneService.SaveMap();
+        }
     }
 
     private static string? OpenFileDialog(string initialDir, string filter)
@@ -597,7 +626,7 @@ public unsafe class EditorUI
         {
             if (ImGui.IsKeyPressed(ImGuiKey.Z)) history.Undo();
             if (ImGui.IsKeyPressed(ImGuiKey.Y)) history.Redo();
-            if (ImGui.IsKeyPressed(ImGuiKey.S)) sceneService.SaveMap();
+            if (ImGui.IsKeyPressed(ImGuiKey.S)) SaveMapOrPrompt(sceneService);
             if (ImGui.IsKeyPressed(ImGuiKey.D) && _selectedObjects.Count > 0)
             {
                 DuplicateObjects(_selectedObjects.ToList(), sceneService, assetService, history);
@@ -649,6 +678,7 @@ public unsafe class EditorUI
                             Pitch = 0,
                         }
                     });
+                    sceneService.SetMapPath("");
                     sceneService.PopulateScene(assetService);
                     _newDocumentRequested = true;
                 }
@@ -662,7 +692,14 @@ public unsafe class EditorUI
                 }
                 if (ImGui.MenuItem("Save", "Ctrl+S"))
                 {
-                    sceneService.SaveMap();
+                    SaveMapOrPrompt(sceneService);
+                }
+                if (ImGui.MenuItem("Save As..."))
+                {
+                    _showSaveAsDialog = true;
+                    _saveMapName = !string.IsNullOrEmpty(sceneService.MapPath)
+                        ? Path.GetFileName(sceneService.MapPath)
+                        : "map.json";
                 }
                 ImGui.Separator();
                 if (ImGui.MenuItem("Play", "F5"))
@@ -717,7 +754,21 @@ public unsafe class EditorUI
 
             if (!ImGui.IsMouseDown(ImGuiMouseButton.Right) && !ImGui.GetIO().WantTextInput)
             {
-                if (ImGui.IsKeyPressed(ImGuiKey.Escape)) { _currentMode = EditorMode.Select; _hasPreviewBrush = false; }
+                if (ImGui.IsKeyPressed(ImGuiKey.Escape))
+                {
+                    if (_currentMode == EditorMode.DrawBrush)
+                    {
+                        _currentMode = EditorMode.Select;
+                        _hasPreviewBrush = false;
+                        _isDrawingBrush = false;
+                        _drawingViewport = null;
+                    }
+                    else
+                    {
+                        _selectedObject = null;
+                        _selectedObjects.Clear();
+                    }
+                }
                 if (ImGui.IsKeyPressed(ImGuiKey.B)) _currentMode = EditorMode.DrawBrush;
                 if (ImGui.IsKeyPressed(ImGuiKey.W)) _gizmoOperation = GizmoOperation.Translate;
                 if (ImGui.IsKeyPressed(ImGuiKey.E)) _gizmoOperation = GizmoOperation.Rotate;
@@ -1067,8 +1118,7 @@ public unsafe class EditorUI
             }
             else if (_currentMode == EditorMode.DrawBrush)
             {
-                // Let right click still navigate the camera
-                if (ImGui.IsMouseDown(ImGuiMouseButton.Right) || ImGui.IsMouseDown(ImGuiMouseButton.Middle))
+                // Always call HandleInput so camera panning/orbiting cursor state is properly restored
                 viewport.HandleInput(ImGui.GetIO(), ImGui.GetIO().DeltaTime, window.Glfw, window.Handle, vpPos, vpSize);
 
                 if (viewport.Camera.IsOrthographic)
@@ -2292,6 +2342,7 @@ public unsafe class EditorUI
                 if (doc != null)
                 {
                     sceneService.SetDocument(doc);
+                    sceneService.SetMapPath(_availableMaps[_selectedOpenMapIndex]);
                     sceneService.PopulateScene(assetService);
                     _selectedObjects.Clear();
                 }
@@ -2311,6 +2362,56 @@ public unsafe class EditorUI
         if (!open)
         {
             _showOpenDialog = false;
+        }
+    }
+
+    private void DrawSaveAsDialog(EditorSceneService sceneService)
+    {
+        if (!_showSaveAsDialog) return;
+
+        ImGui.OpenPopup("Save Map As");
+
+        bool open = true;
+        if (ImGui.BeginPopupModal("Save Map As", ref open, ImGuiWindowFlags.AlwaysAutoResize))
+        {
+            ImGui.Text("Enter map filename:");
+            ImGui.InputText("##SaveName", ref _saveMapName, 128);
+
+            ImGui.Separator();
+
+            if (ImGui.Button("Save", new Vector2(120, 0)))
+            {
+                string name = _saveMapName.Trim();
+                if (!string.IsNullOrEmpty(name))
+                {
+                    if (!name.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                    {
+                        name += ".json";
+                    }
+                    string mapsDir = Path.Combine(ResPath.Path, "Maps");
+                    if (!Directory.Exists(mapsDir))
+                    {
+                        Directory.CreateDirectory(mapsDir);
+                    }
+                    string fullPath = Path.Combine(mapsDir, name);
+                    sceneService.SetMapPath(fullPath);
+                    sceneService.SaveMap();
+                }
+                _showSaveAsDialog = false;
+            }
+
+            ImGui.SameLine();
+            if (ImGui.Button("Cancel", new Vector2(120, 0)))
+            {
+                _showSaveAsDialog = false;
+            }
+
+            ImGui.EndPopup();
+        }
+
+        if (!open)
+        {
+            _showSaveAsDialog = false;
         }
     }
 

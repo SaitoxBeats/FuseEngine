@@ -28,6 +28,11 @@ public class EditorSceneService
         _doc = doc;
     }
 
+    public void SetMapPath(string path)
+    {
+        _mapPath = path;
+    }
+
     public void PopulateScene(EditorAssetService assetService)
     {
         _scene = new Scene();

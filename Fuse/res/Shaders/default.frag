@@ -19,6 +19,6 @@ void main() {
     float ambient = uAmbient;
     vec3 lighting = vec3(ambient) + (1.0 - ambient) * diff * uLightColor;
 
-    vec4 texColor = texture(uTexture, vTexCoord);
+    vec4 texColor = uUseTexture ? texture(uTexture, vTexCoord) : vec4(1.0);
     fragColor = texColor * vec4(uColor * lighting, 1.0);
 }
