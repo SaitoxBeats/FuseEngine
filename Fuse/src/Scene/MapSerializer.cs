@@ -116,6 +116,9 @@ public static class MapSerializer
                 ["visible"] = e.Visible
             };
 
+            if (!string.IsNullOrEmpty(e.ParentId))
+                obj["parent"] = e.ParentId;
+
             if (e.MeshKey.Contains('/') || e.MeshKey.Contains('\\'))
             {
                 obj["model"] = e.MeshKey;
@@ -190,7 +193,30 @@ public static class MapSerializer
                 (float)sj["pitch"]!);
         }
 
+        var parentMap = new Dictionary<string, string>();
+        var visibleMap = new Dictionary<string, bool>();
         var objects = root["objects"]!.AsArray();
+        foreach (var objNode in objects)
+        {
+            if (objNode == null) continue;
+            var obj = objNode.AsObject();
+            string id = obj.TryGetPropertyValue("id", out var idNode) ? (string)idNode! : "unnamed";
+            bool visible = obj.TryGetPropertyValue("visible", out var visNode) ? (bool)visNode! : true;
+            string? parent = obj.TryGetPropertyValue("parent", out var pNode) ? (string)pNode! : null;
+            visibleMap[id] = visible;
+            if (parent != null) parentMap[id] = parent;
+        }
+
+        bool IsGloballyVisible(string id)
+        {
+            if (!visibleMap.TryGetValue(id, out bool vis) || !vis) return false;
+            if (parentMap.TryGetValue(id, out string parentId))
+            {
+                return IsGloballyVisible(parentId);
+            }
+            return true;
+        }
+
         foreach (var objNode in objects)
         {
             if (objNode == null) continue;
@@ -251,7 +277,8 @@ public static class MapSerializer
             entity.TexturePath = texturePath;
             entity.ModelScale = modelScale;
             entity.UvScale = uvScale;
-            entity.Visible = obj.TryGetPropertyValue("visible", out var visNode) ? (bool) visNode! : true;
+            entity.Visible = IsGloballyVisible(id);
+            entity.ParentId = obj.TryGetPropertyValue("parent", out var pIdNode) ? (string)pIdNode! : "";
 
             if (!string.IsNullOrEmpty(texturePath))
             {
@@ -321,6 +348,20 @@ public static class MapSerializer
             else
             {
                 entity.Transform.Scale = isBrush ? Vector3.One : new Vector3(modelScale);
+            }
+        }
+
+        // Compute initial relative transforms for children
+        foreach (var entity in scene.Entities)
+        {
+            if (!string.IsNullOrEmpty(entity.ParentId))
+            {
+                var parent = scene.Entities.FirstOrDefault(e => e.Id == entity.ParentId);
+                if (parent != null)
+                {
+                    entity.InitialRelativePosition = entity.Transform.Position - parent.Transform.Position;
+                    entity.InitialRelativeRotation = Quaternion.Inverse(parent.Transform.Rotation) * entity.Transform.Rotation;
+                }
             }
         }
 

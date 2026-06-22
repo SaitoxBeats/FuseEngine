@@ -6,11 +6,17 @@ using ImGuiNET;
 using Fuse.Scene.Model;
 using Fuse.Renderer;
 using Fuse.Core;
+using Fuse;
 
 namespace Blowtorch;
 
 public unsafe class EditorUI
 {
+    private bool _showOpenDialog;
+    private string[] _availableMaps = [];
+    private int _selectedOpenMapIndex = -1;
+    private bool _newDocumentRequested;
+
     private bool _showMapWindow = true;
     private bool _showJsonWindow = false;
 
@@ -30,6 +36,7 @@ public unsafe class EditorUI
     private EditorMode _currentMode = EditorMode.Select;
     private GizmoOperation _gizmoOperation = GizmoOperation.Translate;
     private MapObject? _selectedObject;
+    private MapObject? _draggedObject;
     private HashSet<MapObject> _selectedObjects = new();
     private HashSet<string> _lastSelectedObjectIds = new();
     private double _lastSelectionTime = 0.0;
@@ -133,6 +140,18 @@ public unsafe class EditorUI
 
 
         DrawMenuBar(window, sceneService, assetService, history);
+
+        DrawOpenDialog(sceneService, assetService);
+
+        if (_newDocumentRequested)
+        {
+            _newDocumentRequested = false;
+            viewport3D.Camera.Target = Vector3.Zero;
+            viewportTop.Camera.Target = Vector3.Zero;
+            viewportFront.Camera.Target = Vector3.Zero;
+            viewportSide.Camera.Target = Vector3.Zero;
+        }
+
         ImGui.End();
 
         DrawViewportWindow(window, viewport3D, viewportTop, viewportFront, viewportSide, sceneService, assetService, history);
@@ -146,37 +165,323 @@ public unsafe class EditorUI
 
     private void DuplicateObject(MapObject obj, EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
     {
-        if (obj == null) return;
-        var doc = sceneService.Document;
-        var pre = doc.Serialize();
-        var cloneDoc = MapDocument.Parse(doc.Serialize());
-        int index = doc.Objects.IndexOf(obj);
-        if (cloneDoc != null && index >= 0 && index < cloneDoc.Objects.Count)
-        {
-            var clone = cloneDoc.Objects[index];
-            clone.Id += "_copy";
-            doc.Objects.Insert(index + 1, clone);
-            SceneNameManager.EnsureAllUnique(doc);
-            _selectedObject = doc.Objects[index + 1]; // Auto select duplicate
-            _selectedObjects.Clear();
-            _selectedObjects.Add(_selectedObject);
-            var post = doc.Serialize();
-            history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
-            sceneService.PopulateScene(assetService);
-        }
+        DuplicateObjects(new List<MapObject> { obj }, sceneService, assetService, history);
     }
 
     private void DeleteObject(MapObject obj, EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
     {
-        if (obj == null) return;
+        DeleteObjects(new List<MapObject> { obj }, sceneService, assetService, history);
+    }
+
+    private void AddWithDescendants(MapObject obj, MapDocument doc, HashSet<MapObject> result)
+    {
+        if (result.Add(obj))
+        {
+            var children = doc.Objects.Where(o => o.ParentId == obj.Id);
+            foreach (var child in children)
+            {
+                AddWithDescendants(child, doc, result);
+            }
+        }
+    }
+
+    private HashSet<MapObject> GetObjectsToTransform(MapDocument doc)
+    {
+        var result = new HashSet<MapObject>();
+        foreach (var obj in _selectedObjects)
+        {
+            AddWithDescendants(obj, doc, result);
+        }
+        return result;
+    }
+
+    private bool IsDescendantOf(MapObject potentialDescendant, MapObject potentialAncestor, MapDocument doc)
+    {
+        string? parentId = potentialDescendant.ParentId;
+        while (!string.IsNullOrEmpty(parentId))
+        {
+            if (parentId == potentialAncestor.Id) return true;
+            var parent = doc.Objects.FirstOrDefault(o => o.Id == parentId);
+            parentId = parent?.ParentId;
+        }
+        return false;
+    }
+
+    private void UpdateEntitiesVisibilityRecursive(MapDocument doc, Fuse.Renderer.Scene scene, MapObject obj)
+    {
+        var children = doc.Objects.Where(o => o.ParentId == obj.Id);
+        foreach (var child in children)
+        {
+            var entity = scene.Entities.FirstOrDefault(e => e.Id == child.Id);
+            if (entity != null)
+            {
+                entity.Visible = child.IsGloballyVisible(doc);
+            }
+            UpdateEntitiesVisibilityRecursive(doc, scene, child);
+        }
+    }
+
+    private void GroupSelected(EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
+    {
+        if (_selectedObjects.Count == 0) return;
+
+        var pre = sceneService.Document.Serialize();
         var doc = sceneService.Document;
-        var pre = doc.Serialize();
-        doc.Objects.Remove(obj);
-        _selectedObjects.Remove(obj);
-        if (_selectedObject == obj) _selectedObject = _selectedObjects.FirstOrDefault();
+
+        // Calculate center position
+        Vector3 sum = Vector3.Zero;
+        int count = 0;
+        foreach (var obj in _selectedObjects)
+        {
+            if (obj.Body != null)
+            {
+                sum += obj.Body.Position;
+                count++;
+            }
+        }
+        Vector3 center = count > 0 ? sum / count : Vector3.Zero;
+
+        // Generate unique group ID
+        int groupIndex = 1;
+        string groupId = $"group_{groupIndex}";
+        while (doc.Objects.Any(o => o.Id == groupId))
+        {
+            groupIndex++;
+            groupId = $"group_{groupIndex}";
+        }
+
+        // Create group object
+        var groupObj = new MapObject
+        {
+            Id = groupId,
+            Visible = true,
+            Body = new MapBody
+            {
+                Shape = MapShapeType.None,
+                Position = center,
+                Rotation = Quaternion.Identity
+            }
+        };
+
+        doc.Objects.Add(groupObj);
+
+        // Parent all selected objects to groupObj
+        foreach (var obj in _selectedObjects)
+        {
+            obj.ParentId = groupObj.Id;
+        }
+
+        SceneNameManager.EnsureAllUnique(doc);
+
         var post = doc.Serialize();
         history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
         sceneService.PopulateScene(assetService);
+
+        // Select the newly created group object
+        _selectedObjects.Clear();
+        _selectedObjects.Add(groupObj);
+        _selectedObject = groupObj;
+    }
+
+    private void UngroupSelected(EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
+    {
+        if (_selectedObjects.Count == 0) return;
+
+        var pre = sceneService.Document.Serialize();
+        var doc = sceneService.Document;
+
+        foreach (var obj in _selectedObjects)
+        {
+            obj.ParentId = null;
+        }
+
+        var post = doc.Serialize();
+        history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
+        sceneService.PopulateScene(assetService);
+    }
+
+    private void DrawObjectNode(MapObject obj, MapDocument doc, EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history, EditorViewport viewport3D, EditorViewport viewportTop, EditorViewport viewportFront, EditorViewport viewportSide, ref MapObject? objectToDelete, ref MapObject? objectToDuplicate)
+    {
+        var children = doc.Objects.Where(o => o.ParentId == obj.Id).ToList();
+        bool isSelected = _selectedObjects.Contains(obj);
+        bool hasChildren = children.Count > 0;
+
+        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.FramePadding | (isSelected ? ImGuiTreeNodeFlags.Selected : 0);
+        if (!hasChildren)
+        {
+            flags |= ImGuiTreeNodeFlags.Leaf;
+        }
+        else
+        {
+            flags |= ImGuiTreeNodeFlags.OpenOnArrow | ImGuiTreeNodeFlags.OpenOnDoubleClick;
+        }
+
+        bool isEmptyGroup = (obj.Body == null || obj.Body.Shape == MapShapeType.None) && string.IsNullOrEmpty(obj.Mesh) && string.IsNullOrEmpty(obj.Model);
+        string typeEmoji = isEmptyGroup ? "📁" : (obj.IsModel ? "🗿" : (obj is Brush ? "📐" : (obj.Body?.Shape == MapShapeType.Sphere ? "🔮" : (obj.Body?.Shape == MapShapeType.Capsule ? "💊" : "📦"))));
+
+        bool isGloballyVisible = obj.IsGloballyVisible(doc);
+
+        string label = $"{typeEmoji} {obj.Id}";
+
+        bool isOpen = ImGui.TreeNodeEx($"##node_{obj.Id}", flags, label);
+
+        if (ImGui.BeginDragDropSource())
+        {
+            _draggedObject = obj;
+            ImGui.Text($"Moving/Grouping: {obj.Id}");
+            ImGui.SetDragDropPayload("HIERARCHY_NODE", IntPtr.Zero, 0);
+            ImGui.EndDragDropSource();
+        }
+
+        if (ImGui.BeginDragDropTarget())
+        {
+            var payload = ImGui.AcceptDragDropPayload("HIERARCHY_NODE");
+            if (payload.NativePtr != null)
+            {
+                if (_draggedObject != null && _draggedObject != obj && !IsDescendantOf(obj, _draggedObject, doc))
+                {
+                    var pre = doc.Serialize();
+                    _draggedObject.ParentId = obj.Id;
+                    
+                    var entity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == _draggedObject.Id);
+                    var parentEntity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
+                    if (entity != null)
+                    {
+                        entity.ParentId = obj.Id;
+                        if (parentEntity != null)
+                        {
+                            entity.InitialRelativePosition = entity.Transform.Position - parentEntity.Transform.Position;
+                            entity.InitialRelativeRotation = Quaternion.Inverse(parentEntity.Transform.Rotation) * entity.Transform.Rotation;
+                        }
+                    }
+                    var post = doc.Serialize();
+                    history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
+                    sceneService.PopulateScene(assetService);
+                }
+                _draggedObject = null;
+            }
+            ImGui.EndDragDropTarget();
+        }
+
+        if (ImGui.IsItemClicked() && !ImGui.IsItemToggledOpen())
+        {
+            if (ImGui.GetIO().KeyCtrl)
+            {
+                if (_selectedObjects.Contains(obj))
+                {
+                    _selectedObjects.Remove(obj);
+                    if (_selectedObject == obj)
+                        _selectedObject = _selectedObjects.FirstOrDefault();
+                }
+                else
+                {
+                    _selectedObjects.Add(obj);
+                    _selectedObject = obj;
+                }
+            }
+            else
+            {
+                _selectedObjects.Clear();
+                _selectedObjects.Add(obj);
+                _selectedObject = obj;
+            }
+            _lastSelectionTime = ImGui.GetTime();
+        }
+
+        if (ImGui.IsItemHovered() && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
+        {
+            FocusCameraOnObject(obj, viewport3D, viewportTop, viewportFront, viewportSide);
+        }
+
+        if (ImGui.BeginPopupContextItem($"context_{obj.Id}"))
+        {
+            if (!_selectedObjects.Contains(obj))
+            {
+                _selectedObjects.Clear();
+                _selectedObjects.Add(obj);
+                _selectedObject = obj;
+            }
+
+            if (ImGui.MenuItem("🔍 Focus Camera"))
+            {
+                FocusCameraOnObject(obj, viewport3D, viewportTop, viewportFront, viewportSide);
+            }
+            if (ImGui.MenuItem("👁 Toggle Visibility"))
+            {
+                _preEditState = _frameBeginState;
+                obj.Visible = !obj.Visible;
+                var entity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
+                if (entity != null) entity.Visible = obj.IsGloballyVisible(doc);
+                UpdateEntitiesVisibilityRecursive(doc, sceneService.Scene, obj);
+                history.PushCommand(new SnapshotCommand(sceneService, assetService, _preEditState, sceneService.Document.Serialize()));
+            }
+            ImGui.Separator();
+            if (ImGui.MenuItem("📦 Group Selected"))
+            {
+                GroupSelected(sceneService, assetService, history);
+            }
+            if (_selectedObjects.Any(o => !string.IsNullOrEmpty(o.ParentId)))
+            {
+                if (ImGui.MenuItem("📤 Ungroup Selected"))
+                {
+                    UngroupSelected(sceneService, assetService, history);
+                }
+            }
+            ImGui.Separator();
+            if (ImGui.MenuItem("📋 Duplicate"))
+            {
+                objectToDuplicate = obj;
+            }
+            if (ImGui.MenuItem("❌ Delete"))
+            {
+                objectToDelete = obj;
+            }
+            ImGui.EndPopup();
+        }
+
+        ImGui.SameLine();
+        float rightAlignPos = ImGui.GetWindowWidth() - 35;
+        ImGui.SetCursorPosX(rightAlignPos);
+
+        string visIcon = obj.Visible ? "👁" : "◌";
+        bool inheritedHidden = !isGloballyVisible && obj.Visible;
+
+        if (inheritedHidden)
+        {
+            ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.5f, 0.5f, 0.5f, 0.5f));
+            visIcon = "👁";
+        }
+
+        ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0, 0, 0, 0));
+        ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0, 0, 0, 0));
+        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.2f, 0.2f, 0.2f, 0.5f));
+
+        if (ImGui.Button($"{visIcon}##visbtn_{obj.Id}", new Vector2(24, 20)))
+        {
+            _preEditState = _frameBeginState;
+            obj.Visible = !obj.Visible;
+            var entity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
+            if (entity != null) entity.Visible = obj.IsGloballyVisible(doc);
+            UpdateEntitiesVisibilityRecursive(doc, sceneService.Scene, obj);
+            history.PushCommand(new SnapshotCommand(sceneService, assetService, _preEditState, sceneService.Document.Serialize()));
+        }
+        ImGui.PopStyleColor(3);
+        if (inheritedHidden)
+        {
+            ImGui.PopStyleColor(1);
+        }
+
+        if (isOpen)
+        {
+            if (hasChildren)
+            {
+                foreach (var child in children)
+                {
+                    DrawObjectNode(child, doc, sceneService, assetService, history, viewport3D, viewportTop, viewportFront, viewportSide, ref objectToDelete, ref objectToDuplicate);
+                }
+            }
+            ImGui.TreePop();
+        }
     }
 
     private void DuplicateObjects(List<MapObject> objs, EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
@@ -185,37 +490,51 @@ public unsafe class EditorUI
         var doc = sceneService.Document;
         var pre = doc.Serialize();
         
-        var cloneDoc = MapDocument.Parse(doc.Serialize());
-        if (cloneDoc == null) return;
-
-        var duplicates = new List<MapObject>();
+        var toDuplicate = new HashSet<MapObject>();
         foreach (var obj in objs)
         {
-            int index = doc.Objects.IndexOf(obj);
-            if (index >= 0 && index < cloneDoc.Objects.Count)
-            {
-                var clone = cloneDoc.Objects[index];
-                clone.Id += "_copy";
-                doc.Objects.Insert(index + 1, clone);
-                duplicates.Add(clone);
-            }
+            AddWithDescendants(obj, doc, toDuplicate);
         }
-
-        if (duplicates.Count > 0)
+        
+        var oldToNewMap = new Dictionary<string, MapObject>();
+        var duplicates = new List<MapObject>();
+        
+        foreach (var obj in toDuplicate)
         {
-            SceneNameManager.EnsureAllUnique(doc);
+            var serialized = MapDocument.SerializeObject(obj);
+            var clone = MapDocument.ParseObject(serialized);
             
-            _selectedObjects.Clear();
-            foreach (var dup in duplicates)
-            {
-                _selectedObjects.Add(dup);
-            }
-            _selectedObject = duplicates.LastOrDefault();
-            
-            var post = doc.Serialize();
-            history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
-            sceneService.PopulateScene(assetService);
+            string newId = obj.Id + "_copy";
+            clone.Id = newId;
+            oldToNewMap[obj.Id] = clone;
+            duplicates.Add(clone);
         }
+        
+        foreach (var clone in duplicates)
+        {
+            var original = toDuplicate.FirstOrDefault(o => o.Id + "_copy" == clone.Id);
+            if (original != null && !string.IsNullOrEmpty(original.ParentId) && oldToNewMap.TryGetValue(original.ParentId, out var newParent))
+            {
+                clone.ParentId = newParent.Id;
+            }
+        }
+        
+        foreach (var clone in duplicates)
+        {
+            doc.Objects.Add(clone);
+        }
+        SceneNameManager.EnsureAllUnique(doc);
+        
+        _selectedObjects.Clear();
+        foreach (var dup in duplicates)
+        {
+            _selectedObjects.Add(dup);
+        }
+        _selectedObject = duplicates.LastOrDefault();
+        
+        var post = doc.Serialize();
+        history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
+        sceneService.PopulateScene(assetService);
     }
 
     private void DeleteObjects(List<MapObject> objs, EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
@@ -224,8 +543,14 @@ public unsafe class EditorUI
         var doc = sceneService.Document;
         var pre = doc.Serialize();
         
-        bool anyRemoved = false;
+        var toDelete = new HashSet<MapObject>();
         foreach (var obj in objs)
+        {
+            AddWithDescendants(obj, doc, toDelete);
+        }
+        
+        bool anyRemoved = false;
+        foreach (var obj in toDelete)
         {
             if (doc.Objects.Remove(obj))
             {
@@ -251,6 +576,14 @@ public unsafe class EditorUI
         sceneService.SaveMap();
         string mapFile = Path.GetFileName(sceneService.MapPath);
         System.Diagnostics.Process.Start("Fuse.exe", mapFile);
+    }
+
+    private static string? OpenFileDialog(string initialDir, string filter)
+    {
+        if (!Directory.Exists(initialDir))
+            initialDir = AppContext.BaseDirectory;
+        var files = Directory.GetFiles(initialDir, "*.json");
+        return files.Length > 0 ? files[0] : null;
     }
 
     private void HandleKeyboardShortcuts(EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
@@ -304,7 +637,29 @@ public unsafe class EditorUI
         {
             if (ImGui.BeginMenu("File"))
             {
-                if (ImGui.MenuItem("Open...", "Ctrl+O")) { }
+                if (ImGui.MenuItem("New", "Ctrl+N"))
+                {
+                    _selectedObjects.Clear();
+                    sceneService.SetDocument(new MapDocument
+                    {
+                        PlayerSpawn = new MapPlayerSpawn
+                        {
+                            Position = Vector3.Zero,
+                            Yaw = 0,
+                            Pitch = 0,
+                        }
+                    });
+                    sceneService.PopulateScene(assetService);
+                    _newDocumentRequested = true;
+                }
+                if (ImGui.MenuItem("Open...", "Ctrl+O"))
+                {
+                    string mapsDir = Path.Combine(ResPath.Path, "Maps");
+                    if (Directory.Exists(mapsDir))
+                        _availableMaps = Directory.GetFiles(mapsDir, "*.json");
+                    _selectedOpenMapIndex = -1;
+                    _showOpenDialog = true;
+                }
                 if (ImGui.MenuItem("Save", "Ctrl+S"))
                 {
                     sceneService.SaveMap();
@@ -528,6 +883,8 @@ public unsafe class EditorUI
 
                 bool selectionDelayActive = (ImGui.GetTime() - _lastSelectionTime) < 0.5;
 
+                var objectsToTransform = GetObjectsToTransform(sceneService.Document);
+
                 if (_gizmoOperation == GizmoOperation.Translate)
                 {
                     if (EditorGizmo.ManipulateTranslation(body.Position, view, proj, vpPos, vpSize, out Vector3 newPos, snapVal, !selectionDelayActive))
@@ -535,7 +892,7 @@ public unsafe class EditorUI
                         Vector3 delta = newPos - body.Position;
                         if (delta.LengthSquared() > 0.00001f)
                         {
-                            foreach (var obj in _selectedObjects)
+                            foreach (var obj in objectsToTransform)
                             {
                                 if (obj.Body != null)
                                 {
@@ -556,7 +913,7 @@ public unsafe class EditorUI
                             Quaternion deltaRot = normalizedNewRot * Quaternion.Inverse(body.Rotation);
                             Vector3 pivot = body.Position;
 
-                            foreach (var obj in _selectedObjects)
+                            foreach (var obj in objectsToTransform)
                             {
                                 if (obj.Body != null)
                                 {
@@ -590,7 +947,7 @@ public unsafe class EditorUI
 
                         Vector3 pivot = body.Position;
 
-                        foreach (var obj in _selectedObjects)
+                        foreach (var obj in objectsToTransform)
                         {
                             if (obj.Body != null)
                             {
@@ -622,7 +979,7 @@ public unsafe class EditorUI
 
                 if (changed)
                 {
-                    foreach (var obj in _selectedObjects)
+                    foreach (var obj in objectsToTransform)
                     {
                         if (obj.Body == null) continue;
 
@@ -1192,101 +1549,57 @@ public unsafe class EditorUI
         if (listHeight < 150f) listHeight = 150f; // Ensure minimum height
 
         ImGui.BeginChild("HierarchyTree", new Vector2(0, listHeight), ImGuiChildFlags.Borders, ImGuiWindowFlags.HorizontalScrollbar);
-        for (int i = 0; i < doc.Objects.Count; i++)
+        
+        var rootObjects = doc.Objects.Where(o => string.IsNullOrEmpty(o.ParentId)).ToList();
+        foreach (var obj in rootObjects)
         {
-            var obj = doc.Objects[i];
-            bool isSelected = _selectedObjects.Contains(obj);
-            
-            var flags = ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.FramePadding | (isSelected ? ImGuiTreeNodeFlags.Selected : 0);
-            
-            string typeEmoji = obj.IsModel ? "🗿" : (obj is Brush ? "📐" : (obj.Body?.Shape == MapShapeType.Sphere ? "🔮" : (obj.Body?.Shape == MapShapeType.Capsule ? "💊" : "📦")));
-            string label = $"{typeEmoji} {obj.Id}";
-            
-            ImGui.TreeNodeEx($"##node{i}", flags, label);
-            
-            if (ImGui.IsItemClicked())
-            {
-                if (ImGui.GetIO().KeyCtrl)
-                {
-                    if (_selectedObjects.Contains(obj))
-                    {
-                        _selectedObjects.Remove(obj);
-                        if (_selectedObject == obj)
-                        {
-                            _selectedObject = _selectedObjects.FirstOrDefault();
-                        }
-                    }
-                    else
-                    {
-                        _selectedObjects.Add(obj);
-                        _selectedObject = obj;
-                    }
-                }
-                else
-                {
-                    _selectedObjects.Clear();
-                    _selectedObjects.Add(obj);
-                    _selectedObject = obj;
-                }
-            }
-
-            if (ImGui.IsItemHovered() && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
-            {
-                FocusCameraOnObject(obj, viewport3D, viewportTop, viewportFront, viewportSide);
-            }
-
-            if (ImGui.BeginPopupContextItem($"context_{i}"))
-            {
-                if (!_selectedObjects.Contains(obj))
-                {
-                    _selectedObjects.Clear();
-                    _selectedObjects.Add(obj);
-                    _selectedObject = obj;
-                }
-
-                if (ImGui.MenuItem("🔍 Focus Camera"))
-                {
-                    FocusCameraOnObject(obj, viewport3D, viewportTop, viewportFront, viewportSide);
-                }
-                if (ImGui.MenuItem("👁 Toggle Visibility"))
-                {
-                    _preEditState = _frameBeginState;
-                    obj.Visible = !obj.Visible;
-                    var entity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
-                    if (entity != null) entity.Visible = obj.Visible;
-                    history.PushCommand(new SnapshotCommand(sceneService, assetService, _preEditState, sceneService.Document.Serialize()));
-                }
-                ImGui.Separator();
-                if (ImGui.MenuItem("📋 Duplicate"))
-                {
-                    objectToDuplicate = obj;
-                }
-                if (ImGui.MenuItem("❌ Delete"))
-                {
-                    objectToDelete = obj;
-                }
-                ImGui.EndPopup();
-            }
-
-            ImGui.SameLine();
-            float rightAlignPos = ImGui.GetWindowWidth() - 35;
-            ImGui.SetCursorPosX(rightAlignPos);
-            
-            string visIcon = obj.Visible ? "👁" : "◌";
-            ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0, 0, 0, 0));
-            ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0, 0, 0, 0));
-            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.2f, 0.2f, 0.2f, 0.5f));
-            
-            if (ImGui.Button($"{visIcon}##visbtn{i}", new Vector2(24, 20)))
-            {
-                _preEditState = _frameBeginState;
-                obj.Visible = !obj.Visible;
-                var entity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
-                if (entity != null) entity.Visible = obj.Visible;
-                history.PushCommand(new SnapshotCommand(sceneService, assetService, _preEditState, sceneService.Document.Serialize()));
-            }
-            ImGui.PopStyleColor(3);
+            DrawObjectNode(obj, doc, sceneService, assetService, history, viewport3D, viewportTop, viewportFront, viewportSide, ref objectToDelete, ref objectToDuplicate);
         }
+        
+        if (ImGui.BeginPopupContextWindow("hierarchy_tree_context", ImGuiPopupFlags.MouseButtonRight | ImGuiPopupFlags.NoOpenOverItems))
+        {
+            if (_selectedObjects.Count > 0)
+            {
+                if (ImGui.MenuItem("📦 Group Selected"))
+                {
+                    GroupSelected(sceneService, assetService, history);
+                }
+                if (_selectedObjects.Any(o => !string.IsNullOrEmpty(o.ParentId)))
+                {
+                    if (ImGui.MenuItem("📤 Ungroup Selected"))
+                    {
+                        UngroupSelected(sceneService, assetService, history);
+                    }
+                }
+            }
+            ImGui.EndPopup();
+        }
+
+        // Empty space drop target to unparent / make root
+        ImGui.Dummy(new Vector2(ImGui.GetContentRegionAvail().X, 50f));
+        if (ImGui.BeginDragDropTarget())
+        {
+            var payload = ImGui.AcceptDragDropPayload("HIERARCHY_NODE");
+            if (payload.NativePtr != null)
+            {
+                if (_draggedObject != null && !string.IsNullOrEmpty(_draggedObject.ParentId))
+                {
+                    var pre = doc.Serialize();
+                    _draggedObject.ParentId = null;
+                    var entity = scene.Entities.FirstOrDefault(e => e.Id == _draggedObject.Id);
+                    if (entity != null)
+                    {
+                        entity.ParentId = "";
+                    }
+                    var post = doc.Serialize();
+                    history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
+                    sceneService.PopulateScene(assetService);
+                }
+                _draggedObject = null;
+            }
+            ImGui.EndDragDropTarget();
+        }
+
         ImGui.EndChild();
 
         // --- Inspector / Properties Window ---
@@ -1403,6 +1716,50 @@ public unsafe class EditorUI
                     history.PushCommand(new SnapshotCommand(sceneService, assetService, _preEditState, sceneService.Document.Serialize()));
                 }
 
+                // Parent Selection
+                string currentParentText = string.IsNullOrEmpty(obj.ParentId) ? "(None)" : obj.ParentId;
+                if (ImGui.BeginCombo("Parent##inspectParent", currentParentText))
+                {
+                    if (ImGui.Selectable("(None)##parent_none", string.IsNullOrEmpty(obj.ParentId)))
+                    {
+                        HandleUndoStart(sceneService);
+                        obj.ParentId = null;
+                        var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
+                        if (entity != null)
+                        {
+                            entity.ParentId = "";
+                        }
+                        HandleUndoEnd(sceneService, assetService, history);
+                    }
+
+                    foreach (var potentialParent in doc.Objects)
+                    {
+                        if (potentialParent.Id == obj.Id) continue;
+                        if (IsDescendantOf(potentialParent, obj, doc)) continue;
+
+                        bool isSelectedParent = obj.ParentId == potentialParent.Id;
+                        if (ImGui.Selectable($"{potentialParent.Id}##parent_{potentialParent.Id}", isSelectedParent))
+                        {
+                            HandleUndoStart(sceneService);
+                            obj.ParentId = potentialParent.Id;
+                            
+                            var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
+                            var parentEntity = scene.Entities.FirstOrDefault(e => e.Id == potentialParent.Id);
+                            if (entity != null)
+                            {
+                                entity.ParentId = potentialParent.Id;
+                                if (parentEntity != null)
+                                {
+                                    entity.InitialRelativePosition = entity.Transform.Position - parentEntity.Transform.Position;
+                                    entity.InitialRelativeRotation = Quaternion.Inverse(parentEntity.Transform.Rotation) * entity.Transform.Rotation;
+                                }
+                            }
+                            HandleUndoEnd(sceneService, assetService, history);
+                        }
+                    }
+                    ImGui.EndCombo();
+                }
+
                 // Visuals & Material
                 if (ImGui.CollapsingHeader("Visuals & Material", ImGuiTreeNodeFlags.DefaultOpen))
                 {
@@ -1483,9 +1840,20 @@ public unsafe class EditorUI
                         if (posChanged)
                         {
                             pos = ApplySnap(pos, _snapGrid);
-                            body.Position = pos;
-                            var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
-                            if (entity != null) entity.Transform.Position = pos;
+                            Vector3 delta = pos - body.Position;
+                            if (delta.LengthSquared() > 0.00001f)
+                            {
+                                var objectsToTransform = GetObjectsToTransform(sceneService.Document);
+                                foreach (var o in objectsToTransform)
+                                {
+                                    if (o.Body != null)
+                                    {
+                                        o.Body.Position += delta;
+                                        var entity = scene.Entities.FirstOrDefault(e => e.Id == o.Id);
+                                        if (entity != null) entity.Transform.Position = o.Body.Position;
+                                    }
+                                }
+                            }
                         }
                         HandleUndoEnd(sceneService, assetService, history);
 
@@ -1495,9 +1863,30 @@ public unsafe class EditorUI
                         if (rotChanged)
                         {
                             euler = ApplySnap(euler, _snapAngle);
-                            body.Rotation = Quaternion.Normalize(EulerToQuaternion(euler));
-                            var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
-                            if (entity != null) entity.Transform.Rotation = body.Rotation;
+                            Quaternion newRot = Quaternion.Normalize(EulerToQuaternion(euler));
+                            Quaternion deltaRot = newRot * Quaternion.Inverse(body.Rotation);
+                            Vector3 pivot = body.Position;
+
+                            var objectsToTransform = GetObjectsToTransform(sceneService.Document);
+                            foreach (var o in objectsToTransform)
+                            {
+                                if (o.Body != null)
+                                {
+                                    if (o != obj)
+                                    {
+                                        Vector3 relativePos = o.Body.Position - pivot;
+                                        Vector3 rotatedPos = Vector3.Transform(relativePos, deltaRot);
+                                        o.Body.Position = pivot + rotatedPos;
+                                    }
+                                    o.Body.Rotation = Quaternion.Normalize(deltaRot * o.Body.Rotation);
+                                    var entity = scene.Entities.FirstOrDefault(e => e.Id == o.Id);
+                                    if (entity != null)
+                                    {
+                                        entity.Transform.Position = o.Body.Position;
+                                        entity.Transform.Rotation = o.Body.Rotation;
+                                    }
+                                }
+                            }
                         }
                         HandleUndoEnd(sceneService, assetService, history);
 
@@ -1869,6 +2258,60 @@ public unsafe class EditorUI
         }
 
         ImGui.End();
+    }
+
+    private void DrawOpenDialog(EditorSceneService sceneService, EditorAssetService assetService)
+    {
+        if (!_showOpenDialog) return;
+
+        ImGui.OpenPopup("Open Map");
+
+        bool open = true;
+        if (ImGui.BeginPopupModal("Open Map", ref open, ImGuiWindowFlags.AlwaysAutoResize))
+        {
+            ImGui.Text("Select a map file:");
+            ImGui.Separator();
+
+            if (_availableMaps.Length == 0)
+            {
+                ImGui.TextColored(new Vector4(1, 0, 0, 1), "No .json maps found in res/Maps/.");
+            }
+            else
+            {
+                if (ImGui.ListBox("##MapsList", ref _selectedOpenMapIndex, _availableMaps.Select(Path.GetFileName).ToArray(), _availableMaps.Length, 6))
+                {
+                }
+            }
+
+            ImGui.Separator();
+
+            ImGui.BeginDisabled(_selectedOpenMapIndex < 0);
+            if (ImGui.Button("Open", new Vector2(120, 0)))
+            {
+                var doc = MapDocument.Load(_availableMaps[_selectedOpenMapIndex]);
+                if (doc != null)
+                {
+                    sceneService.SetDocument(doc);
+                    sceneService.PopulateScene(assetService);
+                    _selectedObjects.Clear();
+                }
+                _showOpenDialog = false;
+            }
+            ImGui.EndDisabled();
+
+            ImGui.SameLine();
+            if (ImGui.Button("Cancel", new Vector2(120, 0)))
+            {
+                _showOpenDialog = false;
+            }
+
+            ImGui.EndPopup();
+        }
+
+        if (!open)
+        {
+            _showOpenDialog = false;
+        }
     }
 
     private Vector2 WorldToScreen(Vector3 worldPos, EditorViewport viewport, Vector2 vpPos, Vector2 vpSize)

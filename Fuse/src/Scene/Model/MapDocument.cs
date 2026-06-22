@@ -96,6 +96,7 @@ public class MapDocument
 
         mo.Id = obj.TryGetPropertyValue("id", out var idNode) ? (string)idNode! : "unnamed";
         mo.Visible = obj.TryGetPropertyValue("visible", out var visNode) ? (bool)visNode! : true;
+        mo.ParentId = obj.TryGetPropertyValue("parent", out var parentNode) ? (string)parentNode! : null;
         mo.Mesh = obj.TryGetPropertyValue("mesh", out var meshNode) ? (string)meshNode! : null;
         mo.Model = obj.TryGetPropertyValue("model", out var modelNode) ? (string)modelNode! : null;
         mo.ModelScale = obj.TryGetPropertyValue("model_scale", out var scaleNode) ? (float)scaleNode! : 1.0f;
@@ -163,13 +164,16 @@ public class MapDocument
         return body;
     }
 
-    private static JsonObject SerializeObject(MapObject obj)
+    public static JsonObject SerializeObject(MapObject obj)
     {
         var j = new JsonObject
         {
             ["id"] = obj.Id,
             ["visible"] = obj.Visible
         };
+
+        if (!string.IsNullOrEmpty(obj.ParentId))
+            j["parent"] = obj.ParentId;
 
         if (obj is Brush brush)
         {

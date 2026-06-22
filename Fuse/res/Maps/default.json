@@ -164,6 +164,7 @@
     {
       "id": "brush_c7a1e5a7",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -315,9 +316,9 @@
       "body": {
         "shape": "box",
         "position": [
-          -5.75,
-          2,
-          4.5
+          -6.611111,
+          2.1631944,
+          5.25
         ],
         "rotation": [
           1,
@@ -338,6 +339,7 @@
     {
       "id": "brush_c7a1e5adwa7_copy_copy",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -489,9 +491,9 @@
       "body": {
         "shape": "box",
         "position": [
-          -3.5,
-          2,
-          6.75
+          -4.361111,
+          2.1631944,
+          7.5
         ],
         "rotation": [
           1,
@@ -512,6 +514,7 @@
     {
       "id": "brush_c7a1e5adwa7_copy_copy_copy",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -663,9 +666,9 @@
       "body": {
         "shape": "box",
         "position": [
-          -5,
-          2,
-          2.25
+          -5.861111,
+          2.1631944,
+          3
         ],
         "rotation": [
           1,
@@ -686,6 +689,7 @@
     {
       "id": "brush_c7a1e5adwa7_copy_copy_copy_copy",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -837,9 +841,9 @@
       "body": {
         "shape": "box",
         "position": [
-          -3,
-          3.5,
-          2.25
+          -3.8611112,
+          3.6631944,
+          3
         ],
         "rotation": [
           1,
@@ -860,6 +864,7 @@
     {
       "id": "brush_c7a1e5adwa7_copy_copy_copy_copy_1",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -1011,9 +1016,9 @@
       "body": {
         "shape": "box",
         "position": [
-          -1.5,
-          2,
-          2.25
+          -2.3611112,
+          2.1631944,
+          3
         ],
         "rotation": [
           1,
@@ -1034,6 +1039,7 @@
     {
       "id": "brush_c7a1e5a7_copy",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -1185,9 +1191,9 @@
       "body": {
         "shape": "box",
         "position": [
-          -1.25,
-          2,
-          4.5
+          -2.1111112,
+          2.1631944,
+          5.25
         ],
         "rotation": [
           1,
@@ -1213,8 +1219,8 @@
       "body": {
         "shape": "trimesh",
         "position": [
-          2.4262238,
-          1.3575053,
+          3,
+          2,
           -6.7155385
         ],
         "rotation": [
@@ -1231,6 +1237,7 @@
     {
       "id": "brush_e3575f76",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -1382,9 +1389,9 @@
       "body": {
         "shape": "box",
         "position": [
-          -3.875,
-          1.5,
-          2.25
+          -4.736111,
+          1.6631944,
+          3
         ],
         "rotation": [
           1,
@@ -1405,6 +1412,7 @@
     {
       "id": "brush_e3575f76_copy_2",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -1556,9 +1564,9 @@
       "body": {
         "shape": "box",
         "position": [
-          -2.125,
-          1.53125,
-          2.25
+          -2.9861112,
+          1.6944444,
+          3
         ],
         "rotation": [
           1,
@@ -1627,15 +1635,16 @@
     {
       "id": "door_copy_copy",
       "visible": true,
+      "parent": "group_1",
       "model": "Models/door.obj",
       "texture": "Textures/door01a_skin14.bmp",
       "interactable": "DoorInteract",
       "body": {
         "shape": "trimesh",
         "position": [
-          -2.25,
-          0,
-          2.25
+          -3.1111112,
+          0.16319442,
+          3
         ],
         "rotation": [
           -4.371139E-08,
@@ -1657,7 +1666,7 @@
         "shape": "trimesh",
         "position": [
           1,
-          1,
+          2,
           -7
         ],
         "rotation": [
@@ -1668,6 +1677,27 @@
         ],
         "mass": 10,
         "friction": 0.5,
+        "restitution": 0
+      }
+    },
+    {
+      "id": "group_1",
+      "visible": true,
+      "body": {
+        "shape": "none",
+        "position": [
+          -4,
+          2,
+          4
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0,
         "restitution": 0
       }
     }
