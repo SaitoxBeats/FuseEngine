@@ -114,25 +114,38 @@ public class RigidBody
                     return;
                 }
 
-                int triCount = _trimeshIndices.Length / 3;
-                var triangles = new IndexedTriangle[triCount];
-                for (int i = 0; i < triCount; i++)
-                {
-                    uint a = _trimeshIndices[i * 3];
-                    uint b = _trimeshIndices[i * 3 + 1];
-                    uint c = _trimeshIndices[i * 3 + 2];
-                    triangles[i] = new IndexedTriangle(a, b, c, 0, 0);
-                }
+                if (_mass > 0)
+                    {
+                        var hullSettings = new ConvexHullShapeSettings(new Span<Vector3>(_trimeshVerts));
+                        _shape = hullSettings.Create();
+                        if (_shape == null)
+                        {
+                            Logger.Error("RigidBody.Build ConvexHull creation failed");
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        int triCount = _trimeshIndices.Length / 3;
+                        var triangles = new IndexedTriangle[triCount];
+                        for (int i = 0; i < triCount; i++)
+                        {
+                            uint a = _trimeshIndices[i * 3];
+                            uint b = _trimeshIndices[i * 3 + 1];
+                            uint c = _trimeshIndices[i * 3 + 2];
+                            triangles[i] = new IndexedTriangle(a, b, c, 0, 0);
+                        }
 
-                var meshSettings = new MeshShapeSettings(
-                    new Span<Vector3>(_trimeshVerts),
-                    new Span<IndexedTriangle>(triangles));
-                _shape = meshSettings.Create();
-                if (_shape == null)
-                {
-                    Logger.Error("RigidBody.Build MeshShape creation failed");
-                    return;
-                }
+                        var meshSettings = new MeshShapeSettings(
+                            new Span<Vector3>(_trimeshVerts),
+                            new Span<IndexedTriangle>(triangles));
+                        _shape = meshSettings.Create();
+                        if (_shape == null)
+                        {
+                            Logger.Error("RigidBody.Build MeshShape creation failed");
+                            return;
+                        }
+                    }
                 break;
             }
 

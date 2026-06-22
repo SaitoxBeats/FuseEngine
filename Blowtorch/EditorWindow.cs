@@ -19,6 +19,7 @@ public unsafe class EditorWindow : IDisposable
         _glfw.WindowHint(WindowHintInt.ContextVersionMajor, 3);
         _glfw.WindowHint(WindowHintInt.ContextVersionMinor, 3);
         _glfw.WindowHint(WindowHintOpenGlProfile.OpenGlProfile, OpenGlProfile.Core);
+        _glfw.WindowHint(WindowHintBool.Maximized, true);
 
         _handle = _glfw.CreateWindow(width, height, title, null, null);
         if (_handle == null)
@@ -30,15 +31,15 @@ public unsafe class EditorWindow : IDisposable
         _glfw.MakeContextCurrent(_handle);
         _glfw.SwapInterval(1);
 
-        var monitor = _glfw.GetPrimaryMonitor();
-        if (monitor != null)
-        {
-            var mode = _glfw.GetVideoMode(monitor);
-            _glfw.GetMonitorPos(monitor, out int monitorX, out int monitorY);
-            int x = monitorX + (mode->Width - width) / 2;
-            int y = monitorY + (mode->Height - height) / 2;
-            _glfw.SetWindowPos(_handle, x, y);
-        }
+        //var monitor = _glfw.GetPrimaryMonitor();
+        //if (monitor != null)
+        //{
+        //    var mode = _glfw.GetVideoMode(monitor);
+        //    _glfw.GetMonitorPos(monitor, out int monitorX, out int monitorY);
+        //    int x = monitorX + (mode->Width - width) / 2;
+        //    int y = monitorY + (mode->Height - height) / 2;
+        //    _glfw.SetWindowPos(_handle, x, y);
+        //}
 
         _gl = GL.GetApi(_glfw.GetProcAddress);
         _gl.Enable(EnableCap.DepthTest);

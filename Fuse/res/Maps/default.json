@@ -1204,6 +1204,29 @@
           2
         ]
       }
+    },
+    {
+      "id": "monkey",
+      "visible": true,
+      "model": "Models/monkey.obj",
+      "texture": "Textures/monkey.jpg",
+      "body": {
+        "shape": "trimesh",
+        "position": [
+          2.4262238,
+          1.3575053,
+          -6.7155385
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 10,
+        "friction": 0.5,
+        "restitution": 0.3
+      }
     }
   ],
   "player_spawn": {
