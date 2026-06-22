@@ -21,7 +21,8 @@ public static class EditorGizmo
         Vector2 vpPos, 
         Vector2 vpSize, 
         out Vector3 newPos,
-        float snapAmount = 0.0f)
+        float snapAmount = 0.0f,
+        bool interactive = true)
     {
         newPos = objectPos;
         bool changed = false;
@@ -44,23 +45,26 @@ public static class EditorGizmo
         int hoveredAxis = -1;
         float closestDist = float.MaxValue;
 
-        for (int i = 0; i < 3; i++)
+        if (interactive)
         {
-            Vector3 tipPos = objectPos + axes[i] * axisLength;
-            if (WorldToScreen(tipPos, view, proj, vpPos, vpSize, out Vector2 tip2D))
+            for (int i = 0; i < 3; i++)
             {
-                float dist = DistancePointToSegment(mousePos, center2D, tip2D);
-                if (dist < hoverRadius && dist < closestDist)
+                Vector3 tipPos = objectPos + axes[i] * axisLength;
+                if (WorldToScreen(tipPos, view, proj, vpPos, vpSize, out Vector2 tip2D))
                 {
-                    hoveredAxis = i;
-                    closestDist = dist;
+                    float dist = DistancePointToSegment(mousePos, center2D, tip2D);
+                    if (dist < hoverRadius && dist < closestDist)
+                    {
+                        hoveredAxis = i;
+                        closestDist = dist;
+                    }
                 }
             }
         }
 
         IsHovered = hoveredAxis != -1;
 
-        if (_activeAxis == -1 && isMouseDown && hoveredAxis != -1 && ImGui.IsWindowHovered())
+        if (_activeAxis == -1 && interactive && isMouseDown && hoveredAxis != -1 && ImGui.IsWindowHovered())
         {
             _activeAxis = hoveredAxis;
             _dragStartObjectPos = objectPos;
@@ -118,7 +122,8 @@ public static class EditorGizmo
         Vector2 vpPos, 
         Vector2 vpSize, 
         out Vector3 newScale,
-        float snapAmount = 0.0f)
+        float snapAmount = 0.0f,
+        bool interactive = true)
     {
         newScale = objectScale;
         bool changed = false;
@@ -140,23 +145,26 @@ public static class EditorGizmo
         int hoveredAxis = -1;
         float closestDist = float.MaxValue;
 
-        for (int i = 0; i < 3; i++)
+        if (interactive)
         {
-            Vector3 tipPos = objectPos + axes[i] * axisLength;
-            if (WorldToScreen(tipPos, view, proj, vpPos, vpSize, out Vector2 tip2D))
+            for (int i = 0; i < 3; i++)
             {
-                float dist = DistancePointToSegment(mousePos, center2D, tip2D);
-                if (dist < hoverRadius && dist < closestDist)
+                Vector3 tipPos = objectPos + axes[i] * axisLength;
+                if (WorldToScreen(tipPos, view, proj, vpPos, vpSize, out Vector2 tip2D))
                 {
-                    hoveredAxis = i;
-                    closestDist = dist;
+                    float dist = DistancePointToSegment(mousePos, center2D, tip2D);
+                    if (dist < hoverRadius && dist < closestDist)
+                    {
+                        hoveredAxis = i;
+                        closestDist = dist;
+                    }
                 }
             }
         }
 
         IsHovered = hoveredAxis != -1;
 
-        if (_activeAxis == -1 && isMouseDown && hoveredAxis != -1 && ImGui.IsWindowHovered())
+        if (_activeAxis == -1 && interactive && isMouseDown && hoveredAxis != -1 && ImGui.IsWindowHovered())
         {
             _activeAxis = hoveredAxis;
             _dragStartObjectScale = objectScale;
@@ -219,7 +227,8 @@ public static class EditorGizmo
         Vector2 vpPos, 
         Vector2 vpSize, 
         out Quaternion newRot,
-        float snapAmount = 0.0f)
+        float snapAmount = 0.0f,
+        bool interactive = true)
     {
         newRot = objectRot;
         bool changed = false;
@@ -261,7 +270,7 @@ public static class EditorGizmo
                 }
             }
 
-            if (axisValidPoints[i] > 1)
+            if (interactive && axisValidPoints[i] > 1)
             {
                 for (int j = 0; j < axisValidPoints[i]; j++)
                 {
@@ -279,7 +288,7 @@ public static class EditorGizmo
         
         IsHovered = hoveredAxis != -1;
 
-        if (_activeAxis == -1 && isMouseDown && hoveredAxis != -1 && ImGui.IsWindowHovered())
+        if (_activeAxis == -1 && interactive && isMouseDown && hoveredAxis != -1 && ImGui.IsWindowHovered())
         {
             _activeAxis = hoveredAxis;
             _dragStartRotation = objectRot;

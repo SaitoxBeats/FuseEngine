@@ -51,6 +51,9 @@ public unsafe class ImGuiBackEnd : IDisposable
         ImGui.Text($"PLAYER_IsOnGround: {(player.IsOnGround ? "true" : "false")}");
         Vector3 feet = player.FeetPosition;
         ImGui.Text($"PLAYER_Position: {feet.X:F2} {feet.Y:F2} {feet.Z:F2}");
+        Vector3 vel = player.NativeCharacter.LinearVelocity;
+        float speed = vel.Length();
+        ImGui.Text($"PLAYER_Speed: {speed:F2}");
         float playerFov = player.Camera.FOV;
         ImGui.SliderFloat("FOV: ", ref playerFov, 1.0f, 120.0f); 
         ImGui.End();

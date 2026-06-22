@@ -33,7 +33,7 @@ public sealed class DoorInteract : IInteractable
         _animating = true;
         _elapsed = 0f;
         _from = Entity.Body.Rotation(World);
-        _to = _baseRot * Quaternion.CreateFromAxisAngle(Vector3.UnitY, _open ? 1.57f : 0f);
+        _to = _baseRot * Quaternion.CreateFromAxisAngle(Vector3.UnitY, _open ? MathUtil.Deg(90f) : 0f);
 
         Logger.Info($"DOOR: {Entity.Id}");
     }

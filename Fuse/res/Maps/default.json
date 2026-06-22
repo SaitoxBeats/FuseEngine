@@ -1625,6 +1625,30 @@
       }
     },
     {
+      "id": "door_copy_copy",
+      "visible": true,
+      "model": "Models/door.obj",
+      "texture": "Textures/door01a_skin14.bmp",
+      "interactable": "DoorInteract",
+      "body": {
+        "shape": "trimesh",
+        "position": [
+          -2.25,
+          0,
+          2.25
+        ],
+        "rotation": [
+          -4.371139E-08,
+          0,
+          -1,
+          0
+        ],
+        "mass": 0,
+        "friction": 0.5,
+        "restitution": 0.3
+      }
+    },
+    {
       "id": "monkey_1",
       "visible": true,
       "model": "Models/monkey.obj",

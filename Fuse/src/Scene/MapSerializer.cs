@@ -251,6 +251,7 @@ public static class MapSerializer
             entity.TexturePath = texturePath;
             entity.ModelScale = modelScale;
             entity.UvScale = uvScale;
+            entity.Visible = obj.TryGetPropertyValue("visible", out var visNode) ? (bool) visNode! : true;
 
             if (!string.IsNullOrEmpty(texturePath))
             {
@@ -285,7 +286,7 @@ public static class MapSerializer
             if (obj.TryGetPropertyValue("interactable", out var interactableNode))
                 entity.InteractableType = (string)interactableNode!;
 
-            if (obj.TryGetPropertyValue("body", out var bodyNode))
+            if (entity.Visible && obj.TryGetPropertyValue("body", out var bodyNode))
             {
                 var bj = bodyNode!.AsObject();
                 bool isTrimesh = bj.TryGetPropertyValue("shape", out var shapeNode)

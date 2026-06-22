@@ -40,6 +40,11 @@ public class Player : IDisposable
     private float _noclipSpeed = 10.0f;
     private float _noclipSprintSpeed = 15.0f;
 
+    private float _tiltTarget;
+    private float _tiltCurrent;
+    private const float MaxTilt = MathF.PI / 55f;
+    private const float TiltSpeed = 6f;
+
     public Player(Physics.PhysicsWorld world, Vector3 position)
     {
         _world = world;
@@ -126,6 +131,13 @@ public class Player : IDisposable
                 }
             }
         }
+
+        // Camera Tilt (quake reference XD)
+        _tiltTarget = 0f;
+        if (Input.Input.KeyDown(Input.KeyCodes.D)) _tiltTarget += MaxTilt;
+        if (Input.Input.KeyDown(Input.KeyCodes.A)) _tiltTarget -= MaxTilt;
+        _tiltCurrent = float.Lerp(_tiltCurrent, _tiltTarget, float.Min(dt * TiltSpeed, 1f));
+        _camera.Roll = _tiltCurrent;
 
         SyncCamera();
         PushDynamicBodies();

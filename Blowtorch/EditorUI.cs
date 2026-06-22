@@ -31,6 +31,8 @@ public class EditorUI
     private GizmoOperation _gizmoOperation = GizmoOperation.Translate;
     private MapObject? _selectedObject;
     private HashSet<MapObject> _selectedObjects = new();
+    private HashSet<string> _lastSelectedObjectIds = new();
+    private double _lastSelectionTime = 0.0;
     private bool _showModelImportDialog = false;
     private List<string> _modelFiles = new();
     private int _selectedModelIndex = -1;
@@ -93,6 +95,12 @@ public class EditorUI
     public void Draw(EditorWindow window, EditorViewport viewport3D, EditorViewport viewportTop, EditorViewport viewportFront, EditorViewport viewportSide, EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
     {
         SyncSelection(sceneService.Document);
+        var currentIds = new HashSet<string>(_selectedObjects.Select(o => o.Id));
+        if (!_lastSelectedObjectIds.SetEquals(currentIds))
+        {
+            _lastSelectionTime = ImGui.GetTime();
+            _lastSelectedObjectIds = currentIds;
+        }
         _frameBeginState = sceneService.Document.Serialize();
 
         if (!ImGui.IsMouseDown(ImGuiMouseButton.Left))
@@ -238,6 +246,13 @@ public class EditorUI
         }
     }
 
+    private static void LaunchGame(EditorSceneService sceneService)
+    {
+        sceneService.SaveMap();
+        string mapFile = Path.GetFileName(sceneService.MapPath);
+        System.Diagnostics.Process.Start("Fuse.exe", mapFile);
+    }
+
     private void HandleKeyboardShortcuts(EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
     {
         var io = ImGui.GetIO();
@@ -267,6 +282,11 @@ public class EditorUI
         {
             DeleteObjects(_selectedObjects.ToList(), sceneService, assetService, history);
         }
+        
+        if (ImGui.IsKeyPressed(ImGuiKey.F5))
+        {
+            LaunchGame(sceneService);
+        }
 
         if (ImGui.IsKeyPressed(ImGuiKey.LeftBracket))
         {
@@ -292,10 +312,7 @@ public class EditorUI
                 ImGui.Separator();
                 if (ImGui.MenuItem("Play", "F5"))
                 {
-                    sceneService.SaveMap();
-                    string mapFile = Path.GetFileName(sceneService.MapPath);
-                    string fuseExe = Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\Fuse\bin\Debug\net10.0\Fuse.exe");
-                    System.Diagnostics.Process.Start(fuseExe, mapFile);
+                    LaunchGame(sceneService);
                 }
                 ImGui.Separator();
                 if (ImGui.MenuItem("Exit")) window.Close();
@@ -463,7 +480,8 @@ public class EditorUI
             var mousePos = ImGui.GetMousePos();
             if (!_isDraggingHandle)
             {
-                if (isHovered && ImGui.IsMouseClicked(ImGuiMouseButton.Left))
+                bool selectionDelayActive = (ImGui.GetTime() - _lastSelectionTime) < 0.5;
+                if (isHovered && ImGui.IsMouseClicked(ImGuiMouseButton.Left) && (isPreview || !selectionDelayActive))
                 {
                     for (int h = 1; h <= 8; h++)
                     {
@@ -506,9 +524,11 @@ public class EditorUI
                     _activeDraggingViewport = viewport;
                 }
 
+                bool selectionDelayActive = (ImGui.GetTime() - _lastSelectionTime) < 0.5;
+
                 if (_gizmoOperation == GizmoOperation.Translate)
                 {
-                    if (EditorGizmo.ManipulateTranslation(body.Position, view, proj, vpPos, vpSize, out Vector3 newPos, snapVal))
+                    if (EditorGizmo.ManipulateTranslation(body.Position, view, proj, vpPos, vpSize, out Vector3 newPos, snapVal, !selectionDelayActive))
                     {
                         Vector3 delta = newPos - body.Position;
                         if (delta.LengthSquared() > 0.00001f)
@@ -528,7 +548,7 @@ public class EditorUI
                 {
                     if (viewport.Camera.ViewType == CameraViewType.Perspective3D)
                     {
-                        if (EditorGizmo.ManipulateRotation(body.Position, body.Rotation, view, proj, vpPos, vpSize, out Quaternion newRot, angleSnap))
+                        if (EditorGizmo.ManipulateRotation(body.Position, body.Rotation, view, proj, vpPos, vpSize, out Quaternion newRot, angleSnap, !selectionDelayActive))
                         {
                             Quaternion normalizedNewRot = Quaternion.Normalize(newRot);
                             Quaternion deltaRot = normalizedNewRot * Quaternion.Inverse(body.Rotation);
@@ -558,7 +578,7 @@ public class EditorUI
                     else if (body.Shape == MapShapeType.Sphere && body.Radius.HasValue) currentScale = new Vector3(body.Radius.Value * 2.0f);
                     else currentScale = new Vector3(_selectedObject.ModelScale);
 
-                    if (EditorGizmo.ManipulateScale(body.Position, currentScale, view, proj, vpPos, vpSize, out Vector3 newScale, snapVal))
+                    if (EditorGizmo.ManipulateScale(body.Position, currentScale, view, proj, vpPos, vpSize, out Vector3 newScale, snapVal, !selectionDelayActive))
                     {
                         Vector3 scaleMult = new Vector3(
                             currentScale.X > 0.0001f ? newScale.X / currentScale.X : 1f,

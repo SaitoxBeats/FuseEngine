@@ -122,7 +122,7 @@ public class PhysicsWorld : IDisposable
                 return false;
             });
             Foundation.Init(doublePrecision: false);
-            Logger.Info("Jolt Physics Init");
+            Logger.Important("Jolt Physics Init");
         }
 
         public void Dispose()

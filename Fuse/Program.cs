@@ -8,7 +8,7 @@ internal static class Program
         string splashPath = Path.Combine(Fuse.ResPath.Path, "splash.txt");
         if (File.Exists(splashPath))
         {
-            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.ForegroundColor = ConsoleColor.DarkBlue;
             Console.WriteLine(File.ReadAllText(splashPath));
             Console.WriteLine(" - GOD BLESS YOU - ");
             Console.ResetColor();

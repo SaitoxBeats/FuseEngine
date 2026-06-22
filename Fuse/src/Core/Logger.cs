@@ -8,6 +8,18 @@ public static class Logger
         Console.WriteLine($"[ INFO ] {message}");
         Console.ResetColor();
     }
+    public static void Important(string message)
+    {
+        Console.ForegroundColor = ConsoleColor.Blue;
+        Console.WriteLine($"[ IMPORTANT ] {message}");
+        Console.ResetColor();
+    }
+    public static void Asset(string message)
+    {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine($"[ ASSET ] {message}");
+        Console.ResetColor();
+    }
 
     public static void Warn(string message)
     {

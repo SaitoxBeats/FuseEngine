@@ -76,6 +76,7 @@ public unsafe class EditorInputService
             KeyCodes.RightControl => ImGuiKey.RightCtrl,
             KeyCodes.RightAlt => ImGuiKey.RightAlt,
             KeyCodes.RightSuper => ImGuiKey.RightSuper,
+            KeyCodes.F5 => ImGuiKey.F5,
             _ => ImGuiKey.None
         };
     }

@@ -12,6 +12,7 @@ public class Camera
 
     private float _yaw = -90.0f;
     private float _pitch;
+    public float _roll;
     private float _fov = 60.0f;
     private float _mouseSensitivity = 0.1f;
 
@@ -32,12 +33,14 @@ public class Camera
 
     public float Yaw => _yaw;
     public float Pitch => _pitch;
+    public float Roll { get => _roll; set => _roll = value; }
 
     public float FOV { get => _fov; set => _fov = value; }
 
     public Matrix4x4 GetViewMatrix()
     {
-        return Matrix4x4.CreateLookAt(_position, _position + _front, _up);
+        var rolledUp = Vector3.Transform(_up, Quaternion.CreateFromAxisAngle(_front, _roll));
+        return Matrix4x4.CreateLookAt(_position, _position + _front, rolledUp);
     }
 
     private float _nearPlane = 0.1f;

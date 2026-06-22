@@ -64,7 +64,7 @@ public unsafe class Texture : IDisposable
         gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)GLEnum.NearestMipmapNearest);
         gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)GLEnum.Nearest);
 
-        Logger.Info($"Texture loaded: {filepath} ({_width}x{_height})");
+        Logger.Asset($"Texture loaded: {filepath} ({_width}x{_height})");
     }
 
     public void Dispose()

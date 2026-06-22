@@ -79,7 +79,7 @@ public static unsafe class ModelLoader
         Api.ReleaseImport(scene);
 
         var resultMesh = new Mesh(gl, [.. vertices], [.. indices]);
-        Logger.Info($"Model loaded: {path} ({vertices.Count} verts, {indices.Count} indices)");
+        Logger.Asset($"Model loaded: {path} ({vertices.Count} verts, {indices.Count} indices)");
 
         return new LoadedModel
         {

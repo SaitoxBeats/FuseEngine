@@ -164,7 +164,7 @@ public unsafe class Application : IDisposable
                 _player.NativeCharacter.Position = spawn.Value.Position;
                 _player.Camera.SetRotation(spawn.Value.Yaw, spawn.Value.Pitch);
             }
-            Logger.Warn($"CURRENT MAP LOADED: {mapPath}");
+            Logger.Important($"CURRENT MAP LOADED: {mapPath}");
         }
         //else
         //{

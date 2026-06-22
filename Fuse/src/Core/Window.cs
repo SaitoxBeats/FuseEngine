@@ -28,7 +28,7 @@ public unsafe class Window : IDisposable
             Logger.Error("Failed to initialize GLFW");
             return;
         }
-        Logger.Info("GLFW Init");
+        Logger.Important("GLFW Init");
 
         _glfw.WindowHint(WindowHintInt.ContextVersionMajor, 3);
         _glfw.WindowHint(WindowHintInt.ContextVersionMinor, 3);
@@ -41,7 +41,7 @@ public unsafe class Window : IDisposable
             _glfw.Terminate();
             return;
         }
-        Logger.Info("WINDOW Init");
+        Logger.Important("WINDOW Init");
 
         _glfw.MakeContextCurrent(_handle);
 
@@ -56,7 +56,7 @@ public unsafe class Window : IDisposable
         }
 
         _gl = GL.GetApi(_glfw.GetProcAddress);
-        Logger.Info("OpenGL Init");
+        Logger.Important("OpenGL Init");
 
         _gl.Enable(EnableCap.DepthTest);
         _gl.Enable(EnableCap.CullFace);
