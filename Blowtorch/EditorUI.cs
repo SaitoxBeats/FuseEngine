@@ -7,6 +7,7 @@ using Fuse.Scene.Model;
 using Fuse.Renderer;
 using Fuse.Core;
 using Fuse;
+using System.Windows.Media.Animation;
 
 namespace Blowtorch;
 
@@ -17,7 +18,9 @@ public unsafe class EditorUI
     private int _selectedOpenMapIndex = -1;
     private bool _newDocumentRequested;
     private bool _showSaveAsDialog;
-    private string _saveMapName = "new_map.json";
+    private bool _showHollowDialog;
+    private float _hollowThickness = 0.5f;
+    private string _saveMapName = "map.json";
 
     private bool _showMapWindow = true;
     private bool _showJsonWindow = false;
@@ -152,6 +155,7 @@ public unsafe class EditorUI
 
         DrawOpenDialog(sceneService, assetService);
         DrawSaveAsDialog(sceneService);
+        DrawHollowDialog(sceneService, assetService, history);
 
         if (_newDocumentRequested)
         {
@@ -714,6 +718,27 @@ public unsafe class EditorUI
             {
                 if (ImGui.MenuItem("Undo", "Ctrl+Z")) history.Undo();
                 if (ImGui.MenuItem("Redo", "Ctrl+Y")) history.Redo();
+                ImGui.EndMenu();
+            }
+            if (ImGui.BeginMenu("CSG"))
+            {
+                int brushCount = _selectedObjects.Count(o => o is Brush);
+                if (ImGui.MenuItem("Subtract (Carve)", "", false, brushCount >= 2))
+                {
+                    PerformCsgOperation(sceneService, assetService, history, "Subtract");
+                }
+                if (ImGui.MenuItem("Intersect", "", false, brushCount >= 2))
+                {
+                    PerformCsgOperation(sceneService, assetService, history, "Intersect");
+                }
+                if (ImGui.MenuItem("Union (Merge)", "", false, brushCount >= 2))
+                {
+                    PerformCsgOperation(sceneService, assetService, history, "Union");
+                }
+                if (ImGui.MenuItem("Make Hollow...", "", false, brushCount >= 1))
+                {
+                    _showHollowDialog = true;
+                }
                 ImGui.EndMenu();
             }
             if (ImGui.BeginMenu("View"))
@@ -1500,7 +1525,11 @@ public unsafe class EditorUI
             float pitch = float.DegreesToRadians(euler.X);
             float yaw = float.DegreesToRadians(euler.Y);
             float roll = float.DegreesToRadians(euler.Z);
-            return Quaternion.CreateFromYawPitchRoll(yaw, pitch, roll);
+
+            var qx = Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitch);
+            var qy = Quaternion.CreateFromAxisAngle(Vector3.UnitY, yaw);
+            var qz = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, roll);
+            return qz * qy * qx;
         }
 
         ImGui.SetNextWindowSize(new Vector2(400, 600), ImGuiCond.FirstUseEver);
@@ -2412,6 +2441,120 @@ public unsafe class EditorUI
         if (!open)
         {
             _showSaveAsDialog = false;
+        }
+    }
+
+    private void DrawHollowDialog(EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
+    {
+        if (_showHollowDialog)
+        {
+            ImGui.OpenPopup("Make Hollow");
+            _showHollowDialog = false;
+        }
+
+        bool open = true;
+        if (ImGui.BeginPopupModal("Make Hollow", ref open, ImGuiWindowFlags.AlwaysAutoResize))
+        {
+            ImGui.Text("Enter wall thickness:");
+            ImGui.InputFloat("##Thickness", ref _hollowThickness, 0.1f, 1.0f);
+
+            if (ImGui.Button("Apply", new Vector2(120, 0)))
+            {
+                PerformCsgOperation(sceneService, assetService, history, "Hollow");
+                ImGui.CloseCurrentPopup();
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("Cancel", new Vector2(120, 0)))
+            {
+                ImGui.CloseCurrentPopup();
+            }
+            ImGui.EndPopup();
+        }
+    }
+
+    private void PerformCsgOperation(EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history, string op)
+    {
+        var targetBrushes = _selectedObjects.OfType<Brush>().ToList();
+        if (targetBrushes.Count == 0) return;
+
+        string pre = sceneService.Document.Serialize();
+        bool changed = false;
+
+        if (op == "Subtract" && targetBrushes.Count >= 2)
+        {
+            var tool = targetBrushes.Last();
+            targetBrushes.RemoveAt(targetBrushes.Count - 1);
+            
+            foreach (var target in targetBrushes)
+            {
+                var resultBrushes = CSGOperations.Subtract(target, tool);
+                sceneService.Document.Objects.Remove(target);
+                sceneService.Document.Objects.AddRange(resultBrushes);
+                assetService.InvalidateMesh(target.Id);
+                _selectedObjects.Remove(target);
+            }
+            changed = true;
+        }
+        else if (op == "Intersect" && targetBrushes.Count >= 2)
+        {
+            var brushA = targetBrushes[0];
+            for (int i = 1; i < targetBrushes.Count; i++)
+            {
+                var result = CSGOperations.Intersect(brushA, targetBrushes[i]);
+                if (result != null)
+                {
+                    brushA = result;
+                }
+            }
+            foreach (var b in targetBrushes)
+            {
+                sceneService.Document.Objects.Remove(b);
+                assetService.InvalidateMesh(b.Id);
+                _selectedObjects.Remove(b);
+            }
+            sceneService.Document.Objects.Add(brushA);
+            changed = true;
+        }
+        else if (op == "Union" && targetBrushes.Count >= 2)
+        {
+            var tool = targetBrushes.Last();
+            targetBrushes.RemoveAt(targetBrushes.Count - 1);
+            
+            foreach (var target in targetBrushes)
+            {
+                var resultBrushes = CSGOperations.Union(target, tool);
+                sceneService.Document.Objects.Remove(target);
+                sceneService.Document.Objects.Remove(tool);
+                sceneService.Document.Objects.AddRange(resultBrushes);
+                
+                assetService.InvalidateMesh(target.Id);
+                assetService.InvalidateMesh(tool.Id);
+                
+                _selectedObjects.Remove(target);
+            }
+            changed = true;
+        }
+        else if (op == "Hollow" && targetBrushes.Count >= 1)
+        {
+            foreach (var target in targetBrushes)
+            {
+                var resultBrushes = CSGOperations.Hollow(target, _hollowThickness);
+                if (resultBrushes.Count > 0)
+                {
+                    sceneService.Document.Objects.Remove(target);
+                    sceneService.Document.Objects.AddRange(resultBrushes);
+                    assetService.InvalidateMesh(target.Id);
+                    _selectedObjects.Remove(target);
+                    changed = true;
+                }
+            }
+        }
+
+        if (changed)
+        {
+            sceneService.PopulateScene(assetService);
+            string post = sceneService.Document.Serialize();
+            history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
         }
     }
 

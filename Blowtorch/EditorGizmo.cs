@@ -335,7 +335,7 @@ public static class EditorGizmo
 
             if (deltaAngle != 0.0f)
             {
-                newRot = Quaternion.CreateFromAxisAngle(axes[_activeAxis], -deltaAngle) * _dragStartRotation;
+                newRot = Quaternion.CreateFromAxisAngle(axes[_activeAxis], deltaAngle) * _dragStartRotation;
                 changed = true;
             }
         }

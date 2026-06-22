@@ -192,7 +192,7 @@ public static class MeshGenerator
         return new MeshData(vertices.ToArray(), indices.ToArray());
     }
 
-    private static void AddUniqueVertex(List<Vector3> list, Vector3 v)
+    public static void AddUniqueVertex(List<Vector3> list, Vector3 v)
     {
         foreach (var item in list)
         {
@@ -204,7 +204,7 @@ public static class MeshGenerator
         list.Add(v);
     }
 
-    private static bool TryGetIntersection(Plane p1, Plane p2, Plane p3, out Vector3 result)
+    public static bool TryGetIntersection(Plane p1, Plane p2, Plane p3, out Vector3 result)
     {
         result = Vector3.Zero;
         

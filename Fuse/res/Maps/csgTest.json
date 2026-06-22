@@ -1,0 +1,1562 @@
+{
+  "version": 1,
+  "objects": [
+    {
+      "id": "brush_65d34eec",
+      "visible": true,
+      "type": "brush",
+      "faces": [
+        {
+          "normal": [
+            0,
+            0,
+            1
+          ],
+          "d": -0.5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            0,
+            -1
+          ],
+          "d": -9.5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            1,
+            0
+          ],
+          "d": -4,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            -1,
+            0
+          ],
+          "d": -4,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            1,
+            0,
+            0
+          ],
+          "d": -5,
+          "texture": "default",
+          "u_axis": [
+            0,
+            0,
+            1
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            -1,
+            0,
+            0
+          ],
+          "d": -5,
+          "texture": "default",
+          "u_axis": [
+            0,
+            0,
+            1
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            -0,
+            -0,
+            -1
+          ],
+          "d": -0.5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        }
+      ],
+      "texture": "Textures/dev_measurecrate01.bmp",
+      "body": {
+        "shape": "box",
+        "position": [
+          0,
+          0,
+          4.5
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0,
+        "restitution": 0,
+        "half_extents": [
+          5,
+          4,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "brush_bb352023",
+      "visible": true,
+      "type": "brush",
+      "faces": [
+        {
+          "normal": [
+            0,
+            0,
+            1
+          ],
+          "d": -9.5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            0,
+            -1
+          ],
+          "d": -0.5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            1,
+            0
+          ],
+          "d": -4,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            -1,
+            0
+          ],
+          "d": -4,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            1,
+            0,
+            0
+          ],
+          "d": -5,
+          "texture": "default",
+          "u_axis": [
+            0,
+            0,
+            1
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            -1,
+            0,
+            0
+          ],
+          "d": -5,
+          "texture": "default",
+          "u_axis": [
+            0,
+            0,
+            1
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            0,
+            1
+          ],
+          "d": -8.5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            -0,
+            -0,
+            1
+          ],
+          "d": -0.5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        }
+      ],
+      "texture": "Textures/dev_measurecrate01.bmp",
+      "body": {
+        "shape": "box",
+        "position": [
+          0,
+          0,
+          -4.5
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0,
+        "restitution": 0,
+        "half_extents": [
+          5,
+          4,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "brush_043e8337",
+      "visible": true,
+      "type": "brush",
+      "faces": [
+        {
+          "normal": [
+            0,
+            0,
+            1
+          ],
+          "d": -5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            0,
+            -1
+          ],
+          "d": -5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            1,
+            0
+          ],
+          "d": -0.5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            -1,
+            0
+          ],
+          "d": -7.5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            1,
+            0,
+            0
+          ],
+          "d": -5,
+          "texture": "default",
+          "u_axis": [
+            0,
+            0,
+            1
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            -1,
+            0,
+            0
+          ],
+          "d": -5,
+          "texture": "default",
+          "u_axis": [
+            0,
+            0,
+            1
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            0,
+            1
+          ],
+          "d": -4,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            0,
+            -1
+          ],
+          "d": -4,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            -0,
+            -1,
+            -0
+          ],
+          "d": -0.5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        }
+      ],
+      "texture": "Textures/dev_measurecrate01.bmp",
+      "body": {
+        "shape": "box",
+        "position": [
+          0,
+          3.5,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0,
+        "restitution": 0,
+        "half_extents": [
+          5,
+          0.5,
+          4
+        ]
+      }
+    },
+    {
+      "id": "brush_8b8e6f95",
+      "visible": true,
+      "type": "brush",
+      "faces": [
+        {
+          "normal": [
+            0,
+            0,
+            1
+          ],
+          "d": -5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            0,
+            -1
+          ],
+          "d": -5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            1,
+            0
+          ],
+          "d": -7.5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            -1,
+            0
+          ],
+          "d": -0.5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            1,
+            0,
+            0
+          ],
+          "d": -5,
+          "texture": "default",
+          "u_axis": [
+            0,
+            0,
+            1
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            -1,
+            0,
+            0
+          ],
+          "d": -5,
+          "texture": "default",
+          "u_axis": [
+            0,
+            0,
+            1
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            0,
+            1
+          ],
+          "d": -4,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            0,
+            -1
+          ],
+          "d": -4,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            1,
+            0
+          ],
+          "d": -6.5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            -0,
+            1,
+            -0
+          ],
+          "d": -0.5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        }
+      ],
+      "texture": "Textures/dev_measurecrate01.bmp",
+      "body": {
+        "shape": "box",
+        "position": [
+          0,
+          -3.5,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0,
+        "restitution": 0,
+        "half_extents": [
+          5,
+          0.5,
+          4
+        ]
+      }
+    },
+    {
+      "id": "brush_83c156eb",
+      "visible": true,
+      "type": "brush",
+      "faces": [
+        {
+          "normal": [
+            0,
+            0,
+            1
+          ],
+          "d": -5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            0,
+            -1
+          ],
+          "d": -5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            1,
+            0
+          ],
+          "d": -4,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            -1,
+            0
+          ],
+          "d": -4,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            1,
+            0,
+            0
+          ],
+          "d": -0.5,
+          "texture": "default",
+          "u_axis": [
+            0,
+            0,
+            1
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            -1,
+            0,
+            0
+          ],
+          "d": -9.5,
+          "texture": "default",
+          "u_axis": [
+            0,
+            0,
+            1
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            0,
+            1
+          ],
+          "d": -4,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            0,
+            -1
+          ],
+          "d": -4,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            1,
+            0
+          ],
+          "d": -3,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            -1,
+            0
+          ],
+          "d": -3,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            -1,
+            -0,
+            -0
+          ],
+          "d": -0.5,
+          "texture": "default",
+          "u_axis": [
+            0,
+            0,
+            1
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        }
+      ],
+      "texture": "Textures/dev_measurecrate01.bmp",
+      "body": {
+        "shape": "box",
+        "position": [
+          4.5,
+          0,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          3,
+          4
+        ]
+      }
+    },
+    {
+      "id": "brush_d1277d5a",
+      "visible": true,
+      "type": "brush",
+      "faces": [
+        {
+          "normal": [
+            0,
+            0,
+            1
+          ],
+          "d": -5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            0,
+            -1
+          ],
+          "d": -5,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            1,
+            0
+          ],
+          "d": -4,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            -1,
+            0
+          ],
+          "d": -4,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            1,
+            0,
+            0
+          ],
+          "d": -9.5,
+          "texture": "default",
+          "u_axis": [
+            0,
+            0,
+            1
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            -1,
+            0,
+            0
+          ],
+          "d": -0.5,
+          "texture": "default",
+          "u_axis": [
+            0,
+            0,
+            1
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            0,
+            1
+          ],
+          "d": -4,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            0,
+            -1
+          ],
+          "d": -4,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            1,
+            0
+          ],
+          "d": -3,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            0,
+            -1,
+            0
+          ],
+          "d": -3,
+          "texture": "default",
+          "u_axis": [
+            1,
+            0,
+            0
+          ],
+          "v_axis": [
+            -0,
+            -0,
+            -1
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            1,
+            0,
+            0
+          ],
+          "d": -8.5,
+          "texture": "default",
+          "u_axis": [
+            0,
+            0,
+            1
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        },
+        {
+          "normal": [
+            1,
+            -0,
+            -0
+          ],
+          "d": -0.5,
+          "texture": "default",
+          "u_axis": [
+            0,
+            0,
+            1
+          ],
+          "v_axis": [
+            -0,
+            -1,
+            -0
+          ],
+          "u_scale": 1,
+          "v_scale": 1,
+          "u_offset": 0,
+          "v_offset": 0,
+          "rotation": 0
+        }
+      ],
+      "texture": "Textures/dev_measurecrate01.bmp",
+      "body": {
+        "shape": "box",
+        "position": [
+          -4.5,
+          0,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0,
+        "restitution": 0,
+        "half_extents": [
+          0.5,
+          3,
+          4
+        ]
+      }
+    }
+  ],
+  "player_spawn": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "yaw": 0,
+    "pitch": 0
+  }
+}
