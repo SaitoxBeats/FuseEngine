@@ -49,12 +49,17 @@ public class SnapshotCommand : ICommand
 
 public class CommandHistory
 {
-    private readonly Stack<ICommand> _undoStack = new();
-    private readonly Stack<ICommand> _redoStack = new();
+    private readonly List<ICommand> _undoStack = new();
+    private readonly List<ICommand> _redoStack = new();
+    private const int MaxHistorySize = 50;
 
     public void PushCommand(ICommand command)
     {
-        _undoStack.Push(command);
+        _undoStack.Add(command);
+        if (_undoStack.Count > MaxHistorySize)
+        {
+            _undoStack.RemoveAt(0);
+        }
         _redoStack.Clear();
     }
 
@@ -62,9 +67,14 @@ public class CommandHistory
     {
         if (_undoStack.Count > 0)
         {
-            var command = _undoStack.Pop();
+            var command = _undoStack[^1];
+            _undoStack.RemoveAt(_undoStack.Count - 1);
             command.Undo();
-            _redoStack.Push(command);
+            _redoStack.Add(command);
+            if (_redoStack.Count > MaxHistorySize)
+            {
+                _redoStack.RemoveAt(0);
+            }
         }
     }
 
@@ -72,9 +82,14 @@ public class CommandHistory
     {
         if (_redoStack.Count > 0)
         {
-            var command = _redoStack.Pop();
+            var command = _redoStack[^1];
+            _redoStack.RemoveAt(_redoStack.Count - 1);
             command.Execute();
-            _undoStack.Push(command);
+            _undoStack.Add(command);
+            if (_undoStack.Count > MaxHistorySize)
+            {
+                _undoStack.RemoveAt(0);
+            }
         }
     }
 }

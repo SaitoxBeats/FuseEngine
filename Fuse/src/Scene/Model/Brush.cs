@@ -11,22 +11,24 @@ public class Brush : MapObject
         Faces.Add(face);
     }
 
-    public void UpdatePlanesFromHalfExtents(System.Numerics.Vector3 half)
+    public void ScalePlanes(System.Numerics.Vector3 scale)
     {
-        foreach (var face in Faces)
+        for (int i = 0; i < Faces.Count; i++)
         {
+            var face = Faces[i];
             var normal = face.Plane.Normal;
-            if (System.Math.Abs(normal.X) > 0.9f)
+            float d = face.Plane.D;
+            
+            var newNormal = new System.Numerics.Vector3(
+                scale.X != 0 ? normal.X / scale.X : normal.X,
+                scale.Y != 0 ? normal.Y / scale.Y : normal.Y,
+                scale.Z != 0 ? normal.Z / scale.Z : normal.Z
+            );
+            float len = newNormal.Length();
+            if (len > 0.000001f)
             {
-                face.Plane = new System.Numerics.Plane(normal, -half.X);
-            }
-            else if (System.Math.Abs(normal.Y) > 0.9f)
-            {
-                face.Plane = new System.Numerics.Plane(normal, -half.Y);
-            }
-            else if (System.Math.Abs(normal.Z) > 0.9f)
-            {
-                face.Plane = new System.Numerics.Plane(normal, -half.Z);
+                newNormal /= len;
+                Faces[i] = new Face(new System.Numerics.Plane(newNormal, d / len));
             }
         }
     }

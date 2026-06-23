@@ -56,11 +56,7 @@ public unsafe class EditorUI
     private EditorViewport? _activeDraggingViewport;
 
     // Brush Tool State
-    private bool _isDrawingBrush = false;
-    private bool _hasPreviewBrush = false;
-    private Vector3 _previewBrushMin;
-    private Vector3 _previewBrushMax;
-    private EditorViewport? _drawingViewport;
+    private BrushPreviewManager _previewManager = new BrushPreviewManager();
 
     // Handle Dragging State
     public enum HandleType
@@ -78,7 +74,6 @@ public unsafe class EditorUI
     private bool _isDraggingHandle = false;
     private HandleType _activeHandle = HandleType.None;
     private EditorViewport? _draggingHandleViewport;
-    private bool _draggingHandleIsPreview = false;
     private void SyncSelection(MapDocument doc)
     {
         if (_selectedObject != null && !doc.Objects.Contains(_selectedObject))
@@ -111,9 +106,7 @@ public unsafe class EditorUI
     {
         if (_currentMode != EditorMode.DrawBrush)
         {
-            _hasPreviewBrush = false;
-            _isDrawingBrush = false;
-            _drawingViewport = null;
+            _previewManager.Reset();
         }
         SyncSelection(sceneService.Document);
         var currentIds = new HashSet<string>(_selectedObjects.Select(o => o.Id));
@@ -803,9 +796,8 @@ public unsafe class EditorUI
                     if (_currentMode == EditorMode.DrawBrush)
                     {
                         _currentMode = EditorMode.Select;
-                        _hasPreviewBrush = false;
-                        _isDrawingBrush = false;
-                        _drawingViewport = null;
+                        _activeHandle = HandleType.None;
+                        _previewManager.Reset();
                     }
                     else
                     {
@@ -818,7 +810,7 @@ public unsafe class EditorUI
                 if (ImGui.IsKeyPressed(ImGuiKey.E)) _gizmoOperation = GizmoOperation.Rotate;
                 if (ImGui.IsKeyPressed(ImGuiKey.R)) _gizmoOperation = GizmoOperation.Scale;
                 
-                if (_currentMode == EditorMode.DrawBrush && _hasPreviewBrush && ImGui.IsKeyPressed(ImGuiKey.Enter))
+                if (_currentMode == EditorMode.DrawBrush && _previewManager.HasPreview && ImGui.IsKeyPressed(ImGuiKey.Enter))
                 {
                     CommitBrush(sceneService, assetService, history);
                 }
@@ -878,11 +870,11 @@ public unsafe class EditorUI
 
         if (viewport.Camera.IsOrthographic)
         {
-            if (_currentMode == EditorMode.DrawBrush && _hasPreviewBrush)
+            if (_currentMode == EditorMode.DrawBrush && _previewManager.HasPreview)
             {
                 showHandles = true;
-                boxMin = Vector3.Min(_previewBrushMin, _previewBrushMax);
-                boxMax = Vector3.Max(_previewBrushMin, _previewBrushMax);
+                boxMin = Vector3.Min(_previewManager.Min, _previewManager.Max);
+                boxMax = Vector3.Max(_previewManager.Min, _previewManager.Max);
                 isPreview = true;
             }
             else if (_currentMode == EditorMode.Select && _selectedObject is Brush brush && brush.Body != null && brush.Body.HalfExtents.HasValue)
@@ -942,7 +934,7 @@ public unsafe class EditorUI
                             _isDraggingHandle = true;
                             _activeHandle = (HandleType)h;
                             _draggingHandleViewport = viewport;
-                            _draggingHandleIsPreview = isPreview;
+                            _previewManager.IsDraggingHandle = isPreview;
                             _preEditState = sceneService.Document.Serialize();
                             break;
                         }
@@ -1058,7 +1050,9 @@ public unsafe class EditorUI
 
                                 if (obj.Body.Shape == MapShapeType.Box && obj.Body.HalfExtents.HasValue)
                                 {
+                                    Vector3 oldExtents = obj.Body.HalfExtents.Value;
                                     obj.Body.HalfExtents = Vector3.Max(new Vector3(0.05f), obj.Body.HalfExtents.Value * scaleMult);
+                                    if (obj is Brush b) b.ScalePlanes(obj.Body.HalfExtents.Value / oldExtents);
                                 }
                                 else if (obj.Body.Shape == MapShapeType.Sphere && obj.Body.Radius.HasValue)
                                 {
@@ -1082,9 +1076,8 @@ public unsafe class EditorUI
                     {
                         if (obj.Body == null) continue;
 
-                        if (obj is Brush brush && obj.Body.HalfExtents.HasValue)
+                        if (obj is Brush brush)
                         {
-                            brush.UpdatePlanesFromHalfExtents(obj.Body.HalfExtents.Value);
                             assetService.InvalidateMesh(brush.Id);
                         }
 
@@ -1141,34 +1134,8 @@ public unsafe class EditorUI
 
                     hitPoint = ApplySnap(hitPoint, _snapGrid);
 
-                    if (ImGui.IsMouseClicked(ImGuiMouseButton.Left))
-                    {
-                        _isDrawingBrush = true;
-                        _drawingViewport = viewport;
-                        
-                        if (!_hasPreviewBrush)
-                        {
-                            _previewBrushMin = hitPoint;
-                            _previewBrushMax = hitPoint;
-                            if (viewport.Camera.ViewType == CameraViewType.Top) { _previewBrushMin.Y = -1; _previewBrushMax.Y = 1; }
-                            if (viewport.Camera.ViewType == CameraViewType.Front) { _previewBrushMin.Z = -1; _previewBrushMax.Z = 1; }
-                            if (viewport.Camera.ViewType == CameraViewType.Side) { _previewBrushMin.X = -1; _previewBrushMax.X = 1; }
-                        }
-                        else
-                        {
-                            if (viewport.Camera.ViewType == CameraViewType.Top) { _previewBrushMin.X = hitPoint.X; _previewBrushMin.Z = hitPoint.Z; }
-                            if (viewport.Camera.ViewType == CameraViewType.Front) { _previewBrushMin.X = hitPoint.X; _previewBrushMin.Y = hitPoint.Y; }
-                            if (viewport.Camera.ViewType == CameraViewType.Side) { _previewBrushMin.Z = hitPoint.Z; _previewBrushMin.Y = hitPoint.Y; }
-                        }
-                    }
-                    
-                    if (_isDrawingBrush && _drawingViewport == viewport)
-                    {
-                        if (viewport.Camera.ViewType == CameraViewType.Top) { _previewBrushMax.X = hitPoint.X; _previewBrushMax.Z = hitPoint.Z; }
-                        if (viewport.Camera.ViewType == CameraViewType.Front) { _previewBrushMax.X = hitPoint.X; _previewBrushMax.Y = hitPoint.Y; }
-                        if (viewport.Camera.ViewType == CameraViewType.Side) { _previewBrushMax.Z = hitPoint.Z; _previewBrushMax.Y = hitPoint.Y; }
-                        _hasPreviewBrush = true;
-                    }
+                    bool isMouseClicked = ImGui.IsMouseClicked(ImGuiMouseButton.Left);
+                    _previewManager.HandleDrawingInput(viewport, hitPoint, isMouseClicked);
                 }
             }
         }
@@ -1216,14 +1183,9 @@ public unsafe class EditorUI
             }
         }
 
-        if (ImGui.IsMouseReleased(ImGuiMouseButton.Left) && _isDrawingBrush)
+        if (ImGui.IsMouseReleased(ImGuiMouseButton.Left))
         {
-            _isDrawingBrush = false;
-            _drawingViewport = null;
-            Vector3 min = Vector3.Min(_previewBrushMin, _previewBrushMax);
-            Vector3 max = Vector3.Max(_previewBrushMin, _previewBrushMax);
-            _previewBrushMin = min;
-            _previewBrushMax = max;
+            _previewManager.EndDrawing();
         }
 
         // Handle Dragging Update (Mouse position follow-up)
@@ -1243,10 +1205,9 @@ public unsafe class EditorUI
 
             UpdateBoundsFromDrag(viewport.Camera.ViewType, _activeHandle, hitPoint, ref currentMin, ref currentMax);
 
-            if (_draggingHandleIsPreview)
+            if (_previewManager.IsDraggingHandle)
             {
-                _previewBrushMin = currentMin;
-                _previewBrushMax = currentMax;
+                _previewManager.UpdateBoundsFromDrag(currentMin, currentMax);
             }
             else if (_selectedObject is Brush brush && brush.Body != null)
             {
@@ -1254,9 +1215,11 @@ public unsafe class EditorUI
                 if (newSize.X > 0.1f && newSize.Y > 0.1f && newSize.Z > 0.1f)
                 {
                     brush.Body.Position = currentMin + newSize * 0.5f;
+                    Vector3 oldHalf = brush.Body.HalfExtents ?? Vector3.One;
                     brush.Body.HalfExtents = newSize * 0.5f;
 
-                    brush.UpdatePlanesFromHalfExtents(brush.Body.HalfExtents.Value);
+                    Vector3 scale = brush.Body.HalfExtents.Value / oldHalf;
+                    brush.ScalePlanes(scale);
                     assetService.InvalidateMesh(brush.Id);
 
                     var entity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == brush.Id);
@@ -1275,11 +1238,12 @@ public unsafe class EditorUI
                 _activeHandle = HandleType.None;
                 _draggingHandleViewport = null;
                 
-                if (!_draggingHandleIsPreview)
+                if (!_previewManager.IsDraggingHandle)
                 {
                     var postEditState = sceneService.Document.Serialize();
                     history.PushCommand(new SnapshotCommand(sceneService, assetService, _preEditState, postEditState));
                 }
+                _previewManager.IsDraggingHandle = false;
             }
         }
 
@@ -1347,10 +1311,10 @@ public unsafe class EditorUI
         // Draw Handles & Bounding Box Outline
         if (showHandles)
         {
-            Vector3 finalMin = _draggingHandleIsPreview ? _previewBrushMin : boxMin;
-            Vector3 finalMax = _draggingHandleIsPreview ? _previewBrushMax : boxMax;
+            Vector3 finalMin = _previewManager.IsDraggingHandle ? _previewManager.Min : boxMin;
+            Vector3 finalMax = _previewManager.IsDraggingHandle ? _previewManager.Max : boxMax;
             
-            if (!_draggingHandleIsPreview && _selectedObjects.Count > 0)
+            if (!_previewManager.IsDraggingHandle && _selectedObjects.Count > 0)
             {
                 if (GetSelectionAABB(assetService, out Vector3 tMin, out Vector3 tMax))
                 {
@@ -2064,11 +2028,13 @@ public unsafe class EditorUI
                                 HandleUndoStart(sceneService);
                                 if (heChanged)
                                 {
+                                    Vector3 oldHalf = body.HalfExtents ?? Vector3.One;
                                     body.HalfExtents = ApplySnap(he, _snapGrid);
                                     var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
                                     if (obj is Brush brush)
                                     {
-                                        brush.UpdatePlanesFromHalfExtents(body.HalfExtents.Value);
+                                        Vector3 scale = body.HalfExtents.Value / oldHalf;
+                                        brush.ScalePlanes(scale);
                                         assetService.InvalidateMesh(brush.Id);
                                         if (entity != null)
                                         {
@@ -2172,21 +2138,10 @@ public unsafe class EditorUI
 
     private void CommitBrush(EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
     {
-        if (!_hasPreviewBrush) return;
-
-        Vector3 min = Vector3.Min(_previewBrushMin, _previewBrushMax);
-        Vector3 max = Vector3.Max(_previewBrushMin, _previewBrushMax);
-        Vector3 size = max - min;
-        
-        // Prevent flat brushes
-        if (size.X < 0.1f) size.X = 1.0f;
-        if (size.Y < 0.1f) size.Y = 1.0f;
-        if (size.Z < 0.1f) size.Z = 1.0f;
-
-        Vector3 pos = min + size * 0.5f;
+        if (!_previewManager.HasPreview) return;
 
         var pre = sceneService.Document.Serialize();
-        var brush = Brush.CreateCube(pos, size);
+        var brush = _previewManager.CreateBrush();
         brush.Texture = "Textures/dev_measurecrate01.bmp";
 
         sceneService.Document.Objects.Add(brush);
@@ -2195,7 +2150,7 @@ public unsafe class EditorUI
         _selectedObjects.Clear();
         _selectedObjects.Add(brush);
         _currentMode = EditorMode.Select;
-        _hasPreviewBrush = false;
+        _previewManager.Reset();
 
         var post = sceneService.Document.Serialize();
         history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
@@ -2777,16 +2732,7 @@ public unsafe class EditorUI
 
     public void DrawPreviewDebug(Fuse.Debug.DebugDrawer drawer, EditorAssetService assetService)
     {
-        if (_hasPreviewBrush)
-        {
-            Vector3 min = Vector3.Min(_previewBrushMin, _previewBrushMax);
-            Vector3 max = Vector3.Max(_previewBrushMin, _previewBrushMax);
-            Vector3 size = max - min;
-            Vector3 pos = min + size * 0.5f;
-
-            // Draw as cyan/light blue outline
-            drawer.DrawBox(pos, Quaternion.Identity, size * 0.5f, new Vector3(0.0f, 1.0f, 1.0f));
-        }
+        _previewManager.Draw3DPreview(drawer);
 
         if (GetSelectionAABB(assetService, out Vector3 totalMin, out Vector3 totalMax))
         {
