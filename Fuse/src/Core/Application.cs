@@ -415,6 +415,30 @@ public unsafe class Application : IDisposable
         float capsuleHalfH = _player.IsCrouching ? 0.4f : 0.9f;
         _debugDrawer.DrawCapsule(_player.Position, Quaternion.Identity, capsuleHalfH, 0.5f, new Vector3(0, 1, 0));
         _debugDrawer.DrawBox(_player.FeetPosition, Quaternion.Identity, new Vector3(0.1f), new Vector3(0, 1, 1));
+        // arrow at poiting movement direction
+        // Arrow at feet pointing movement direction
+        Vector3 vel = _player.LinearVelocity;
+        Vector3 horiz = new Vector3(vel.X, 0, vel.Z);
+        if (horiz.LengthSquared() > 0.01f)
+        {
+            Vector3 dir = Vector3.Normalize(horiz);
+            Vector3 from = _player.FeetPosition;
+            float len = 0.5f;
+            Vector3 to = from + dir * len;
+            Vector3 color = new Vector3(0, 1, 1); // cyan
+
+            _debugDrawer.PushLine(from, to, color);
+
+            // Arrowhead
+            float arrowSize = 0.1f;
+            float arrowAngle = 0.4f; // ~25 degrees
+            Vector3 right = Vector3.Normalize(Vector3.Cross(dir, Vector3.UnitY)) * arrowSize;
+            Vector3 up = Vector3.Normalize(Vector3.Cross(right, dir)) * arrowSize;
+            Vector3 headLeft = to - dir * arrowSize + right * arrowAngle;
+            Vector3 headRight = to - dir * arrowSize - right * arrowAngle;
+            _debugDrawer.PushLine(to, headLeft, color);
+            _debugDrawer.PushLine(to, headRight, color);
+        }
 
         float aspect = (float)_scrWidth / _scrHeight;
         var view = _player.Camera.GetViewMatrix();

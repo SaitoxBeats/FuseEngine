@@ -257,6 +257,7 @@ public class Player : IDisposable
     public Vector3 Position => new((float)_character.Position.X, (float)_character.Position.Y, (float)_character.Position.Z);
     public Vector3 EyePosition => new((float)_character.Position.X, (float)_character.Position.Y + _currentEyeHeight, (float)_character.Position.Z);
     public CharacterVirtual NativeCharacter => _character;
+    public Vector3 LinearVelocity => new((float)_character.LinearVelocity.X, (float)_character.LinearVelocity.Y, (float)_character.LinearVelocity.Z);
     public bool IsOnGround => _character.GroundState == GroundState.OnGround;
     public bool IsCrouching => _isCrouching;
     public bool IsSprinting => _isSprinting;
