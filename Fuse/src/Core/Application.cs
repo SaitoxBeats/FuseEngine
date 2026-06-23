@@ -38,6 +38,7 @@ public unsafe class Application : IDisposable
     private Renderer.Texture _skyboxTexture = null!;
     private Renderer.Texture _crosshairTexture = null!;
     private Renderer.Texture _crosshairInteractTexture = null!;
+    private Vector3 _skyboxDominantColor = Vector3.One;
 
     // Scene
     //public string mapPath = $"{Fuse.ResPath.Path}/Maps/default.json";
@@ -123,7 +124,9 @@ public unsafe class Application : IDisposable
         _cubeMesh = _assets.GetMesh("cube")!;
         _groundMesh = _assets.GetMesh("ground")!;
         _crateTexture = _assets.GetTexture($"{Fuse.ResPath.Path}/Textures/dev_measurecrate01.bmp");
-        _skyboxTexture = _assets.GetTexture($"{Fuse.ResPath.Path}/Textures/skybox_2.png");
+        _skyboxTexture = _assets.GetTexture($"{Fuse.ResPath.Path}/Textures/skybox_1.png");
+        if (_skyboxTexture.ID != 0)
+            _skyboxDominantColor = _skyboxTexture.GetDominantColor();
         _crosshairTexture = _assets.GetTexture($"{Fuse.ResPath.Path}/Textures/UI/crosshair.png");
         _crosshairInteractTexture = _assets.GetTexture($"{Fuse.ResPath.Path}/Textures/UI/crosshair_interact.png");
 
@@ -557,8 +560,11 @@ public unsafe class Application : IDisposable
             gl.DepthFunc(DepthFunction.Less);
             _shader.Use();
             _shader.SetVec3("uLightDir", Vector3.Normalize(new Vector3(1, 2, 1)));
-            _shader.SetVec3("uLightColor", new Vector3(1, 0.95f, 0.9f));
-            _shader.SetFloat("uAmbient", 0.15f);
+
+            float lum = _skyboxDominantColor.X * 0.2126f + _skyboxDominantColor.Y * 0.7152f + _skyboxDominantColor.Z * 0.0722f;
+            _shader.SetFloat("uAmbient", 0.02f + 0.28f * lum);
+            var tinted = Vector3.Lerp(new Vector3(1, 0.95f, 0.9f), _skyboxDominantColor, 0.5f);
+            _shader.SetVec3("uLightColor", tinted * (0.5f + 0.5f * lum));
             _shader.SetMat4("uView", view);
             _shader.SetMat4("uProj", proj);
             _shader.SetVec3("uColor", Vector3.One);
