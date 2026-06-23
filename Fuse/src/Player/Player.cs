@@ -185,12 +185,35 @@ public class Player : IDisposable
                 Vector3 groundNormal = _character.GroundNormal;
                 if (groundNormal.Y < 0.99f)
                 {
-                    Vector3 moveDir = Vector3.Normalize(new Vector3(horiz.X, 0.0f, horiz.Y));
-                    float dot = Vector3.Dot(moveDir, groundNormal);
-                    if (dot < 0.0f)
+                    // If you're wondering why this exists, it's because Trimesh ghost contacts are
+                    // complete bullshit and occasionally report walls as walkable slopes.
+                    //
+                    // Without this check the player randomly gets launched upward because some
+                    // fucking invisible dumb-ass contact decided a vertical wall was actually ground.
+                    //
+                    // Don't remove this unless you enjoy wasting an entire weekend debugging
+                    // the same stupid fucking problem again.
+                    bool hasRealGround = false;
+                    float charCenterY = (float)_character.Position.Y;
+
+                    foreach (var c in _character.GetActiveContacts())
                     {
-                        float slopeFactor = 1.0f - groundNormal.Y;
-                        velocity.Y = -dot * slopeFactor * horiz.Length();
+                        if (c.HadCollision && c.SurfaceNormal.Y > 0.5f && c.Position.Y < charCenterY)
+                        {
+                            hasRealGround = true;
+                            break;
+                        }
+                    }
+
+                    if (hasRealGround)
+                    {
+                        Vector3 moveDir = Vector3.Normalize(new Vector3(horiz.X, 0.0f, horiz.Y));
+                        float dot = Vector3.Dot(moveDir, groundNormal);
+                        if (dot < 0.0f)
+                        {
+                            float slopeFactor = 1.0f - groundNormal.Y;
+                            velocity.Y = -dot * slopeFactor * horiz.Length();
+                        }
                     }
                 }
             }
@@ -407,6 +430,8 @@ public class Player : IDisposable
             }
         }
     }
+
+
 
     private void OnContactAdded(CharacterVirtual character, in BodyID bodyID2, SubShapeID subShapeID2,
         in RVector3 contactPosition, in Vector3 contactNormal, ref CharacterContactSettings settings)

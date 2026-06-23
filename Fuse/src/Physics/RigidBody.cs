@@ -141,6 +141,13 @@ public class RigidBody
                         var meshSettings = new MeshShapeSettings(
                             new Span<Vector3>(_trimeshVerts),
                             new Span<IndexedTriangle>(triangles));
+
+                        // Fix (PLEASE GOD) "Ghost Collisions" / Internal Edges.
+                        // We use Cos(50 degrees) as a general threshold so any internal
+                        // edges less steep than 50 degrees difference are ignored.
+                        // Trimeshes are bullshit.
+                        meshSettings.ActiveEdgeCosThresholdAngle = MathF.Cos(50.0f * MathF.PI / 180.0f);
+
                         _shape = meshSettings.Create();
                         if (_shape == null)
                         {
