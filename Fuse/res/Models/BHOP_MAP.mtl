@@ -1,0 +1,102 @@
+# Blender 3.6.23 MTL File: 'None'
+# www.blender.org
+
+newmtl New_Material_12
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.876691 0.933962 0.917855
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+
+newmtl New_Material_1_9
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.509434 0.509434 0.509434
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+
+newmtl New_Material_2_9
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.198113 0.198113 0.198113
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+
+newmtl Tile_Blue
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 2
+map_Kd C:/Tile_Blue.png
+map_d C:/Tile_Blue.png
+
+newmtl Tile_Gray
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 2
+map_Kd C:/Tile_Gray_0.png
+map_d C:/Tile_Gray_0.png
+
+newmtl Tile_Red
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 2
+map_Kd C:/Tile_Red.png
+map_d C:/Tile_Red.png
+
+newmtl Tile_White
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 2
+map_Kd C:/Tile_White_0.png
+map_d C:/Tile_White_0.png
+
+newmtl Tile_Yellow
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 2
+map_Kd C:/Tile_Yellow_0.png
+map_d C:/Tile_Yellow_0.png
+
+newmtl Water_1
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 2
+map_Kd C:/Water_0.png
+map_d C:/Water_0.png
+
+newmtl White_Tile2
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 2
+map_Kd C:/White_Tile2.png
+map_d C:/White_Tile2.png

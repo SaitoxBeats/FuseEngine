@@ -14,6 +14,8 @@ public class Console
     private bool _scrollToBottom;
     private Player.Player? _player;
     private TextWriter? _originalOut;
+    private TextWriter? _originalError;
+    public Action<string>? OnLoadMap { get; set; }
 
     public Console()
     {
@@ -25,13 +27,18 @@ public class Console
     public void StartCapture()
     {
         _originalOut = System.Console.Out;
-        System.Console.SetOut(new CaptureWriter(this));
+        _originalError = System.Console.Error;
+        var writer = new CaptureWriter(this);
+        System.Console.SetOut(writer);
+        System.Console.SetError(writer);
     }
 
     public void StopCapture()
     {
         if (_originalOut != null)
             System.Console.SetOut(_originalOut);
+        if (_originalError != null)
+            System.Console.SetError(_originalError);
     }
 
     public void Toggle() => _open = !_open;
@@ -83,9 +90,22 @@ public class Console
             }
             return;
         }
+        if (lower.StartsWith("loadmap "))
+        {
+            string fileName = cmd["loadmap ".Length..].Trim();
+            if (string.IsNullOrEmpty(fileName))
+            {
+                AddLog("Usage: loadMap <Filename>");
+                return;
+            }
+            AddLog($"Loading Map: {fileName}");
+            OnLoadMap?.Invoke(fileName);
+            return;
+        }
         if (lower == "help")
         {
             AddLog("Commands:");
+            AddLog("  loadMap - Load a map (e.g. loadMap map.json)");
             AddLog("  noClip  - Toggle noclip");
             AddLog("  help    - Show this");
             AddLog("  clear   - Clear console");

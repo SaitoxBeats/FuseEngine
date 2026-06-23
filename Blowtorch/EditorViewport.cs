@@ -224,7 +224,7 @@ public unsafe class EditorViewport : IDisposable
                     string modelPath = Path.GetFullPath(Path.Combine(fuseResPath, mapObj.Model));
                     var model = assets.GetModel(modelPath, mapObj.ModelScale);
                     if (model != null && model.CollVertices.Length > 0)
-                        _debugDrawer.DrawTrimesh(body.Position, body.Rotation, model.CollVertices, model.CollIndices, color);
+                        _debugDrawer.DrawTrimesh(body.Position, body.Rotation, model.CollVertices, model.CollIndices, color, new Vector3(mapObj.ModelScale));
                     break;
             }
         }

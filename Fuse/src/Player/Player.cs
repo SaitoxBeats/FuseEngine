@@ -19,7 +19,7 @@ public class Player : IDisposable
     private float _currentEyeHeight = 0.9f;
 
     private float _maxSpeedGround = 4.0f;
-    private float _maxSpeedAir = 0.8f;
+    private float _maxSpeedAir = 1.0f;
     private float _groundAccel = 10.0f;
     private float _airAccel = 150.0f;
     private float _frictionValue = 4.0f;
@@ -167,8 +167,11 @@ public class Player : IDisposable
 
         if (onGround)
         {
+            bool wantsJump = Input.Input.KeyDown(Input.KeyCodes.Space);
+
             Vector2 horiz = new(velocity.X, velocity.Z);
-            horiz = ApplyFriction(horiz, dt);
+            if (!wantsJump)
+                horiz = ApplyFriction(horiz, dt);
             float groundSpeed = _maxSpeedGround;
             if (_isSprinting)
                 groundSpeed *= _sprintSpeedMul;

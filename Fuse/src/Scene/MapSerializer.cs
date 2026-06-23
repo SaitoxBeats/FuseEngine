@@ -335,7 +335,7 @@ public static class MapSerializer
                 {
                     var model = assets.GetModel(modelPath, modelScale);
                     if (model != null && model.CollVertices.Length > 0)
-                        body.SetTrimesh(model.CollVertices, model.CollIndices);
+                        body.SetTrimesh(model.CollVertices, model.CollIndices, new Vector3(modelScale));
                     else
                         body.SetBox(new Vector3(0.5f));
                 }

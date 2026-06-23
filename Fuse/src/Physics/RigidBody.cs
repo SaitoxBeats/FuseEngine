@@ -36,6 +36,7 @@ public class RigidBody
     private float _capsuleHeight = 1.8f;
     private Vector3[]? _trimeshVerts;
     private uint[]? _trimeshIndices;
+    private Vector3 _trimeshScale = Vector3.One;
 
     public RigidBody SetBox(Vector3 halfExtents)
     {
@@ -67,11 +68,12 @@ public class RigidBody
         return this;
     }
 
-    public RigidBody SetTrimesh(Vector3[] vertices, uint[] indices)
+    public RigidBody SetTrimesh(Vector3[] vertices, uint[] indices, Vector3 scale = default)
     {
         _shapeType = ShapeType.Trimesh;
         _trimeshVerts = vertices;
         _trimeshIndices = indices;
+        _trimeshScale = scale == default ? Vector3.One : scale;
         return this;
     }
 
@@ -116,9 +118,19 @@ public class RigidBody
                     return;
                 }
 
+                Vector3[] finalVerts = _trimeshVerts;
+                if (_trimeshScale != Vector3.One)
+                {
+                    finalVerts = new Vector3[_trimeshVerts.Length];
+                    for (int i = 0; i < _trimeshVerts.Length; i++)
+                    {
+                        finalVerts[i] = _trimeshVerts[i] * _trimeshScale;
+                    }
+                }
+
                 if (_mass > 0)
                     {
-                        var hullSettings = new ConvexHullShapeSettings(new Span<Vector3>(_trimeshVerts));
+                        var hullSettings = new ConvexHullShapeSettings(new Span<Vector3>(finalVerts));
                         _shape = hullSettings.Create();
                         if (_shape == null)
                         {
@@ -139,7 +151,7 @@ public class RigidBody
                         }
 
                         var meshSettings = new MeshShapeSettings(
-                            new Span<Vector3>(_trimeshVerts),
+                            new Span<Vector3>(finalVerts),
                             new Span<IndexedTriangle>(triangles));
 
                         // Fix (PLEASE GOD) "Ghost Collisions" / Internal Edges.

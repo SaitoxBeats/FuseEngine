@@ -1429,8 +1429,9 @@ public unsafe class EditorUI
                     Vector3 max = new(float.MinValue);
                     foreach (var v in model.CollVertices)
                     {
-                        min = Vector3.Min(min, v);
-                        max = Vector3.Max(max, v);
+                        Vector3 scaledV = v * obj.ModelScale;
+                        min = Vector3.Min(min, scaledV);
+                        max = Vector3.Max(max, scaledV);
                     }
                     hit = RayAABBIntersect(localOrigin, localDir, min, max, out dist);
                 }
@@ -2716,7 +2717,8 @@ public unsafe class EditorUI
                 {
                     foreach (var v in model.CollVertices)
                     {
-                        Vector3 world = body.Position + Vector3.Transform(v, rotMatrix);
+                        Vector3 scaledV = v * selObj.ModelScale;
+                        Vector3 world = body.Position + Vector3.Transform(scaledV, rotMatrix);
                         totalMin = Vector3.Min(totalMin, world);
                         totalMax = Vector3.Max(totalMax, world);
                     }

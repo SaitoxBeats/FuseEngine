@@ -217,9 +217,10 @@ public unsafe class DebugDrawer : IDisposable
         }
     }
 
-    public void DrawTrimesh(Vector3 pos, Quaternion rot, Vector3[] vertices, uint[] indices, Vector3 color)
+    public void DrawTrimesh(Vector3 pos, Quaternion rot, Vector3[] vertices, uint[] indices, Vector3 color, Vector3 scale = default)
     {
-        var r = Matrix4x4.CreateFromQuaternion(rot);
+        Vector3 s = scale == default ? Vector3.One : scale;
+        var r = Matrix4x4.CreateScale(s) * Matrix4x4.CreateFromQuaternion(rot);
         for (int i = 0; i < indices.Length; i += 3)
         {
             var a = pos + Vector3.Transform(vertices[indices[i]], r);

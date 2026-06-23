@@ -105,6 +105,7 @@ public unsafe class Application : IDisposable
         _console = new Imgui.Console();
         _console.SetPlayer(_player);
         _console.StartCapture();
+        _console.OnLoadMap = LoadMap;
 
         // Assets via AssetManager
         _shader = _assets.GetShader($"{Fuse.ResPath.Path}/Shaders/default.vert", $"{Fuse.ResPath.Path}/Shaders/default.frag")!;
@@ -135,6 +136,48 @@ public unsafe class Application : IDisposable
         return true;
     }
 
+    private void LoadMap(string fileName)
+    {
+        string loadPath = $"{Fuse.ResPath.Path}/Maps/{fileName}";
+        if (!File.Exists(loadPath))
+        {
+            Logger.Error($"Map not found: {loadPath}");
+            return;
+        }
+
+        _interactables.Clear();
+        _behaviours.Clear();
+
+        foreach (var b in _bodies)
+        {
+            if (b.IsBuilt)
+                _physics.DestroyBody(b.Native);
+        }
+        _bodies.Clear();
+
+        foreach (var handle in _interactableHandles.Values)
+            handle.Free();
+        _interactableHandles.Clear();
+
+        var loaded = Fuse.Scene.MapSerializer.LoadFromFile(
+            loadPath, _scene, _physics, _assets, out var spawn, Fuse.ResPath.Path);
+
+        if (loaded != null)
+        {
+            _bodies.AddRange(loaded);
+            if (spawn.HasValue)
+            {
+                _player.NativeCharacter.Position = spawn.Value.Position;
+                _player.NativeCharacter.LinearVelocity = Vector3.Zero;
+                _player.Camera.SetRotation(spawn.Value.Yaw, spawn.Value.Pitch);
+            }
+        }
+
+        RegisterInteractablesAndBehaviours();
+        mapPath = loadPath;
+        Logger.Info($"Map loaded: {fileName}");
+    }
+    
     private void RegisterInteractablesAndBehaviours()
     {
         foreach (var entity in _scene.Entities)

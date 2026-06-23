@@ -52,9 +52,9 @@ public static unsafe class ModelLoader
             for (int i = 0; i < mesh->MNumVertices; i++)
             {
                 var pos = new Vector3(
-                    mesh->MVertices[i].X * scale,
-                    mesh->MVertices[i].Y * scale,
-                    mesh->MVertices[i].Z * scale);
+                    mesh->MVertices[i].X,
+                    mesh->MVertices[i].Y,
+                    mesh->MVertices[i].Z);
 
                 var uv = Vector2.Zero;
                 if (mesh->MTextureCoords[0] != null)
