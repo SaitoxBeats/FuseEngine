@@ -13,6 +13,7 @@ public class MapObject
 
     public string? Texture { get; set; }
     public string? Interactable { get; set; }
+    public string? Behaviour { get; set; }
     public MapBody? Body { get; set; }
 
     public bool IsModel => !string.IsNullOrEmpty(Model);

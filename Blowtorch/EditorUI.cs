@@ -17,8 +17,10 @@ public unsafe class EditorUI
     private string[] _availableMaps = [];
     private int _selectedOpenMapIndex = -1;
     private bool _newDocumentRequested;
+    private bool _focusCameraRequested;
     private bool _showSaveAsDialog;
     private bool _showHollowDialog;
+    private bool _showHitBoxes = true;
     private float _hollowThickness = 0.5f;
     private string _saveMapName = "map.json";
 
@@ -129,6 +131,12 @@ public unsafe class EditorUI
 
         HandleKeyboardShortcuts(sceneService, assetService, history);
 
+        if (_focusCameraRequested && _selectedObject != null)
+        {
+            _focusCameraRequested = false;
+            FocusCameraOnObject(_selectedObject, viewport3D, viewportTop, viewportFront, viewportSide);
+        }
+
         // --- Dockspace Fullscreen ---
         var mainViewport = ImGui.GetMainViewport();
         ImGui.SetNextWindowPos(mainViewport.WorkPos);
@@ -169,6 +177,11 @@ public unsafe class EditorUI
         ImGui.End();
 
         DrawViewportWindow(window, viewport3D, viewportTop, viewportFront, viewportSide, sceneService, assetService, history);
+
+        viewport3D.ShowHitboxes = _showHitBoxes;
+        viewportTop.ShowHitboxes = _showHitBoxes;
+        viewportFront.ShowHitboxes = _showHitBoxes;
+        viewportSide.ShowHitboxes = _showHitBoxes;
 
         if (_showMapWindow)
             DrawMapWindow(sceneService, assetService, history, viewport3D, viewportTop, viewportFront, viewportSide);
@@ -648,6 +661,11 @@ public unsafe class EditorUI
         {
             DeleteObjects(_selectedObjects.ToList(), sceneService, assetService, history);
         }
+
+        if (ImGui.IsKeyPressed(ImGuiKey.F) && _selectedObject != null)
+        {
+            _focusCameraRequested = true;
+        }
         
         if (ImGui.IsKeyPressed(ImGuiKey.F5))
         {
@@ -745,6 +763,7 @@ public unsafe class EditorUI
             {
                 ImGui.MenuItem("Map Objects", "", ref _showMapWindow);
                 ImGui.MenuItem("Raw JSON", "", ref _showJsonWindow);
+                ImGui.MenuItem("Show hitboxes", "", ref _showHitBoxes);
                 ImGui.EndMenu();
             }
             ImGui.EndMainMenuBar();
@@ -933,7 +952,11 @@ public unsafe class EditorUI
         }
 
         bool isDraggingActiveInThisViewport = _isDraggingHandle && _draggingHandleViewport == viewport;
-        bool normalInteractionAllowed = isHovered && !EditorGizmo.IsUsing() && !EditorGizmo.IsHovered && !_isDraggingHandle;
+        //bool normalInteractionAllowed = isHovered && !EditorGizmo.IsUsing() && !EditorGizmo.IsHovered && !_isDraggingHandle;
+
+        bool gizmoActive = EditorGizmo.IsUsing();
+        bool allowViewportInput = isHovered && !gizmoActive && !_isDraggingHandle;
+        bool allowPicking = allowViewportInput && !EditorGizmo.IsHovered;
 
         if (_selectedObject != null && _selectedObject.Body != null && sceneService.Document.Objects.Contains(_selectedObject) && !_isDraggingHandle)
         {
@@ -1095,51 +1118,11 @@ public unsafe class EditorUI
             }
         }
 
-        if (normalInteractionAllowed)
+        if (allowViewportInput)
         {
             if (_currentMode == EditorMode.Select)
             {
-                    viewport.HandleInput(ImGui.GetIO(), ImGui.GetIO().DeltaTime, window.Glfw, window.Handle, vpPos, vpSize);
-
-                if (ImGui.IsMouseClicked(ImGuiMouseButton.Left))
-                {
-                    EditorGizmo.GetMouseRay(ImGui.GetIO().MousePos, viewport.Camera.ViewMatrix, viewport.Camera.ProjectionMatrix(vpSize.X / vpSize.Y), vpPos, vpSize, out Vector3 rayOrigin, out Vector3 rayDir);
-                    
-                    MapObject? hitObj = PickObject(rayOrigin, rayDir, sceneService);
-                    if (hitObj != null)
-                    {
-                        if (ImGui.GetIO().KeyCtrl)
-                        {
-                            if (_selectedObjects.Contains(hitObj))
-                            {
-                                _selectedObjects.Remove(hitObj);
-                                if (_selectedObject == hitObj)
-                                {
-                                    _selectedObject = _selectedObjects.FirstOrDefault();
-                                }
-                            }
-                            else
-                            {
-                                _selectedObjects.Add(hitObj);
-                                _selectedObject = hitObj;
-                            }
-                        }
-                        else
-                        {
-                            _selectedObjects.Clear();
-                            _selectedObjects.Add(hitObj);
-                            _selectedObject = hitObj;
-                        }
-                    }
-                    else
-                    {
-                        if (!ImGui.GetIO().KeyCtrl)
-                        {
-                            _selectedObjects.Clear();
-                            _selectedObject = null;
-                        }
-                    }
-                }
+                viewport.HandleInput(ImGui.GetIO(), ImGui.GetIO().DeltaTime, window.Glfw, window.Handle, vpPos, vpSize);
             }
             else if (_currentMode == EditorMode.DrawBrush)
             {
@@ -1185,6 +1168,49 @@ public unsafe class EditorUI
                         if (viewport.Camera.ViewType == CameraViewType.Front) { _previewBrushMax.X = hitPoint.X; _previewBrushMax.Y = hitPoint.Y; }
                         if (viewport.Camera.ViewType == CameraViewType.Side) { _previewBrushMax.Z = hitPoint.Z; _previewBrushMax.Y = hitPoint.Y; }
                         _hasPreviewBrush = true;
+                    }
+                }
+            }
+        }
+
+        if (allowPicking && _currentMode == EditorMode.Select)
+        {
+            if (ImGui.IsMouseClicked(ImGuiMouseButton.Left))
+            {
+                EditorGizmo.GetMouseRay(ImGui.GetIO().MousePos, viewport.Camera.ViewMatrix, viewport.Camera.ProjectionMatrix(vpSize.X / vpSize.Y), vpPos, vpSize, out Vector3 rayOrigin, out Vector3 rayDir);
+                
+                MapObject? hitObj = PickObject(rayOrigin, rayDir, sceneService);
+                if (hitObj != null)
+                {
+                    if (ImGui.GetIO().KeyCtrl)
+                    {
+                        if (_selectedObjects.Contains(hitObj))
+                        {
+                            _selectedObjects.Remove(hitObj);
+                            if (_selectedObject == hitObj)
+                            {
+                                _selectedObject = _selectedObjects.FirstOrDefault();
+                            }
+                        }
+                        else
+                        {
+                            _selectedObjects.Add(hitObj);
+                            _selectedObject = hitObj;
+                        }
+                    }
+                    else
+                    {
+                        _selectedObjects.Clear();
+                        _selectedObjects.Add(hitObj);
+                        _selectedObject = hitObj;
+                    }
+                }
+                else
+                {
+                    if (!ImGui.GetIO().KeyCtrl)
+                    {
+                        _selectedObjects.Clear();
+                        _selectedObject = null;
                     }
                 }
             }
@@ -1901,6 +1927,21 @@ public unsafe class EditorUI
                         obj.Interactable = interactable;
                         var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
                         if (entity != null) entity.InteractableType = interactable;
+                    }
+                    HandleUndoEnd(sceneService, assetService, history);
+                }
+
+                // Behaviour
+                if (ImGui.CollapsingHeader("Behaviour", ImGuiTreeNodeFlags.None))
+                {
+                    string behaviour = obj.Behaviour ?? "";
+                    bool behavChanged = ImGui.InputText("Behaviour Type##inspectBehaviour", ref behaviour, 128);
+                    HandleUndoStart(sceneService);
+                    if (behavChanged)
+                    {
+                        obj.Behaviour = behaviour;
+                        var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
+                        if (entity != null) entity.BehaviourType = behaviour;
                     }
                     HandleUndoEnd(sceneService, assetService, history);
                 }
@@ -2664,6 +2705,40 @@ public unsafe class EditorUI
 
             // Draw as cyan/light blue outline
             drawer.DrawBox(pos, Quaternion.Identity, size * 0.5f, new Vector3(0.0f, 1.0f, 1.0f));
+        }
+
+        if (_selectedObject?.Body != null)
+        {
+            var body = _selectedObject.Body;
+            Vector3 color = new Vector3(0.2f, 1.0f, 0.2f);
+
+            Vector3 h = body.HalfExtents ?? Vector3.One;
+            if (body.Shape != MapShapeType.Box)
+            {
+                float r = body.Radius ?? 0.5f;
+                if (body.Shape == MapShapeType.Capsule)
+                    r = MathF.Max(r, (body.Height ?? 1f) * 0.5f);
+                if (body.Shape == MapShapeType.Trimesh) r = 1.0f;
+                h = new Vector3(r);
+            }
+
+            var rotMatrix = Matrix4x4.CreateFromQuaternion(body.Rotation);
+            Vector3 min = new(float.MaxValue), max = new(float.MinValue);
+
+            for (int i = 0; i < 8; i++)
+            {
+                Vector3 local = new(
+                    (i & 1) == 0 ? -h.X : h.X,
+                    (i & 2) == 0 ? -h.Y : h.Y,
+                    (i & 4) == 0 ? -h.Z : h.Z);
+                Vector3 world = body.Position + Vector3.Transform(local, rotMatrix);
+                min = Vector3.Min(min, world);
+                max = Vector3.Max(max, world);
+            }
+
+            Vector3 center = (min + max) * 0.5f;
+            Vector3 halfExt = (max - min) * 0.5f;
+            drawer.DrawBox(center, Quaternion.Identity, halfExt, color);
         }
     }
 }

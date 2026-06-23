@@ -20,7 +20,7 @@ public class ViewportCamera
 
     private const float Sensitivity = 0.3f;
     private const float ScrollSpeed = 1.5f;
-    private const float PanSpeed = 0.02f;
+    private const float PanSpeed = 0.005f;
     private const float FlySpeed = 15.0f;
     private const float MinDistance = 0.5f;
     private const float MaxDistance = 200.0f;

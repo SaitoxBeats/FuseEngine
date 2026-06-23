@@ -138,6 +138,9 @@ public static class MapSerializer
             if (!string.IsNullOrEmpty(e.InteractableType))
                 obj["interactable"] = e.InteractableType;
 
+            if (!string.IsNullOrEmpty(e.BehaviourType))
+                obj["behaviour"] = e.BehaviourType;
+
             if (e.Body != null && e.Body.IsBuilt)
                 obj["body"] = SerializeBody(e, physics);
 
@@ -312,6 +315,9 @@ public static class MapSerializer
 
             if (obj.TryGetPropertyValue("interactable", out var interactableNode))
                 entity.InteractableType = (string)interactableNode!;
+
+            if (obj.TryGetPropertyValue("behaviour", out var behaviourNode))
+                entity.BehaviourType = (string)behaviourNode!;
 
             if (entity.Visible && obj.TryGetPropertyValue("body", out var bodyNode))
             {

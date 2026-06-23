@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using Silk.NET.OpenGL;
 using Fuse.Input;
 using Fuse.Interaction;
+using Fuse.Behaviours;
 
 namespace Fuse.Core;
 
@@ -60,6 +61,9 @@ public unsafe class Application : IDisposable
     private readonly List<IInteractable> _interactables = [];
     private Interaction.IInteractable? _lookingAt;
     private readonly Dictionary<JoltPhysicsSharp.BodyID, GCHandle> _interactableHandles = [];
+
+    // Behaviours
+    private readonly List<IBehaviour> _behaviours = [];
 
     public Application()
     {
@@ -124,14 +128,14 @@ public unsafe class Application : IDisposable
         _crosshairNode = _hud.AddImage(_crosshairTexture, UI.HUDAnchor.Center, Vector2.Zero, new Vector2(8, 8));
 
         // Register interactables
-        RegisterInteractables();
+        RegisterInteractablesAndBehaviours();
 
         _lastTime = _window.GlfwApi.GetTime();
         Logger.Info(":: Application ready ::");
         return true;
     }
 
-    private void RegisterInteractables()
+    private void RegisterInteractablesAndBehaviours()
     {
         foreach (var entity in _scene.Entities)
         {
@@ -146,6 +150,20 @@ public unsafe class Application : IDisposable
                     var gcHandle = GCHandle.Alloc(interactable);
                     _interactableHandles[entity.Body.Native] = gcHandle;
                     _physics.BodyInterface.SetUserData(entity.Body.Native, (ulong)GCHandle.ToIntPtr(gcHandle));
+                }
+            }
+        }
+
+        foreach (var entity in _scene.Entities)
+        {
+            if (entity.Body != null && entity.Body.IsBuilt && !string.IsNullOrEmpty(entity.BehaviourType))
+            {
+                var behaviour = BehaviourSystem.Create(entity.BehaviourType);
+                if (behaviour != null)
+                {
+                    behaviour.Entity = entity;
+                    behaviour.World = _physics;
+                    _behaviours.Add(behaviour);
                 }
             }
         }
@@ -257,6 +275,8 @@ public unsafe class Application : IDisposable
                     _pickup.Update(dt);
                     foreach (var interactable in _interactables)
                         interactable.Update(dt);
+                    foreach (var behaviour in _behaviours)
+                        behaviour.Update(dt);
                 }
 
                 HandleInput();
@@ -319,6 +339,7 @@ public unsafe class Application : IDisposable
         if (Input.Input.KeyPressed(KeyCodes.F5))
         {
             _interactables.Clear();
+            _behaviours.Clear();
             string loadPath = mapPath;
             foreach (var b in _bodies)
             {
@@ -342,7 +363,7 @@ public unsafe class Application : IDisposable
                 }
             }
 
-            RegisterInteractables();
+            RegisterInteractablesAndBehaviours();
         }
 
         if (Input.Input.KeyPressed(KeyCodes.F9))

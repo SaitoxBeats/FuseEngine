@@ -103,6 +103,7 @@ public class MapDocument
         mo.UvScale = obj.TryGetPropertyValue("uv_scale", out var uvNode) ? Vec2FromJson(uvNode!.AsArray()) : Vector2.One;
         mo.Texture = obj.TryGetPropertyValue("texture", out var texNode) ? (string)texNode! : null;
         mo.Interactable = obj.TryGetPropertyValue("interactable", out var interactNode) ? (string)interactNode! : null;
+        mo.Behaviour = obj.TryGetPropertyValue("behaviour", out var behavNode) ? (string)behavNode! : null;
 
         if (obj.TryGetPropertyValue("body", out var bodyNode))
             mo.Body = ParseBody(bodyNode!.AsObject());
@@ -199,10 +200,13 @@ public class MapDocument
                 j["uv_scale"] = Vec2ToJson(obj.UvScale);
         }
 
+        // fuck 
         if (!string.IsNullOrEmpty(obj.Texture))
             j["texture"] = obj.Texture;
         if (!string.IsNullOrEmpty(obj.Interactable))
             j["interactable"] = obj.Interactable;
+        if (!string.IsNullOrEmpty(obj.Behaviour))
+            j["behaviour"] = obj.Behaviour;
 
         if (obj.Body != null)
             j["body"] = SerializeBody(obj.Body);

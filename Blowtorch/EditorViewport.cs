@@ -9,6 +9,7 @@ using Fuse.AssetManagement;
 using Fuse.Core;
 using Shader = Fuse.Renderer.Shader;
 using Mesh = Fuse.Renderer.Mesh;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Blowtorch;
 
@@ -38,6 +39,11 @@ public unsafe class EditorViewport : IDisposable
         _gridMesh = CreateGridMesh(_gl, 4000, 1.0f);
         _debugDrawer = new Fuse.Debug.DebugDrawer(_gl) { Enabled = true };
         CreateFbo(800, 600);
+    }
+    public bool ShowHitboxes
+    {
+        get => _debugDrawer.Enabled;
+        set => _debugDrawer.Enabled = value;
     }
 
     public uint ColorTexture => _colorTex;
@@ -188,6 +194,7 @@ public unsafe class EditorViewport : IDisposable
         var view = _camera.ViewMatrix;
         var proj = _camera.ProjectionMatrix((float)_width / _height);
 
+        if (!_debugDrawer.Enabled) return;
         _debugDrawer.Clear();
 
         var doc = sceneService.Document;
