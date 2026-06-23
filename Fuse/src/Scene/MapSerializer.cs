@@ -65,6 +65,7 @@ public static class MapSerializer
         bj["mass"] = e.Body.Mass;
         bj["friction"] = e.Body.Friction;
         bj["restitution"] = e.Body.Restitution;
+        bj["is_trigger"] = e.Body.IsTrigger;
 
         switch (e.Body.Type)
         {
@@ -328,6 +329,9 @@ public static class MapSerializer
                 var body = new RigidBody();
                 ConfigureBodyFromJson(body, bj);
 
+                if (body.IsTrigger)
+                    entity.Visible = false;
+
                 if (!string.IsNullOrEmpty(entity.BehaviourType))
                     body.SetKinematic(true);
 
@@ -342,6 +346,7 @@ public static class MapSerializer
 
                 body.Build(physics);
                 entity.Body = body;
+                scene.RegisterBody(entity);
                 
                 if (isBrush)
                     entity.Transform.Scale = Vector3.One;
@@ -412,6 +417,8 @@ public static class MapSerializer
             body.SetFriction((float)frictionToken!);
         if (bj.TryGetPropertyValue("restitution", out var restToken))
             body.SetRestitution((float)restToken!);
+        if (bj.TryGetPropertyValue("is_trigger", out var triggerToken))
+            body.SetTrigger((bool)triggerToken!);
     }
 
     public static bool SaveToFile(Renderer.Scene scene, PhysicsWorld physics, string filepath,

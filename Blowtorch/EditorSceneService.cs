@@ -45,6 +45,8 @@ public class EditorSceneService
             var entity = _scene.Add(mesh, mapObj.Id);
             entity.MeshKey = mapObj.Mesh ?? mapObj.Model ?? "";
             entity.TexturePath = mapObj.Texture ?? "";
+            if (mapObj.Body?.IsTrigger == true)
+                entity.TexturePath = "Textures/tools/toolstrigger.bmp";
             entity.Visible = mapObj.Visible;
             entity.ModelScale = mapObj.ModelScale;
             entity.UvScale = mapObj.UvScale;

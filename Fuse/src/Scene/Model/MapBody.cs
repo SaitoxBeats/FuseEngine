@@ -20,6 +20,7 @@ public class MapBody
     public float Mass { get; set; }
     public float Friction { get; set; }
     public float Restitution { get; set; }
+    public bool IsTrigger { get; set; }
 
     public Vector3? HalfExtents { get; set; }
     public float? Radius { get; set; }

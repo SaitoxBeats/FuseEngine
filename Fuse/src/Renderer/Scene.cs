@@ -1,5 +1,6 @@
 using System.Numerics;
 using Fuse.Physics;
+using JoltPhysicsSharp;
 
 namespace Fuse.Renderer;
 
@@ -37,6 +38,7 @@ public class Entity
 public class Scene
 {
     private readonly List<Entity> _entities = [];
+    private readonly Dictionary<BodyID, Entity> _bodyEntityMap = [];
 
     public Entity Add(Mesh mesh, string id, RigidBody? body = null)
     {
@@ -48,15 +50,30 @@ public class Scene
             Body = body,
         };
         _entities.Add(entity);
+        if (body != null)
+            _bodyEntityMap[body.Native] = entity;
         return entity;
     }
 
     public void Clear()
     {
+        _bodyEntityMap.Clear();
         _entities.Clear();
     }
 
     public IReadOnlyList<Entity> Entities => _entities;
+
+    public void RegisterBody(Entity entity)
+    {
+        if (entity.Body != null)
+            _bodyEntityMap[entity.Body.Native] = entity;
+    }
+
+    public Entity? GetEntityByBody(BodyID bodyId)
+    {
+        _bodyEntityMap.TryGetValue(bodyId, out var entity);
+        return entity;
+    }
 
     public void Render(Shader shader, PhysicsWorld world, Texture defaultTexture)
     {
@@ -177,5 +194,11 @@ public class Scene
 
             e.Mesh.Draw();
         }
+    }
+
+    public bool IsEntityTrigger(string id)
+    {
+        var entity = _entities.FirstOrDefault(e => e.Id == id);
+        return entity?.Body?.IsTrigger ?? false;
     }
 }

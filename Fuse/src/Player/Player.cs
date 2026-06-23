@@ -280,6 +280,7 @@ public class Player : IDisposable
     }
 
     public Camera Camera => _camera;
+    public BodyLockInterface GetBodyLockInterface() => _bli;
     public Vector3 Position => new((float)_character.Position.X, (float)_character.Position.Y, (float)_character.Position.Z);
     public Vector3 EyePosition => new((float)_character.Position.X, (float)_character.Position.Y + _currentEyeHeight, (float)_character.Position.Z);
     public CharacterVirtual NativeCharacter => _character;
@@ -443,7 +444,7 @@ public class Player : IDisposable
         _bli.LockRead(bodyID2, out bodyLock);
         if (bodyLock.Succeeded)
         {
-            if (bodyLock.Body.IsStatic && contactNormal.Y > 0.707f)
+            if (bodyLock.Body.IsStatic && contactNormal.Y > 0.707f && !bodyLock.Body.IsSensor)
                 settings.CanPushCharacter = false;
             _bli.UnlockRead(bodyLock);
         }

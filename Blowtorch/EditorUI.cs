@@ -1792,6 +1792,18 @@ public unsafe class EditorUI
                     }
                     HandleUndoEnd(sceneService, assetService, history);
                 }
+
+                // Is Trigger
+                bool commonTrigger = _selectedObjects.Select(o => o.Body!.IsTrigger).Distinct().Count() == 1
+                    ? _selectedObjects.First().Body!.IsTrigger : false;
+                bool multiTrigger = commonTrigger;
+                if (ImGui.Checkbox("Is Trigger##multiTrigger", ref multiTrigger))
+                {
+                    HandleUndoStart(sceneService);
+                    foreach (var obj in _selectedObjects)
+                        obj.Body!.IsTrigger = multiTrigger;
+                    HandleUndoEnd(sceneService, assetService, history);
+                }
             }
         }
         else
@@ -2038,6 +2050,12 @@ public unsafe class EditorUI
                         bool restChanged = ImGui.DragFloat("Restitution##inspectRestitution", ref restitution, 0.05f, 0.0f, 1.0f, "%.2f");
                         HandleUndoStart(sceneService);
                         if (restChanged) body.Restitution = restitution;
+                        HandleUndoEnd(sceneService, assetService, history);
+
+                        bool isTrigger = body.IsTrigger;
+                        bool trigChanged = ImGui.Checkbox("Is Trigger##inspectTrigger", ref isTrigger);
+                        HandleUndoStart(sceneService);
+                        if (trigChanged) body.IsTrigger = isTrigger;
                         HandleUndoEnd(sceneService, assetService, history);
 
                         switch (body.Shape)

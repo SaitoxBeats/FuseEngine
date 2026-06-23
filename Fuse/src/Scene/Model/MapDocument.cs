@@ -131,6 +131,7 @@ public class MapDocument
             Mass = bj.TryGetPropertyValue("mass", out var mNode) ? (float)mNode! : 0,
             Friction = bj.TryGetPropertyValue("friction", out var fNode) ? (float)fNode! : 0.5f,
             Restitution = bj.TryGetPropertyValue("restitution", out var rNode) ? (float)rNode! : 0.3f,
+            IsTrigger = bj.TryGetPropertyValue("is_trigger", out var TrigNode) ? (bool)TrigNode! : false,
         };
 
         if (bj.TryGetPropertyValue("position", out var posNode))
@@ -223,7 +224,8 @@ public class MapDocument
             ["rotation"] = QuatToJson(body.Rotation),
             ["mass"] = body.Mass,
             ["friction"] = body.Friction,
-            ["restitution"] = body.Restitution
+            ["restitution"] = body.Restitution,
+            ["is_trigger"] = body.IsTrigger,
         };
 
         switch (body.Shape)

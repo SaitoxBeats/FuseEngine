@@ -26,6 +26,7 @@ public class RigidBody
     private bool _isKinematic;
     private float _friction = 0.5f;
     private float _restitution = 0.3f;
+    private bool _isTrigger;
 
     private ShapeType _shapeType;
     private Vector3 _boxHalfExtents = new(0.5f);
@@ -81,6 +82,7 @@ public class RigidBody
     public RigidBody SetRotation(Quaternion rot) { _rotation = rot; return this; }
     public RigidBody SetMass(float mass) { _mass = mass; return this; }
     public RigidBody SetKinematic(bool kinematic) { _isKinematic = kinematic; return this; }
+    public RigidBody SetTrigger(bool trigger) { _isTrigger = trigger; return this; }
     public RigidBody SetFriction(float f) { _friction = f; return this; }
     public RigidBody SetRestitution(float r) { _restitution = r; return this; }
 
@@ -188,6 +190,9 @@ public class RigidBody
         settings.AllowSleeping = true;
         settings.MotionQuality = MotionQuality.Discrete;
 
+        if (_isTrigger)
+            settings.IsSensor = true;
+
         if (motionType == MotionType.Dynamic)
         {
             settings.OverrideMassProperties = OverrideMassProperties.CalculateMassAndInertia;
@@ -265,4 +270,5 @@ public class RigidBody
     public float PlaneDistance => _planeDistance;
     public Vector3[]? TrimeshVertices => _trimeshVerts;
     public uint[]? TrimeshIndices => _trimeshIndices;
+    public bool IsTrigger => _isTrigger;
 }

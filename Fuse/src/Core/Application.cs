@@ -1,9 +1,10 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
-using Silk.NET.OpenGL;
+using Fuse.Behaviours;
 using Fuse.Input;
 using Fuse.Interaction;
-using Fuse.Behaviours;
+using Fuse.Renderer;
+using Silk.NET.OpenGL;
 
 namespace Fuse.Core;
 
@@ -64,6 +65,7 @@ public unsafe class Application : IDisposable
 
     // Behaviours
     private readonly List<IBehaviour> _behaviours = [];
+    private Behaviours.TriggerSystem _triggerSystem = null!;
 
     public Application()
     {
@@ -106,6 +108,14 @@ public unsafe class Application : IDisposable
         _console.SetPlayer(_player);
         _console.StartCapture();
         _console.OnLoadMap = LoadMap;
+
+        // Triggers
+        _triggerSystem = new Behaviours.TriggerSystem(
+            _player.NativeCharacter,
+            _behaviours,
+            id => _scene.GetEntityByBody(id),
+            _player.GetBodyLockInterface()
+        );
 
         // Assets via AssetManager
         _shader = _assets.GetShader($"{Fuse.ResPath.Path}/Shaders/default.vert", $"{Fuse.ResPath.Path}/Shaders/default.frag")!;
@@ -178,8 +188,43 @@ public unsafe class Application : IDisposable
         Logger.Info($"Map loaded: {fileName}");
     }
     
+    private void ReloadMap()
+    {
+        _interactables.Clear();
+        _behaviours.Clear();
+        string loadPath = mapPath;
+        foreach (var b in _bodies)
+        {
+            if (b.IsBuilt)
+                _physics.DestroyBody(b.Native);
+        }
+        _bodies.Clear();
+        foreach (var handle in _interactableHandles.Values)
+            handle.Free();
+        _interactableHandles.Clear();
+
+        var loaded = Fuse.Scene.MapSerializer.LoadFromFile(loadPath, _scene, _physics, _assets, out var spawn, Fuse.ResPath.Path);
+        if (loaded != null)
+        {
+            _bodies.AddRange(loaded);
+            if (spawn.HasValue)
+            {
+                _player.NativeCharacter.Position = spawn.Value.Position;
+                _player.NativeCharacter.LinearVelocity = Vector3.Zero;
+                _player.Camera.SetRotation(spawn.Value.Yaw, spawn.Value.Pitch);
+            }
+        }
+
+        RegisterInteractablesAndBehaviours();
+    }
     private void RegisterInteractablesAndBehaviours()
     {
+        foreach (var entity in _scene.Entities)
+        {
+            if (entity.Body != null)
+                _scene.RegisterBody(entity);
+        }
+
         foreach (var entity in _scene.Entities)
         {
             if (entity.Body != null && entity.Body.IsBuilt && !string.IsNullOrEmpty(entity.InteractableType))
@@ -320,6 +365,16 @@ public unsafe class Application : IDisposable
                         interactable.Update(dt);
                     foreach (var behaviour in _behaviours)
                         behaviour.Update(dt);
+                    _triggerSystem.Update(dt);
+                    foreach (var behaviour in _behaviours)
+                    {
+                        if (behaviour is Behaviours.TriggerReset reset && reset.PendingReset)
+                        {
+                            reset.PendingReset = false;
+                            ReloadMap();
+                            break;
+                        }
+                    }
                 }
 
                 HandleInput();
@@ -381,32 +436,7 @@ public unsafe class Application : IDisposable
 
         if (Input.Input.KeyPressed(KeyCodes.F5))
         {
-            _interactables.Clear();
-            _behaviours.Clear();
-            string loadPath = mapPath;
-            foreach (var b in _bodies)
-            {
-                if (b.IsBuilt)
-                    _physics.DestroyBody(b.Native);
-            }
-            _bodies.Clear();
-            foreach (var handle in _interactableHandles.Values)
-                handle.Free();
-            _interactableHandles.Clear();
-
-            var loaded = Fuse.Scene.MapSerializer.LoadFromFile(loadPath, _scene, _physics, _assets, out var spawn, Fuse.ResPath.Path);
-            if (loaded != null)
-            {
-                _bodies.AddRange(loaded);
-                if (spawn.HasValue)
-                {
-                    _player.NativeCharacter.Position = spawn.Value.Position;
-                    _player.NativeCharacter.LinearVelocity = Vector3.Zero;
-                    _player.Camera.SetRotation(spawn.Value.Yaw, spawn.Value.Pitch);
-                }
-            }
-
-            RegisterInteractablesAndBehaviours();
+            ReloadMap();
         }
 
         if (Input.Input.KeyPressed(KeyCodes.F9))

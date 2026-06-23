@@ -26,6 +26,7 @@
         "mass": 0,
         "friction": 0.8,
         "restitution": 0.3,
+        "is_trigger": false,
         "half_extents": [
           100,
           0.1,
@@ -55,6 +56,7 @@
         "mass": 10,
         "friction": 0.5,
         "restitution": 0.4,
+        "is_trigger": false,
         "half_extents": [
           0.5,
           0.5,
@@ -81,7 +83,8 @@
         ],
         "mass": 0,
         "friction": 0.5,
-        "restitution": 0.3
+        "restitution": 0.3,
+        "is_trigger": false
       }
     },
     {
@@ -104,7 +107,8 @@
         ],
         "mass": 0,
         "friction": 0.5,
-        "restitution": 0.3
+        "restitution": 0.3,
+        "is_trigger": false
       }
     },
     {
@@ -127,6 +131,7 @@
         "mass": 10,
         "friction": 0.5,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           0.5,
           0.5,
@@ -154,6 +159,7 @@
         "mass": 10,
         "friction": 0.5,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           0.5,
           0.5,
@@ -329,6 +335,7 @@
         "mass": 0,
         "friction": 0,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           0.25,
           2,
@@ -504,6 +511,7 @@
         "mass": 0,
         "friction": 0,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           2.5,
           2,
@@ -679,6 +687,7 @@
         "mass": 0,
         "friction": 0,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           1,
           2,
@@ -854,6 +863,7 @@
         "mass": 0,
         "friction": 0,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           1,
           0.5,
@@ -1029,6 +1039,7 @@
         "mass": 0,
         "friction": 0,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           0.5,
           2,
@@ -1204,6 +1215,7 @@
         "mass": 0,
         "friction": 0,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           0.25,
           2,
@@ -1231,7 +1243,8 @@
         ],
         "mass": 10,
         "friction": 0.5,
-        "restitution": 0.3
+        "restitution": 0.3,
+        "is_trigger": false
       }
     },
     {
@@ -1402,6 +1415,7 @@
         "mass": 0,
         "friction": 0,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           0.125,
           1.5,
@@ -1577,6 +1591,7 @@
         "mass": 0,
         "friction": 0,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           0.125,
           1.53125,
@@ -1605,7 +1620,8 @@
         ],
         "mass": 0,
         "friction": 0.5,
-        "restitution": 0.3
+        "restitution": 0.3,
+        "is_trigger": false
       }
     },
     {
@@ -1629,7 +1645,8 @@
         ],
         "mass": 0,
         "friction": 0.5,
-        "restitution": 0.3
+        "restitution": 0.3,
+        "is_trigger": false
       }
     },
     {
@@ -1654,7 +1671,8 @@
         ],
         "mass": 0,
         "friction": 0.5,
-        "restitution": 0.3
+        "restitution": 0.3,
+        "is_trigger": false
       }
     },
     {
@@ -1677,7 +1695,8 @@
         ],
         "mass": 10,
         "friction": 0.5,
-        "restitution": 0
+        "restitution": 0,
+        "is_trigger": false
       }
     },
     {
@@ -1698,7 +1717,8 @@
         ],
         "mass": 0,
         "friction": 0,
-        "restitution": 0
+        "restitution": 0,
+        "is_trigger": false
       }
     },
     {
@@ -1869,6 +1889,7 @@
         "mass": 0,
         "friction": 0.8,
         "restitution": 0.3,
+        "is_trigger": false,
         "half_extents": [
           1,
           0.5,
@@ -1896,7 +1917,8 @@
         ],
         "mass": 0,
         "friction": 0.5,
-        "restitution": 0
+        "restitution": 0,
+        "is_trigger": false
       }
     }
   ],
