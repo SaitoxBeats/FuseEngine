@@ -28,6 +28,16 @@ public unsafe class Application : IDisposable
     // Shaders (from AssetManager)
     private Renderer.Shader _shader = null!;
     private Renderer.Shader _skyboxShader = null!;
+    private Renderer.Shader _shadowShader = null!;
+    private Renderer.ShadowMap _shadowMap = null!;
+
+    // Shadow Settings
+    private float _shadowBiasFactor = 0.0f;
+    private float _shadowBiasBase = 0.0000f;
+    private float _shadowNearPlane = 1.0f;
+    private float _shadowFarPlane = 300.0f;
+    private float _shadowSpread = 2.0f;
+    private bool _shadowsEnabled = false;
 
     // Meshes (from AssetManager)
     private Renderer.Mesh _cubeMesh = null!;
@@ -121,6 +131,8 @@ public unsafe class Application : IDisposable
         // Assets via AssetManager
         _shader = _assets.GetShader($"{Fuse.ResPath.Path}/Shaders/default.vert", $"{Fuse.ResPath.Path}/Shaders/default.frag")!;
         _skyboxShader = _assets.GetShader($"{Fuse.ResPath.Path}/Shaders/skybox.vert", $"{Fuse.ResPath.Path}/Shaders/skybox.frag")!;
+        _shadowShader = _assets.GetShader($"{Fuse.ResPath.Path}/Shaders/shadow.vert", $"{Fuse.ResPath.Path}/Shaders/shadow.frag")!;
+        _shadowMap = new Renderer.ShadowMap(gl, 512, 512);
         _cubeMesh = _assets.GetMesh("cube")!;
         _groundMesh = _assets.GetMesh("ground")!;
         _crateTexture = _assets.GetTexture($"{Fuse.ResPath.Path}/Textures/dev_measurecrate01.bmp");
@@ -328,6 +340,11 @@ public unsafe class Application : IDisposable
 
         _window.OnKeyPress += (key) =>
         {
+            if (key == KeyCodes.F12)
+            {
+                _shadowsEnabled = !_shadowsEnabled;
+            }
+            
             if (key == KeyCodes.Escape)
             {
                 _paused = !_paused;
@@ -394,6 +411,18 @@ public unsafe class Application : IDisposable
                 // ImGui
                 _imgui.NewFrame(dt, _scrWidth, _scrHeight);
                 _imgui.DrawWindows(_player);
+
+                if (_paused)
+                {
+                    ImGuiNET.ImGui.Begin("Shadow Settings");
+                    ImGuiNET.ImGui.DragFloat("Bias Factor", ref _shadowBiasFactor, 0.0001f, 0.0f, 0.1f, "%.5f");
+                    ImGuiNET.ImGui.DragFloat("Bias Base", ref _shadowBiasBase, 0.00001f, 0.0f, 0.01f, "%.6f");
+                    ImGuiNET.ImGui.DragFloat("Near Plane", ref _shadowNearPlane, 1.0f, -200.0f, 200.0f, "%.1f");
+                    ImGuiNET.ImGui.DragFloat("Far Plane", ref _shadowFarPlane, 1.0f, 10.0f, 1000.0f, "%.1f");
+                    ImGuiNET.ImGui.DragFloat("Spread (Softness)", ref _shadowSpread, 0.1f, 0.0f, 20.0f, "%.1f");
+                    ImGuiNET.ImGui.End();
+                }
+
                 _console.Draw();
                 _imgui.Render();
 
@@ -528,6 +557,35 @@ public unsafe class Application : IDisposable
         var view = _player.Camera.GetViewMatrix();
         var proj = _player.Camera.GetProjectionMatrix(aspect);
 
+        // --- 1. Shadow Pass ---
+        Vector3 lightDir = Vector3.Normalize(new Vector3(1, 2, 1));
+        
+        float[] cascadeLevels = { _shadowFarPlane * 0.05f, _shadowFarPlane * 0.2f, _shadowFarPlane };
+        Matrix4x4[] lightSpaceMatrices = new Matrix4x4[3];
+
+        if (_shadowShader != null && _shadowShader.ID != 0 && _shadowsEnabled)
+        {
+            gl.Enable(EnableCap.DepthTest);
+            gl.Enable(EnableCap.CullFace);
+            gl.CullFace(GLEnum.Front); // Fix peter-panning
+
+            _shadowShader.Use();
+            
+            for (int i = 0; i < 3; i++)
+            {
+                float near = i == 0 ? _player.Camera.NearPlane : cascadeLevels[i - 1];
+                float far = cascadeLevels[i];
+                lightSpaceMatrices[i] = GetLightSpaceMatrix(near, far, aspect, lightDir);
+                
+                _shadowShader.SetMat4("uLightSpaceMatrix", lightSpaceMatrices[i]);
+                _shadowMap.BindForWriting(i);
+                _scene.Render(_shadowShader, _physics, _crateTexture, lightSpaceMatrices[i]); 
+            }
+        }
+
+        // --- 2. Regular Render Pass ---
+        gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+        gl.Viewport(0, 0, (uint)_scrWidth, (uint)_scrHeight);
         gl.ClearColor(0.1f, 0.1f, 0.15f, 1.0f);
         gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
@@ -559,17 +617,34 @@ public unsafe class Application : IDisposable
             gl.CullFace(GLEnum.Back);
             gl.DepthFunc(DepthFunction.Less);
             _shader.Use();
-            _shader.SetVec3("uLightDir", Vector3.Normalize(new Vector3(1, 2, 1)));
+            _shader.SetVec3("uLightDir", lightDir);
 
             float lum = _skyboxDominantColor.X * 0.2126f + _skyboxDominantColor.Y * 0.7152f + _skyboxDominantColor.Z * 0.0722f;
             _shader.SetFloat("uAmbient", 0.02f + 0.28f * lum);
             var tinted = Vector3.Lerp(new Vector3(1, 0.95f, 0.9f), _skyboxDominantColor, 0.5f);
             _shader.SetVec3("uLightColor", tinted * (0.5f + 0.5f * lum));
+            
             _shader.SetMat4("uView", view);
             _shader.SetMat4("uProj", proj);
+            
+            for (int i = 0; i < 3; i++)
+            {
+                _shader.SetMat4($"uLightSpaceMatrices[{i}]", lightSpaceMatrices[i]);
+                _shader.SetFloat($"uCascadePlaneDistances[{i}]", cascadeLevels[i]);
+            }
+            
+            _shader.SetBool("uEnableShadows", _shadowsEnabled);
+            
+            _shader.SetFloat("uShadowBiasFactor", _shadowBiasFactor);
+            _shader.SetFloat("uShadowBiasBase", _shadowBiasBase);
+            _shader.SetFloat("uShadowSpread", _shadowSpread);
+            
             _shader.SetVec3("uColor", Vector3.One);
             _shader.SetBool("uUseTexture", true);
+            
             _shader.SetInt("uTexture", 0);
+            _shader.SetInt("uShadowMap", 1);
+            _shadowMap.BindForReading(TextureUnit.Texture1);
 
             _scene.Render(_shader, _physics, _crateTexture);
         }
@@ -651,5 +726,71 @@ public unsafe class Application : IDisposable
         _physics.Dispose();
         _window.Dispose();
         Logger.Info("Application shutdown");
+    }
+    private Vector4[] GetFrustumCornersWorldSpace(Matrix4x4 proj, Matrix4x4 view)
+    {
+        Matrix4x4.Invert(view * proj, out Matrix4x4 invVP);
+        
+        Vector4[] corners = new Vector4[8];
+        int i = 0;
+        for (int x = 0; x < 2; ++x)
+        {
+            for (int y = 0; y < 2; ++y)
+            {
+                for (int z = 0; z < 2; ++z)
+                {
+                    Vector4 pt = Vector4.Transform(new Vector4(
+                        2.0f * x - 1.0f,
+                        2.0f * y - 1.0f,
+                        2.0f * z - 1.0f,
+                        1.0f), invVP);
+                    corners[i++] = pt / pt.W;
+                }
+            }
+        }
+        return corners;
+    }
+
+    private Matrix4x4 GetLightSpaceMatrix(float near, float far, float aspect, Vector3 lightDir)
+    {
+        var proj = Matrix4x4.CreatePerspectiveFieldOfView(
+            float.DegreesToRadians(_player.Camera.FOV), aspect, near, far);
+        var view = _player.Camera.GetViewMatrix();
+        
+        var corners = GetFrustumCornersWorldSpace(proj, view);
+        
+        Vector3 center = Vector3.Zero;
+        foreach (var v in corners)
+        {
+            center += new Vector3(v.X, v.Y, v.Z);
+        }
+        center /= corners.Length;
+
+        var lightView = Matrix4x4.CreateLookAt(center + lightDir, center, Vector3.UnitY);
+        
+        float minX = float.MaxValue;
+        float maxX = float.MinValue;
+        float minY = float.MaxValue;
+        float maxY = float.MinValue;
+        float minZ = float.MaxValue;
+        float maxZ = float.MinValue;
+        
+        foreach (var v in corners)
+        {
+            var trf = Vector4.Transform(v, lightView);
+            minX = MathF.Min(minX, trf.X);
+            maxX = MathF.Max(maxX, trf.X);
+            minY = MathF.Min(minY, trf.Y);
+            maxY = MathF.Max(maxY, trf.Y);
+            minZ = MathF.Min(minZ, trf.Z);
+            maxZ = MathF.Max(maxZ, trf.Z);
+        }
+        
+        float zMult = 10.0f;
+        if (minZ < 0) minZ *= zMult; else minZ /= zMult;
+        if (maxZ < 0) maxZ /= zMult; else maxZ *= zMult;
+
+        var lightProjection = Matrix4x4.CreateOrthographicOffCenter(minX, maxX, minY, maxY, minZ, maxZ);
+        return lightView * lightProjection;
     }
 }

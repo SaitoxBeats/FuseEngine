@@ -6,6 +6,7 @@ layout(location = 2) in vec3 aNormal;
 out vec2 vTexCoord;
 out vec3 vWorldPos;
 out vec3 vWorldNormal;
+out vec3 vViewPos;
 
 uniform mat4 uModel;
 uniform mat4 uView;
@@ -17,5 +18,6 @@ void main() {
     vec4 worldPos = uModel * vec4(aPos, 1.0);
     vWorldPos = worldPos.xyz;
     vWorldNormal = mat3(transpose(inverse(uModel))) * aNormal;
+    vViewPos = (uView * worldPos).xyz;
     gl_Position = uProj * uView * worldPos;
 }

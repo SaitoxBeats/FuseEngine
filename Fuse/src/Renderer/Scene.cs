@@ -75,7 +75,7 @@ public class Scene
         return entity;
     }
 
-    public void Render(Shader shader, PhysicsWorld world, Texture defaultTexture)
+    public void Render(Shader shader, PhysicsWorld world, Texture defaultTexture, Matrix4x4? cullMatrix = null)
     {
         // 1. Update all physics-driven parent positions
         foreach (var e in _entities)
@@ -177,6 +177,38 @@ public class Scene
         foreach (var e in _entities)
         {
             if (!e.Visible || e.Mesh == null) continue;
+
+            if (cullMatrix.HasValue)
+            {
+                Vector3 worldPos = e.Transform.Position;
+                Vector4 ndcPos = Vector4.Transform(new Vector4(worldPos, 1.0f), cullMatrix.Value);
+                
+                if (ndcPos.W != 0)
+                {
+                    ndcPos.X /= ndcPos.W;
+                    ndcPos.Y /= ndcPos.W;
+                    ndcPos.Z /= ndcPos.W;
+                }
+                
+                // Conservatively estimate object radius
+                float radius = MathF.Max(e.Transform.Scale.X, MathF.Max(e.Transform.Scale.Y, e.Transform.Scale.Z)) * 2.0f;
+                
+                // Extremely safe minimum radius since we don't have precise AABBs for meshes
+                // 30.0 units guarantees that large objects like grounds or walls won't vanish easily
+                radius = MathF.Max(radius, 40.0f); 
+                
+                // Convert world radius to NDC padding using the matrix's scale components
+                float pX = MathF.Abs(radius * cullMatrix.Value.M11);
+                float pY = MathF.Abs(radius * cullMatrix.Value.M22);
+
+                // Ignore Z culling entirely! Objects far behind the camera can still cast long shadows into our view.
+                // If fully outside the X and Y bounds of the light's view, ignore it!
+                if (ndcPos.X > 1.0f + pX || ndcPos.X < -1.0f - pX ||
+                    ndcPos.Y > 1.0f + pY || ndcPos.Y < -1.0f - pY)
+                {
+                    continue; // Skip rendering!
+                }
+            }
 
             shader.SetMat4("uModel", e.Transform.Matrix);
             shader.SetVec2("uUvScale", e.UvScale);
