@@ -189,7 +189,7 @@ public unsafe class EditorViewport : IDisposable
         }
     }
 
-    public void RenderDebug(EditorAssetService assetService, EditorSceneService sceneService, Action<Fuse.Debug.DebugDrawer>? onDrawDebug = null)
+    public void RenderDebug(EditorAssetService assetService, EditorSceneService sceneService, Action<Fuse.Debug.DebugDrawer, EditorAssetService>? onDrawDebug = null)
     {
         var view = _camera.ViewMatrix;
         var proj = _camera.ProjectionMatrix((float)_width / _height);
@@ -245,7 +245,7 @@ public unsafe class EditorViewport : IDisposable
             _debugDrawer.PushLine(eyePos, eyePos + fwd * 1.5f, new Vector3(0, 1, 1));
         }
 
-        onDrawDebug?.Invoke(_debugDrawer);
+        onDrawDebug?.Invoke(_debugDrawer, assetService);
 
         _debugDrawer.Render(view, proj);
     }

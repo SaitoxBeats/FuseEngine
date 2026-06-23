@@ -1179,7 +1179,7 @@ public unsafe class EditorUI
             {
                 EditorGizmo.GetMouseRay(ImGui.GetIO().MousePos, viewport.Camera.ViewMatrix, viewport.Camera.ProjectionMatrix(vpSize.X / vpSize.Y), vpPos, vpSize, out Vector3 rayOrigin, out Vector3 rayDir);
                 
-                MapObject? hitObj = PickObject(rayOrigin, rayDir, sceneService);
+                MapObject? hitObj = PickObject(rayOrigin, rayDir, sceneService, assetService);
                 if (hitObj != null)
                 {
                     if (ImGui.GetIO().KeyCtrl)
@@ -1347,9 +1347,18 @@ public unsafe class EditorUI
         // Draw Handles & Bounding Box Outline
         if (showHandles)
         {
-            Vector3 finalMin = _draggingHandleIsPreview ? _previewBrushMin : (_selectedObject != null && _selectedObject.Body != null && _selectedObject.Body.HalfExtents.HasValue ? _selectedObject.Body.Position - _selectedObject.Body.HalfExtents.Value : boxMin);
-            Vector3 finalMax = _draggingHandleIsPreview ? _previewBrushMax : (_selectedObject != null && _selectedObject.Body != null && _selectedObject.Body.HalfExtents.HasValue ? _selectedObject.Body.Position + _selectedObject.Body.HalfExtents.Value : boxMax);
+            Vector3 finalMin = _draggingHandleIsPreview ? _previewBrushMin : boxMin;
+            Vector3 finalMax = _draggingHandleIsPreview ? _previewBrushMax : boxMax;
             
+            if (!_draggingHandleIsPreview && _selectedObjects.Count > 0)
+            {
+                if (GetSelectionAABB(assetService, out Vector3 tMin, out Vector3 tMax))
+                {
+                    finalMin = tMin;
+                    finalMax = tMax;
+                }
+            }
+
             Vector3 orderedMin = Vector3.Min(finalMin, finalMax);
             Vector3 orderedMax = Vector3.Max(finalMin, finalMax);
 
@@ -1401,7 +1410,7 @@ public unsafe class EditorUI
         ImGui.EndChild();
     }
 
-    private MapObject? PickObject(Vector3 rayOrigin, Vector3 rayDir, EditorSceneService sceneService)
+    private MapObject? PickObject(Vector3 rayOrigin, Vector3 rayDir, EditorSceneService sceneService, EditorAssetService assetService)
     {
         MapObject? closestObj = null;
         float closestDist = float.MaxValue;
@@ -1426,11 +1435,30 @@ public unsafe class EditorUI
             {
                 hit = RayAABBIntersect(localOrigin, localDir, -obj.Body.HalfExtents.Value, obj.Body.HalfExtents.Value, out dist);
             }
+            else if (obj.Body.Shape == MapShapeType.Trimesh && obj.IsModel && obj.Model != null)
+            {
+                string modelPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(assetService.FuseResPath, obj.Model));
+                var model = assetService.AssetManager.GetModel(modelPath, obj.ModelScale);
+                if (model != null && model.CollVertices.Length > 0)
+                {
+                    Vector3 min = new(float.MaxValue);
+                    Vector3 max = new(float.MinValue);
+                    foreach (var v in model.CollVertices)
+                    {
+                        min = Vector3.Min(min, v);
+                        max = Vector3.Max(max, v);
+                    }
+                    hit = RayAABBIntersect(localOrigin, localDir, min, max, out dist);
+                }
+                else
+                {
+                    hit = RaySphereIntersect(localOrigin, localDir, Vector3.Zero, 1.0f, out dist);
+                }
+            }
             else 
             {
                 float r = 1.0f;
                 if (obj.Body.Shape == MapShapeType.Capsule && obj.Body.Height.HasValue) r = obj.Body.Height.Value;
-                if (obj.IsModel) r = obj.ModelScale * 1.5f;
                 hit = RaySphereIntersect(localOrigin, localDir, Vector3.Zero, r, out dist);
             }
             
@@ -2694,7 +2722,60 @@ public unsafe class EditorUI
         else if (axis == 2) v.Z = val;
     }
 
-    public void DrawPreviewDebug(Fuse.Debug.DebugDrawer drawer)
+    private bool GetSelectionAABB(EditorAssetService assetService, out Vector3 totalMin, out Vector3 totalMax)
+    {
+        totalMin = new Vector3(float.MaxValue);
+        totalMax = new Vector3(float.MinValue);
+        bool hasBounds = false;
+
+        foreach (var selObj in _selectedObjects)
+        {
+            if (selObj.Body == null || !selObj.Visible) continue;
+            var body = selObj.Body;
+            var rotMatrix = Matrix4x4.CreateFromQuaternion(body.Rotation);
+
+            if (body.Shape == MapShapeType.Trimesh && selObj.IsModel && selObj.Model != null)
+            {
+                string modelPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(assetService.FuseResPath, selObj.Model));
+                var model = assetService.AssetManager.GetModel(modelPath, selObj.ModelScale);
+                if (model != null && model.CollVertices.Length > 0)
+                {
+                    foreach (var v in model.CollVertices)
+                    {
+                        Vector3 world = body.Position + Vector3.Transform(v, rotMatrix);
+                        totalMin = Vector3.Min(totalMin, world);
+                        totalMax = Vector3.Max(totalMax, world);
+                    }
+                    hasBounds = true;
+                    continue;
+                }
+            }
+
+            Vector3 h = body.HalfExtents ?? Vector3.One;
+            if (body.Shape != MapShapeType.Box)
+            {
+                float r = body.Radius ?? 0.5f;
+                if (body.Shape == MapShapeType.Capsule)
+                    r = MathF.Max(r, (body.Height ?? 1f) * 0.5f);
+                h = new Vector3(r);
+            }
+
+            for (int i = 0; i < 8; i++)
+            {
+                Vector3 local = new(
+                    (i & 1) == 0 ? -h.X : h.X,
+                    (i & 2) == 0 ? -h.Y : h.Y,
+                    (i & 4) == 0 ? -h.Z : h.Z);
+                Vector3 world = body.Position + Vector3.Transform(local, rotMatrix);
+                totalMin = Vector3.Min(totalMin, world);
+                totalMax = Vector3.Max(totalMax, world);
+            }
+            hasBounds = true;
+        }
+        return hasBounds;
+    }
+
+    public void DrawPreviewDebug(Fuse.Debug.DebugDrawer drawer, EditorAssetService assetService)
     {
         if (_hasPreviewBrush)
         {
@@ -2707,37 +2788,11 @@ public unsafe class EditorUI
             drawer.DrawBox(pos, Quaternion.Identity, size * 0.5f, new Vector3(0.0f, 1.0f, 1.0f));
         }
 
-        if (_selectedObject?.Body != null)
+        if (GetSelectionAABB(assetService, out Vector3 totalMin, out Vector3 totalMax))
         {
-            var body = _selectedObject.Body;
+            Vector3 center = (totalMin + totalMax) * 0.5f;
+            Vector3 halfExt = (totalMax - totalMin) * 0.5f;
             Vector3 color = new Vector3(0.2f, 1.0f, 0.2f);
-
-            Vector3 h = body.HalfExtents ?? Vector3.One;
-            if (body.Shape != MapShapeType.Box)
-            {
-                float r = body.Radius ?? 0.5f;
-                if (body.Shape == MapShapeType.Capsule)
-                    r = MathF.Max(r, (body.Height ?? 1f) * 0.5f);
-                if (body.Shape == MapShapeType.Trimesh) r = 1.0f;
-                h = new Vector3(r);
-            }
-
-            var rotMatrix = Matrix4x4.CreateFromQuaternion(body.Rotation);
-            Vector3 min = new(float.MaxValue), max = new(float.MinValue);
-
-            for (int i = 0; i < 8; i++)
-            {
-                Vector3 local = new(
-                    (i & 1) == 0 ? -h.X : h.X,
-                    (i & 2) == 0 ? -h.Y : h.Y,
-                    (i & 4) == 0 ? -h.Z : h.Z);
-                Vector3 world = body.Position + Vector3.Transform(local, rotMatrix);
-                min = Vector3.Min(min, world);
-                max = Vector3.Max(max, world);
-            }
-
-            Vector3 center = (min + max) * 0.5f;
-            Vector3 halfExt = (max - min) * 0.5f;
             drawer.DrawBox(center, Quaternion.Identity, halfExt, color);
         }
     }
