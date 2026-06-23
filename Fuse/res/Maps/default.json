@@ -1852,7 +1852,6 @@
         }
       ],
       "texture": "Textures/dev_measurecrate01.bmp",
-      "interactable": "MovingFloor",
       "behaviour": "MovingFloor",
       "body": {
         "shape": "box",

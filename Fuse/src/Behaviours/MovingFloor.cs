@@ -32,11 +32,16 @@ public sealed class MovingFloor : IBehaviour
 
         Vector3 current = Entity.Body.Position(World);
         Vector3 target = _goingForward ? _targetPos : _startPos;
-        Vector3 newPos = MathUtil.MoveTowards(current, target, Speed * dt);
+        float dist = Vector3.Distance(current, target);
 
-        World.SetBodyPositionAndRotation(Entity.Body.Native, newPos, Entity.Body.Rotation(World));
-
-        if (Vector3.Distance(newPos, target) < 0.01f)
+        if (dist < 0.01f)
+        {
             _goingForward = !_goingForward;
+            World.BodyInterface.SetLinearVelocity(Entity.Body.Native, Vector3.Zero);
+            return;
+        }
+
+        Vector3 dir = Vector3.Normalize(target - current);
+        World.BodyInterface.SetLinearVelocity(Entity.Body.Native, dir * Speed);
     }
 }

@@ -1,7 +1,9 @@
 using System.Numerics;
-using JoltPhysicsSharp;
-using Fuse.Renderer;
+using System.Threading.Tasks.Dataflow;
 using Fuse.Core;
+using Fuse.Physics;
+using Fuse.Renderer;
+using JoltPhysicsSharp;
 
 namespace Fuse.Player;
 
@@ -116,6 +118,19 @@ public class Player : IDisposable
         using var bodyFilter = new Physics.DefaultBodyFilter();
         using var shapeFilter = new Physics.DefaultShapeFilter();
         _character.ExtendedUpdate(dt, updSettings, ref _objectLayer, _world.Native, bodyFilter, shapeFilter);
+
+        if (_character.GroundState == GroundState.OnGround)
+        {
+            Vector3 groundVel = _character.GroundVelocity;
+            if (groundVel.LengthSquared() > 0.0001f)
+            {
+                Vector3 charPos = _character.Position;
+                _character.Position = new Vector3(
+                    charPos.X + groundVel.X * dt,
+                    charPos.Y,
+                    charPos.Z + groundVel.Z * dt);
+            }
+        }
 
         Vector3 charVel = _character.LinearVelocity;
         if (charVel.Y > 0.0f)

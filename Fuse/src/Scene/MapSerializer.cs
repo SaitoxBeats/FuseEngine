@@ -328,6 +328,9 @@ public static class MapSerializer
                 var body = new RigidBody();
                 ConfigureBodyFromJson(body, bj);
 
+                if (!string.IsNullOrEmpty(entity.BehaviourType))
+                    body.SetKinematic(true);
+
                 if (isTrimesh && isModel)
                 {
                     var model = assets.GetModel(modelPath, modelScale);

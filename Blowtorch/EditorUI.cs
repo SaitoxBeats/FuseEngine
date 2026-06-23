@@ -1146,11 +1146,14 @@ public unsafe class EditorUI
             {
                 EditorGizmo.GetMouseRay(ImGui.GetIO().MousePos, viewport.Camera.ViewMatrix, viewport.Camera.ProjectionMatrix(vpSize.X / vpSize.Y), vpPos, vpSize, out Vector3 rayOrigin, out Vector3 rayDir);
                 
-                MapObject? hitObj = PickObject(rayOrigin, rayDir, sceneService, assetService);
-                if (hitObj != null)
+                var hitObjects = PickObjects(rayOrigin, rayDir, sceneService, assetService);
+                if (hitObjects.Count > 0)
                 {
+                    MapObject hitObj;
+                    
                     if (ImGui.GetIO().KeyCtrl)
                     {
+                        hitObj = hitObjects[0];
                         if (_selectedObjects.Contains(hitObj))
                         {
                             _selectedObjects.Remove(hitObj);
@@ -1167,6 +1170,24 @@ public unsafe class EditorUI
                     }
                     else
                     {
+                        if (_selectedObject != null)
+                        {
+                            int currentIndex = hitObjects.IndexOf(_selectedObject);
+                            if (currentIndex >= 0 && _selectedObjects.Count == 1)
+                            {
+                                int nextIndex = (currentIndex + 1) % hitObjects.Count;
+                                hitObj = hitObjects[nextIndex];
+                            }
+                            else
+                            {
+                                hitObj = hitObjects[0];
+                            }
+                        }
+                        else
+                        {
+                            hitObj = hitObjects[0];
+                        }
+
                         _selectedObjects.Clear();
                         _selectedObjects.Add(hitObj);
                         _selectedObject = hitObj;
@@ -1374,23 +1395,22 @@ public unsafe class EditorUI
         ImGui.EndChild();
     }
 
-    private MapObject? PickObject(Vector3 rayOrigin, Vector3 rayDir, EditorSceneService sceneService, EditorAssetService assetService)
+    private List<MapObject> PickObjects(Vector3 rayOrigin, Vector3 rayDir, EditorSceneService sceneService, EditorAssetService assetService)
     {
-        MapObject? closestObj = null;
-        float closestDist = float.MaxValue;
-
-        foreach(var obj in sceneService.Document.Objects)
+        var hits = new List<(MapObject obj, float dist)>();
+        
+        foreach (var obj in sceneService.Document.Objects)
         {
             if (obj.Body == null || !obj.Visible) continue;
-            
+
             float dist = float.MaxValue;
             bool hit = false;
-            
+
             Matrix4x4 modelInv;
             Matrix4x4.Invert(Matrix4x4.CreateFromQuaternion(obj.Body.Rotation) * Matrix4x4.CreateTranslation(obj.Body.Position), out modelInv);
             Vector3 localOrigin = Vector3.Transform(rayOrigin, modelInv);
             Vector3 localDir = Vector3.Normalize(Vector3.TransformNormal(rayDir, modelInv));
-
+            
             if (obj.Body.Shape == MapShapeType.Sphere && obj.Body.Radius.HasValue)
             {
                 hit = RaySphereIntersect(localOrigin, localDir, Vector3.Zero, obj.Body.Radius.Value, out dist);
@@ -1426,13 +1446,12 @@ public unsafe class EditorUI
                 hit = RaySphereIntersect(localOrigin, localDir, Vector3.Zero, r, out dist);
             }
             
-            if (hit && dist < closestDist)
+            if (hit)
             {
-                closestDist = dist;
-                closestObj = obj;
+                hits.Add((obj, dist));
             }
         }
-        return closestObj;
+        return hits.OrderBy(h => h.dist).Select(h => h.obj).ToList();
     }
 
     private bool RaySphereIntersect(Vector3 ro, Vector3 rd, Vector3 center, float radius, out float t)

@@ -23,6 +23,7 @@ public class RigidBody
     private Vector3 _position;
     private Quaternion _rotation = Quaternion.Identity;
     private float _mass;
+    private bool _isKinematic;
     private float _friction = 0.5f;
     private float _restitution = 0.3f;
 
@@ -77,6 +78,7 @@ public class RigidBody
     public RigidBody SetPosition(Vector3 pos) { _position = pos; return this; }
     public RigidBody SetRotation(Quaternion rot) { _rotation = rot; return this; }
     public RigidBody SetMass(float mass) { _mass = mass; return this; }
+    public RigidBody SetKinematic(bool kinematic) { _isKinematic = kinematic; return this; }
     public RigidBody SetFriction(float f) { _friction = f; return this; }
     public RigidBody SetRestitution(float r) { _restitution = r; return this; }
 
@@ -153,10 +155,10 @@ public class RigidBody
                 return;
         }
 
-        var motionType = _mass > 0 ? MotionType.Dynamic : MotionType.Static;
+        var motionType = _isKinematic ? MotionType.Kinematic : _mass > 0 ? MotionType.Dynamic : MotionType.Static;
 
         var settings = new BodyCreationSettings(
-            _shape,
+            _shape!,
             _position,
             _rotation,
             motionType,
