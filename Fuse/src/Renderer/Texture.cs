@@ -29,7 +29,7 @@ public unsafe class Texture : IDisposable
 
         try
         {
-            image = ImageResult.FromMemory(fileData, ColorComponents.Default);
+            image = ImageResult.FromMemory(fileData, ColorComponents.RedGreenBlueAlpha);
         }
         catch (Exception ex)
         {
@@ -40,9 +40,9 @@ public unsafe class Texture : IDisposable
         _width = image.Width;
         _height = image.Height;
 
-        _channels = image.Comp is ColorComponents.RedGreenBlueAlpha ? 4 : 3;
-        var format = _channels == 4 ? PixelFormat.Rgba : PixelFormat.Rgb;
-        var internalFormat = _channels == 4 ? InternalFormat.Rgba : InternalFormat.Rgb;
+        _channels = 4;
+        var format = PixelFormat.Rgba;
+        var internalFormat = InternalFormat.Rgba;
 
         // Keep original pixels for color analysis (before flip)
         _pixelData = image.Data;

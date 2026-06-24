@@ -7,10 +7,11 @@ namespace Fuse.AssetManagement;
 public class AssetManager
 {
     private readonly GL _gl;
-    private readonly Dictionary<string, Renderer.Texture> _textures = [];
+    private readonly Dictionary<string, Renderer.Texture> _textures = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, Renderer.Shader> _shaders = [];
-    private readonly Dictionary<string, Renderer.Mesh> _meshes = [];
-    private readonly Dictionary<string, Renderer.LoadedModel> _models = [];
+    private readonly Dictionary<string, Renderer.Mesh> _meshes = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, Renderer.LoadedModel> _models = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _loadedCleanPaths = new(StringComparer.OrdinalIgnoreCase);
 
     public AssetManager(GL gl)
     {
@@ -60,6 +61,33 @@ public class AssetManager
         if (_models.TryGetValue(path, out var model))
             return model;
 
+        int hashIdx = path.IndexOf('#');
+        if (hashIdx != -1)
+        {
+            string cleanPath = path.Substring(0, hashIdx);
+
+            if (_loadedCleanPaths.Contains(cleanPath))
+            {
+                return null;
+            }
+
+            _loadedCleanPaths.Add(cleanPath);
+
+            var submeshes = Renderer.ModelLoader.LoadAllSubmeshes(_gl, cleanPath, scale);
+            for (int i = 0; i < submeshes.Length; i++)
+            {
+                if (submeshes[i] != null)
+                {
+                    _models[$"{cleanPath}#{i}"] = submeshes[i]!;
+                }
+            }
+
+            if (_models.TryGetValue(path, out var found))
+                return found;
+
+            return null;
+        }
+
         var loaded = Renderer.ModelLoader.Load(_gl, path, scale);
         _models[path] = loaded!;
         return loaded;
@@ -72,13 +100,14 @@ public class AssetManager
         foreach (var m in _meshes.Values) m.Dispose();
         foreach (var m in _models.Values)
         {
-            if (m.Mesh != null)
+            if (m != null && m.Mesh != null)
                 m.Mesh.Dispose();
         }
         _textures.Clear();
         _shaders.Clear();
         _meshes.Clear();
         _models.Clear();
+        _loadedCleanPaths.Clear();
     }
 
     private static string ShaderKey(string v, string f) => $"{v}|{f}";

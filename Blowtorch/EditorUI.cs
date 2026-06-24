@@ -2234,70 +2234,121 @@ public unsafe class EditorUI
         string modelsDir = Path.Combine(fuseResPath, "Models");
         if (Directory.Exists(modelsDir))
         {
-            var files = Directory.GetFiles(modelsDir, "*.obj");
+            var files = Directory.GetFiles(modelsDir, "*.*", SearchOption.AllDirectories)
+                                 .Where(f => f.EndsWith(".obj", StringComparison.OrdinalIgnoreCase) || 
+                                             f.EndsWith(".gltf", StringComparison.OrdinalIgnoreCase) || 
+                                             f.EndsWith(".glb", StringComparison.OrdinalIgnoreCase));
             foreach (var f in files)
             {
-                _modelFiles.Add(Path.GetFileName(f));
+                string relPath = Path.GetRelativePath(modelsDir, f).Replace('\\', '/');
+                _modelFiles.Add(relPath);
             }
         }
     }
 
-    private string? FindTextureInModel(string objFullPath, string fuseResPath)
+    private unsafe string? FindTextureInModel(string objFullPath, string fuseResPath)
     {
         try
         {
             if (!File.Exists(objFullPath)) return null;
 
-            string mtlFilename = null!;
-            foreach (var line in File.ReadLines(objFullPath))
+            var api = Silk.NET.Assimp.Assimp.GetApi();
+            var scene = api.ImportFile(objFullPath, (uint)Silk.NET.Assimp.PostProcessSteps.None);
+            
+            if (scene == null || scene->MRootNode == null) 
             {
-                var trimmed = line.Trim();
-                if (trimmed.StartsWith("mtllib ", StringComparison.OrdinalIgnoreCase))
+                Logger.Error($"Failed to parse model for textures: {objFullPath}");
+                return null;
+            }
+
+            Silk.NET.Assimp.TextureType[] texTypes = new[] {
+                Silk.NET.Assimp.TextureType.BaseColor,
+                Silk.NET.Assimp.TextureType.Diffuse,
+                Silk.NET.Assimp.TextureType.Unknown
+            };
+
+            for (int i = 0; i < scene->MNumMaterials; i++)
+            {
+                var mat = scene->MMaterials[i];
+                Silk.NET.Assimp.AssimpString path;
+
+                foreach (var type in texTypes)
                 {
-                    mtlFilename = trimmed.Substring(7).Trim();
-                    break;
+                    if (api.GetMaterialTexture(mat, type, 0, &path, null, null, null, null, null, null) == Silk.NET.Assimp.Return.Success)
+                    {
+                        string texPath = path.AsString;
+                        if (string.IsNullOrEmpty(texPath)) continue;
+
+                        if (texPath.StartsWith("*"))
+                        {
+                            if (int.TryParse(texPath.Substring(1), out int texIndex) && texIndex >= 0 && texIndex < scene->MNumTextures)
+                            {
+                                var embeddedTex = scene->MTextures[texIndex];
+                                if (embeddedTex->MHeight == 0) // Compressed (PNG/JPG)
+                                {
+                                    byte[] bytes = new byte[embeddedTex->MWidth];
+                                    System.Runtime.InteropServices.Marshal.Copy((IntPtr)embeddedTex->PcData, bytes, 0, (int)embeddedTex->MWidth);
+                                    
+                                    string baseName = Path.GetFileNameWithoutExtension(objFullPath);
+                                    string saveName = $"{baseName}_tex_{texIndex}.png";
+                                    string targetTexturePath = Path.Combine(fuseResPath, "Textures", saveName);
+                                    
+                                    Directory.CreateDirectory(Path.Combine(fuseResPath, "Textures"));
+                                    File.WriteAllBytes(targetTexturePath, bytes);
+                                    
+                                    api.ReleaseImport(scene);
+                                    return $"Textures/{saveName}";
+                                }
+                            }
+                        }
+                        else
+                        {
+                            string nameOnly = Path.GetFileName(texPath);
+                            string targetTexturePath = Path.Combine(fuseResPath, "Textures", nameOnly);
+
+                            if (File.Exists(targetTexturePath))
+                            {
+                                api.ReleaseImport(scene);
+                                return $"Textures/{nameOnly}";
+                            }
+                            
+                            string relativeToModel = Path.Combine(Path.GetDirectoryName(objFullPath) ?? "", texPath);
+                            if (File.Exists(relativeToModel))
+                            {
+                                Directory.CreateDirectory(Path.Combine(fuseResPath, "Textures"));
+                                File.Copy(relativeToModel, targetTexturePath, true);
+                                api.ReleaseImport(scene);
+                                return $"Textures/{nameOnly}";
+                            }
+
+                            string absoluteNameOnly = Path.Combine(Path.GetDirectoryName(objFullPath) ?? "", nameOnly);
+                            if (File.Exists(absoluteNameOnly))
+                            {
+                                Directory.CreateDirectory(Path.Combine(fuseResPath, "Textures"));
+                                File.Copy(absoluteNameOnly, targetTexturePath, true);
+                                api.ReleaseImport(scene);
+                                return $"Textures/{nameOnly}";
+                            }
+                            
+                            Logger.Warn($"Model import: Texture '{nameOnly}' defined in model but not found locally.");
+                            api.ReleaseImport(scene);
+                            return null;
+                        }
+                    }
                 }
             }
 
-            if (string.IsNullOrEmpty(mtlFilename)) return null;
-
-            string mtlFullPath = Path.Combine(Path.GetDirectoryName(objFullPath) ?? "", mtlFilename);
-            if (!File.Exists(mtlFullPath)) return null;
-
-            string textureFilename = null!;
-            foreach (var line in File.ReadLines(mtlFullPath))
-            {
-                var trimmed = line.Trim();
-                if (trimmed.StartsWith("map_Kd ", StringComparison.OrdinalIgnoreCase))
-                {
-                    textureFilename = trimmed.Substring(7).Trim();
-                    break;
-                }
-            }
-
-            if (string.IsNullOrEmpty(textureFilename)) return null;
-
-            string nameOnly = Path.GetFileName(textureFilename);
-            string targetTexturePath = Path.Combine(fuseResPath, "Textures", nameOnly);
-
-            if (File.Exists(targetTexturePath))
-            {
-                return $"Textures/{nameOnly}";
-            }
-            else
-            {
-                Logger.Warn($"Model import: Texture '{nameOnly}' defined in mtl but not found in '{targetTexturePath}'");
-            }
+            api.ReleaseImport(scene);
+            return null;
         }
         catch (Exception ex)
         {
             Logger.Error($"Error parsing model for texture: {ex.Message}");
+            return null;
         }
-
-        return null;
     }
 
-    private void ImportSelectedModel(string filename, string? texturePath, EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
+    private void ImportSingleModel(string filename, string? texturePath, EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
     {
         var doc = sceneService.Document;
         var pre = doc.Serialize();
@@ -2336,6 +2387,214 @@ public unsafe class EditorUI
         sceneService.PopulateScene(assetService);
     }
 
+    private unsafe void ImportSelectedModel(string filename, string? texturePath, EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
+    {
+        string modelFullPath = Path.Combine(assetService.FuseResPath, "Models", filename);
+        if (!File.Exists(modelFullPath)) return;
+
+        try
+        {
+            var api = Silk.NET.Assimp.Assimp.GetApi();
+            var scene = api.ImportFile(modelFullPath, (uint)Silk.NET.Assimp.PostProcessSteps.None);
+            
+            if (scene == null || scene->MRootNode == null || scene->MNumMeshes == 0) 
+            {
+                Logger.Error($"Failed to parse model for import: {modelFullPath}");
+                if (scene != null) api.ReleaseImport(scene);
+                ImportSingleModel(filename, texturePath, sceneService, assetService, history);
+                return;
+            }
+
+            var doc = sceneService.Document;
+            var pre = doc.Serialize();
+
+            string baseName = Path.GetFileNameWithoutExtension(filename);
+            var importedObjects = new System.Collections.Generic.List<MapObject>();
+
+            Silk.NET.Assimp.TextureType[] texTypes = new[] {
+                Silk.NET.Assimp.TextureType.BaseColor,
+                Silk.NET.Assimp.TextureType.Diffuse,
+                Silk.NET.Assimp.TextureType.Unknown
+            };
+
+            for (int i = 0; i < scene->MNumMeshes; i++)
+            {
+                var mesh = scene->MMeshes[i];
+                string meshName = mesh->MName.AsString;
+                if (string.IsNullOrEmpty(meshName))
+                {
+                    meshName = $"{baseName}_mesh_{i}";
+                }
+                else
+                {
+                    meshName = $"{baseName}_{meshName}";
+                }
+
+                string? meshTexturePath = null;
+                uint matIdx = mesh->MMaterialIndex;
+                if (matIdx < scene->MNumMaterials)
+                {
+                    var mat = scene->MMaterials[matIdx];
+                    Silk.NET.Assimp.AssimpString path;
+                    
+                    foreach (var type in texTypes)
+                    {
+                        if (api.GetMaterialTexture(mat, type, 0, &path, null, null, null, null, null, null) == Silk.NET.Assimp.Return.Success)
+                        {
+                            string texPath = path.AsString;
+                            if (string.IsNullOrEmpty(texPath)) continue;
+
+                            if (texPath.StartsWith("*"))
+                            {
+                                if (int.TryParse(texPath.Substring(1), out int texIndex) && texIndex >= 0 && texIndex < scene->MNumTextures)
+                                {
+                                    var embeddedTex = scene->MTextures[texIndex];
+                                    if (embeddedTex->MHeight == 0)
+                                    {
+                                        byte[] bytes = new byte[embeddedTex->MWidth];
+                                        System.Runtime.InteropServices.Marshal.Copy((IntPtr)embeddedTex->PcData, bytes, 0, (int)embeddedTex->MWidth);
+                                        
+                                        string saveName = $"{baseName}_tex_{texIndex}.png";
+                                        string targetTexturePath = Path.Combine(assetService.FuseResPath, "Textures", saveName);
+                                        
+                                        Directory.CreateDirectory(Path.Combine(assetService.FuseResPath, "Textures"));
+                                        File.WriteAllBytes(targetTexturePath, bytes);
+                                        meshTexturePath = $"Textures/{saveName}";
+                                        break;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                string nameOnly = Path.GetFileName(texPath);
+                                string targetTexturePath = Path.Combine(assetService.FuseResPath, "Textures", nameOnly);
+
+                                if (File.Exists(targetTexturePath))
+                                {
+                                    meshTexturePath = $"Textures/{nameOnly}";
+                                    break;
+                                }
+                                
+                                string relativeToModel = Path.Combine(Path.GetDirectoryName(modelFullPath) ?? "", texPath);
+                                if (File.Exists(relativeToModel))
+                                {
+                                    Directory.CreateDirectory(Path.Combine(assetService.FuseResPath, "Textures"));
+                                    File.Copy(relativeToModel, targetTexturePath, true);
+                                    meshTexturePath = $"Textures/{nameOnly}";
+                                    break;
+                                }
+
+                                string absoluteNameOnly = Path.Combine(Path.GetDirectoryName(modelFullPath) ?? "", nameOnly);
+                                if (File.Exists(absoluteNameOnly))
+                                {
+                                    Directory.CreateDirectory(Path.Combine(assetService.FuseResPath, "Textures"));
+                                    File.Copy(absoluteNameOnly, targetTexturePath, true);
+                                    meshTexturePath = $"Textures/{nameOnly}";
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (string.IsNullOrEmpty(meshTexturePath))
+                {
+                    meshTexturePath = texturePath;
+                }
+
+                var obj = new MapObject
+                {
+                    Id = meshName,
+                    Visible = true,
+                    Model = $"Models/{filename}#{i}",
+                    ModelScale = 1.0f,
+                    Body = new MapBody
+                    {
+                        Shape = MapShapeType.Trimesh,
+                        Position = new Vector3(0, 1, 0),
+                        Rotation = Quaternion.Identity,
+                        Mass = 0,
+                        Friction = 0.5f,
+                        Restitution = 0.0f
+                    }
+                };
+
+                if (!string.IsNullOrEmpty(meshTexturePath))
+                {
+                    obj.Texture = meshTexturePath;
+                }
+
+                importedObjects.Add(obj);
+            }
+
+            api.ReleaseImport(scene);
+
+            if (importedObjects.Count == 0)
+            {
+                ImportSingleModel(filename, texturePath, sceneService, assetService, history);
+                return;
+            }
+
+            foreach (var obj in importedObjects)
+            {
+                doc.Objects.Add(obj);
+            }
+            SceneNameManager.EnsureAllUnique(doc);
+
+            if (importedObjects.Count > 1)
+            {
+                int groupIndex = 1;
+                string groupId = $"group_{baseName}_{groupIndex}";
+                while (doc.Objects.Any(o => o.Id == groupId))
+                {
+                    groupIndex++;
+                    groupId = $"group_{baseName}_{groupIndex}";
+                }
+
+                var groupObj = new MapObject
+                {
+                    Id = groupId,
+                    Visible = true,
+                    Body = new MapBody
+                    {
+                        Shape = MapShapeType.None,
+                        Position = new Vector3(0, 1, 0),
+                        Rotation = Quaternion.Identity
+                    }
+                };
+
+                doc.Objects.Add(groupObj);
+
+                foreach (var obj in importedObjects)
+                {
+                    obj.ParentId = groupObj.Id;
+                }
+
+                _selectedObjects.Clear();
+                _selectedObjects.Add(groupObj);
+                _selectedObject = groupObj;
+            }
+            else
+            {
+                _selectedObjects.Clear();
+                foreach (var obj in importedObjects)
+                {
+                    _selectedObjects.Add(obj);
+                }
+                _selectedObject = importedObjects[0];
+            }
+
+            var post = doc.Serialize();
+            history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
+            sceneService.PopulateScene(assetService);
+        }
+        catch (Exception ex)
+        {
+            Logger.Error($"Error importing model meshes: {ex.Message}");
+            ImportSingleModel(filename, texturePath, sceneService, assetService, history);
+        }
+    }
+
     private void DrawModelImportDialog(EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
     {
         if (!_showModelImportDialog) return;
@@ -2350,7 +2609,7 @@ public unsafe class EditorUI
 
             if (_modelFiles.Count == 0)
             {
-                ImGui.TextColored(new Vector4(1, 0, 0, 1), "No .obj files found in Models/ directory.");
+                ImGui.TextColored(new Vector4(1, 0, 0, 1), "No models found in Models/ directory.");
             }
             else
             {
