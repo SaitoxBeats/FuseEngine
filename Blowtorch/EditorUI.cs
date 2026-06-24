@@ -877,12 +877,15 @@ public unsafe class EditorUI
                 boxMax = Vector3.Max(_previewManager.Min, _previewManager.Max);
                 isPreview = true;
             }
-            else if (_currentMode == EditorMode.Select && _selectedObject is Brush brush && brush.Body != null && brush.Body.HalfExtents.HasValue)
+            else if (_currentMode == EditorMode.Select && _selectedObjects.Count > 0)
             {
-                showHandles = true;
-                boxMin = brush.Body.Position - brush.Body.HalfExtents.Value;
-                boxMax = brush.Body.Position + brush.Body.HalfExtents.Value;
-                isPreview = false;
+                if (GetSelectionAABB(assetService, out Vector3 tMin, out Vector3 tMax))
+                {
+                    showHandles = true;
+                    boxMin = tMin;
+                    boxMax = tMax;
+                    isPreview = false;
+                }
             }
         }
 
@@ -1230,25 +1233,37 @@ public unsafe class EditorUI
             {
                 _previewManager.UpdateBoundsFromDrag(currentMin, currentMax);
             }
-            else if (_selectedObject is Brush brush && brush.Body != null)
+            else if (_selectedObjects.Count > 0)
             {
                 Vector3 newSize = currentMax - currentMin;
                 if (newSize.X > 0.1f && newSize.Y > 0.1f && newSize.Z > 0.1f)
                 {
-                    brush.Body.Position = currentMin + newSize * 0.5f;
-                    Vector3 oldHalf = brush.Body.HalfExtents ?? Vector3.One;
-                    brush.Body.HalfExtents = newSize * 0.5f;
+                    Vector3 frameOldSize = boxMax - boxMin;
+                    if (frameOldSize.X < 0.001f) frameOldSize.X = 1f;
+                    if (frameOldSize.Y < 0.001f) frameOldSize.Y = 1f;
+                    if (frameOldSize.Z < 0.001f) frameOldSize.Z = 1f;
 
-                    Vector3 scale = brush.Body.HalfExtents.Value / oldHalf;
-                    brush.ScalePlanes(scale);
-                    assetService.InvalidateMesh(brush.Id);
+                    Vector3 frameScale = newSize / frameOldSize;
 
-                    var entity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == brush.Id);
-                    if (entity != null)
+                    foreach (var obj in _selectedObjects)
                     {
-                        entity.Transform.Position = brush.Body.Position;
-                        entity.Transform.Scale = Vector3.One;
-                        entity.Mesh = assetService.GetOrCreateMesh(brush);
+                        if (obj is Brush brush && brush.Body != null && brush.Body.HalfExtents.HasValue)
+                        {
+                            Vector3 relativePos = brush.Body.Position - boxMin;
+                            brush.Body.Position = currentMin + (relativePos * frameScale);
+                            brush.Body.HalfExtents = brush.Body.HalfExtents.Value * frameScale;
+
+                            brush.ScalePlanes(frameScale);
+                            assetService.InvalidateMesh(brush.Id);
+
+                            var entity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == brush.Id);
+                            if (entity != null)
+                            {
+                                entity.Transform.Position = brush.Body.Position;
+                                entity.Transform.Scale = Vector3.One;
+                                entity.Mesh = assetService.GetOrCreateMesh(brush);
+                            }
+                        }
                     }
                 }
             }
