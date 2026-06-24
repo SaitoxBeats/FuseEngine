@@ -17,4 +17,8 @@
     <PackageReference Include="ImGui.NET" Version="1.91.6.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="res\Textures\Icons\" />
+  </ItemGroup>
+
 </Project>

@@ -33,7 +33,7 @@ public unsafe class Application : IDisposable
 
     public Application()
     {
-        _window = new Window("Fuse Engine", _scrWidth, _scrHeight);
+        _window = new Window("Fuse", _scrWidth, _scrHeight);
         _physics = new Physics.PhysicsWorld(new Vector3(0, -9.81f, 0));
     }
 

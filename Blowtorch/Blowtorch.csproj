@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	  <ApplicationIcon>blowtorch.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>

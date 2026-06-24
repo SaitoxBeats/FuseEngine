@@ -191,7 +191,7 @@ public class SceneManager
                     break;
                 case RigidBody.ShapeType.Trimesh:
                     if (b.TrimeshVertices != null && b.TrimeshIndices != null)
-                        debugDrawer.DrawTrimesh(pos, rot, b.TrimeshVertices, b.TrimeshIndices, color);
+                        debugDrawer.DrawTrimesh(pos, rot, b.TrimeshVertices, b.TrimeshIndices, color, b.TrimeshScale);
                     break;
             }
         }

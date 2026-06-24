@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Silk.NET.GLFW;
 using Silk.NET.OpenGL;
 
@@ -45,6 +46,8 @@ public unsafe class EditorWindow : IDisposable
         _gl.Enable(EnableCap.DepthTest);
         _gl.Enable(EnableCap.CullFace);
         _gl.CullFace(GLEnum.Back);
+
+        SetWindowIcon();
     }
 
     public Glfw Glfw => _glfw;
@@ -55,6 +58,40 @@ public unsafe class EditorWindow : IDisposable
     public void SwapBuffers() => _glfw.SwapBuffers(_handle);
     public void PollEvents() => _glfw.PollEvents();
     public void Close() => _glfw.SetWindowShouldClose(_handle, true);
+
+    private void SetWindowIcon()
+    {
+        string iconPath = Path.Combine(Fuse.ResPath.Path, "Textures", "Icons", "blowtorch.ico");
+        if (!File.Exists(iconPath)) return;
+
+        using var icon = new System.Drawing.Icon(iconPath);
+        using var bmp = icon.ToBitmap();
+        var rect = new System.Drawing.Rectangle(0, 0, bmp.Width, bmp.Height);
+        var data = bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadOnly,
+            System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+        int bytes = bmp.Width * bmp.Height * 4;
+        byte[] pixels = new byte[bytes];
+        System.Runtime.InteropServices.Marshal.Copy(data.Scan0, pixels, 0, bytes);
+
+        // Swap R and B channels (BGRA → RGBA)
+        for (int i = 0; i < bytes; i += 4)
+        {
+            (pixels[i], pixels[i + 2]) = (pixels[i + 2], pixels[i]);
+        }
+
+        fixed (byte* ptr = pixels)
+        {
+            var image = new Silk.NET.GLFW.Image
+            {
+                Width = bmp.Width,
+                Height = bmp.Height,
+                Pixels = ptr
+            };
+            _glfw.SetWindowIcon(_handle, 1, &image);
+        }
+        bmp.UnlockBits(data);
+    }
 
     public void Dispose()
     {

@@ -270,5 +270,6 @@ public class RigidBody
     public float PlaneDistance => _planeDistance;
     public Vector3[]? TrimeshVertices => _trimeshVerts;
     public uint[]? TrimeshIndices => _trimeshIndices;
+    public Vector3 TrimeshScale => _trimeshScale;
     public bool IsTrigger => _isTrigger;
 }

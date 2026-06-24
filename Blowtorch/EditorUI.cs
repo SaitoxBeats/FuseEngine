@@ -1801,7 +1801,14 @@ public unsafe class EditorUI
                 {
                     HandleUndoStart(sceneService);
                     foreach (var obj in _selectedObjects)
+                    {
                         obj.Body!.IsTrigger = multiTrigger;
+                        var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
+                        if (entity != null)
+                        {
+                            entity.TexturePath = multiTrigger ? "Textures/tools/toolstrigger.bmp" : (obj.Texture ?? "");
+                        }
+                    }
                     HandleUndoEnd(sceneService, assetService, history);
                 }
             }
@@ -2055,7 +2062,15 @@ public unsafe class EditorUI
                         bool isTrigger = body.IsTrigger;
                         bool trigChanged = ImGui.Checkbox("Is Trigger##inspectTrigger", ref isTrigger);
                         HandleUndoStart(sceneService);
-                        if (trigChanged) body.IsTrigger = isTrigger;
+                        if (trigChanged)
+                        {
+                            body.IsTrigger = isTrigger;
+                            var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
+                            if (entity != null)
+                            {
+                                entity.TexturePath = isTrigger ? "Textures/tools/toolstrigger.bmp" : (obj.Texture ?? "");
+                            }
+                        }
                         HandleUndoEnd(sceneService, assetService, history);
 
                         switch (body.Shape)
