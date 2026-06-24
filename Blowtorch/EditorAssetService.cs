@@ -57,7 +57,7 @@ public class EditorAssetService : IDisposable
             if (!_meshCache.TryGetValue(brush.Id, out var mesh))
             {
                 var meshData = MeshGenerator.Generate(brush);
-                mesh = new Mesh(_gl, meshData.Vertices, meshData.Indices);
+                mesh = new Mesh(_gl, meshData.Vertices, meshData.Indices, meshData.LineIndices);
                 _meshCache[brush.Id] = mesh;
             }
             return mesh;

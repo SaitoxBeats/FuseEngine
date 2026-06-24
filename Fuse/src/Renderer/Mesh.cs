@@ -19,9 +19,13 @@ public unsafe class Mesh : IDisposable
     private uint _vao;
     private uint _vbo;
     private uint _ebo;
+    private uint _lineEbo;
     private uint _indexCount;
+    private uint _lineIndexCount;
 
-    public Mesh(GL gl, Vertex[] vertices, uint[] indices)
+    public bool HasLineBuffer => _lineEbo != 0;
+
+    public Mesh(GL gl, Vertex[] vertices, uint[] indices, uint[] lineIndices = null)
     {
         _gl = gl;
         _indexCount = (uint)indices.Length;
@@ -40,6 +44,25 @@ public unsafe class Mesh : IDisposable
 
             gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _ebo);
             gl.BufferData(BufferTargetARB.ElementArrayBuffer, (nuint)(indices.Length * sizeof(uint)), iPtr, BufferUsageARB.StaticDraw);
+
+            if (lineIndices != null && lineIndices.Length > 0)
+            {
+                _lineIndexCount = (uint)lineIndices.Length;
+                _lineEbo = gl.GenBuffer();
+                fixed (uint* lPtr = lineIndices)
+                {
+                    // Bind and upload line indices
+                    gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _lineEbo);
+                    gl.BufferData(BufferTargetARB.ElementArrayBuffer, (nuint)(lineIndices.Length * sizeof(uint)), lPtr, BufferUsageARB.StaticDraw);
+                }
+                // Rebind the default triangle EBO so the VAO captures it as default
+                gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _ebo);
+            }
+            else
+            {
+                _lineEbo = 0;
+                _lineIndexCount = 0;
+            }
 
             gl.EnableVertexAttribArray(0);
             gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)0);
@@ -61,6 +84,18 @@ public unsafe class Mesh : IDisposable
         _gl.DeleteVertexArray(_vao);
         _gl.DeleteBuffer(_vbo);
         _gl.DeleteBuffer(_ebo);
+        if (_lineEbo != 0) _gl.DeleteBuffer(_lineEbo);
+    }
+
+    public void DrawLineBuffer()
+    {
+        if (_lineEbo == 0) return;
+        _gl.BindVertexArray(_vao);
+        _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _lineEbo);
+        _gl.DrawElements(PrimitiveType.Lines, _lineIndexCount, DrawElementsType.UnsignedInt, (void*)0);
+        // Restore default EBO for this VAO
+        _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _ebo);
+        _gl.BindVertexArray(0);
     }
 
     public void Draw()

@@ -139,13 +139,16 @@ public unsafe class EditorViewport : IDisposable
         bool isWireframe = _camera.IsOrthographic;
         if (isWireframe)
         {
-            _gl.PolygonMode(GLEnum.FrontAndBack, GLEnum.Line);
+            _gl.Disable(EnableCap.DepthTest);
+            _gl.LineWidth(2.0f);
             shader.SetBool("uUseTexture", false);
             shader.SetFloat("uAmbient", 1.0f);
             shader.SetVec3("uColor", new Vector3(0.8f, 0.8f, 0.8f));
         }
         else
         {
+            _gl.Enable(EnableCap.DepthTest);
+            _gl.PolygonMode(GLEnum.FrontAndBack, GLEnum.Fill);
             shader.SetFloat("uAmbient", 0.2f);
             shader.SetVec3("uColor", Vector3.One);
         }
@@ -174,18 +177,28 @@ public unsafe class EditorViewport : IDisposable
                 {
                     shader.SetBool("uUseTexture", false);
                 }
+
+                entity.Mesh.Draw();
             }
             else
             {
-                shader.SetBool("uUseTexture", false);
+                if (entity.Mesh.HasLineBuffer)
+                {
+                    _gl.PolygonMode(GLEnum.FrontAndBack, GLEnum.Fill);
+                    entity.Mesh.DrawLineBuffer();
+                }
+                else
+                {
+                    _gl.PolygonMode(GLEnum.FrontAndBack, GLEnum.Line);
+                    entity.Mesh.Draw();
+                }
             }
-
-            entity.Mesh.Draw();
         }
 
         if (isWireframe)
         {
             _gl.PolygonMode(GLEnum.FrontAndBack, GLEnum.Fill);
+            _gl.Enable(EnableCap.DepthTest);
         }
     }
 

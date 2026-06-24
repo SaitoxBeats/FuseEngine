@@ -43,6 +43,7 @@ public static class MeshGenerator
 
         var vertices = new List<Vertex>();
         var indices = new List<uint>();
+        var lineIndices = new List<uint>();
         
         var faces = brush.Faces;
         int numFaces = faces.Count;
@@ -187,9 +188,16 @@ public static class MeshGenerator
                 indices.Add(startIndex + i);
                 indices.Add(startIndex + i + 1);
             }
+
+            // Generate Line Indices (edges of the face)
+            for (uint i = 0; i < polyVerts.Count; i++)
+            {
+                lineIndices.Add(startIndex + i);
+                lineIndices.Add(startIndex + ((i + 1) % (uint)polyVerts.Count));
+            }
         }
 
-        return new MeshData(vertices.ToArray(), indices.ToArray());
+        return new MeshData(vertices.ToArray(), indices.ToArray(), lineIndices.ToArray());
     }
 
     public static void AddUniqueVertex(List<Vector3> list, Vector3 v)
@@ -229,10 +237,12 @@ public class MeshData
 {
     public Vertex[] Vertices { get; }
     public uint[] Indices { get; }
+    public uint[] LineIndices { get; }
 
-    public MeshData(Vertex[] vertices, uint[] indices)
+    public MeshData(Vertex[] vertices, uint[] indices, uint[] lineIndices = null)
     {
         Vertices = vertices;
         Indices = indices;
+        LineIndices = lineIndices;
     }
 }
