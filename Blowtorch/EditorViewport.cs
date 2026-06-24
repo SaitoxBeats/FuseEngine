@@ -270,7 +270,10 @@ public unsafe class EditorViewport : IDisposable
 
         float scroll = io.MouseWheel;
         if (scroll != 0)
-            _camera.Zoom(scroll);
+        {
+            Vector2 localMousePos = io.MousePos - vpPos;
+            _camera.Zoom(scroll, localMousePos, vpSize);
+        }
 
         bool wantPan = false;
         bool wantOrbit = false;
@@ -312,7 +315,7 @@ public unsafe class EditorViewport : IDisposable
                 Vector2 mouse = io.MousePos;
                 float dx = mouse.X - _lastMouse.X;
                 float dy = mouse.Y - _lastMouse.Y;
-                _camera.Pan(dx, dy);
+                _camera.Pan(dx, dy, vpSize.Y);
                 _lastMouse = mouse;
                 if (glfw != null && win != null)
                 {

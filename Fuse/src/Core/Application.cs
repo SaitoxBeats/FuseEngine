@@ -1,5 +1,7 @@
 using System.Numerics;
 using Fuse.Input;
+using Fuse.Physics;
+using JoltPhysicsSharp;
 using Silk.NET.OpenGL;
 
 namespace Fuse.Core;
@@ -255,6 +257,28 @@ public unsafe class Application : IDisposable
             _console.Toggle();
             if (_console.IsOpen) Input.Input.ShowCursor();
             else Input.Input.DisableCursor();
+        }
+
+        if (Input.Input.KeyPressed(KeyCodes.G))
+        {
+            var cam = _player.Camera;
+            var origin = cam.Position;
+            var front = cam.Front;
+            float maxDist = 20f;
+            var dirScaled = front * maxDist;
+            var ray = new Ray(ref origin, ref dirScaled);
+
+            using var bpFilter = new DefaultBroadPhaseLayerFilter();
+            using var olFilter = new DefaultObjectLayerFilter();
+            using var bodyFilter = new DefaultBodyFilter();
+
+            Vector3 target;
+            if (_physics.NarrowPhaseQuery.CastRay(ray, out var hit, bpFilter, olFilter, bodyFilter))
+                target = origin + front * maxDist * hit.Fraction;
+            else
+                target = origin + front * maxDist;
+
+            Physics.Explosion.Apply(_physics, target, 105f, 10000.0f);
         }
     }
 

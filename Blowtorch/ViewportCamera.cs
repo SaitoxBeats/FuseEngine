@@ -18,12 +18,12 @@ public class ViewportCamera
     private float _pitch = -20.0f;
     private Vector3 _target;
 
-    private const float Sensitivity = 0.3f;
-    private const float ScrollSpeed = 1.5f;
-    private const float PanSpeed = 0.005f;
-    private const float FlySpeed = 15.0f;
-    private const float MinDistance = 0.5f;
-    private const float MaxDistance = 200.0f;
+    public float Sensitivity { get; set; } = 0.3f;
+    public float ScrollSpeed { get; set; } = 1.5f;
+    public float PanSpeed { get; set; } = 0.005f;
+    public float FlySpeed { get; set; } = 15.0f;
+    public float MinDistance { get; set; } = 0.5f;
+    public float MaxDistance { get; set; } = 200.0f;
 
     public CameraViewType ViewType { get; set; } = CameraViewType.Perspective3D;
     public float OrthoSize { get; set; } = 10.0f;
@@ -44,12 +44,22 @@ public class ViewportCamera
         _pitch = float.Clamp(_pitch, -89.0f, 89.0f);
     }
 
-    public void Zoom(float delta)
+    public void Zoom(float delta, Vector2 mousePos, Vector2 viewportSize)
     {
         if (IsOrthographic)
         {
+            // Zoom to mouse logic
+            float nx = (mousePos.X / viewportSize.X) * 2.0f - 1.0f;
+            float ny = 1.0f - (mousePos.Y / viewportSize.Y) * 2.0f;
+            float aspect = viewportSize.X / viewportSize.Y;
+
+            Vector3 offsetBefore = Right * (nx * OrthoSize * aspect * 0.5f) + Up * (ny * OrthoSize * 0.5f);
+            
             OrthoSize -= delta * (OrthoSize * 0.1f);
-            OrthoSize = float.Clamp(OrthoSize, 0.1f, 1000.0f);
+            OrthoSize = float.Clamp(OrthoSize, 0.1f, 10000.0f);
+            
+            Vector3 offsetAfter = Right * (nx * OrthoSize * aspect * 0.5f) + Up * (ny * OrthoSize * 0.5f);
+            _target += offsetBefore - offsetAfter;
         }
         else
         {
@@ -58,52 +68,28 @@ public class ViewportCamera
         }
     }
 
-    public void Pan(float deltaX, float deltaY)
+    public void Pan(float deltaX, float deltaY, float viewportHeight)
     {
         float panScale;
-        Vector3 right, up;
 
         if (IsOrthographic)
         {
-            panScale = OrthoSize * 0.0015f;
-            switch (ViewType)
-            {
-                case CameraViewType.Top:
-                    right = Vector3.UnitX;
-                    up = -Vector3.UnitZ;
-                    break;
-                case CameraViewType.Front:
-                    right = Vector3.UnitX;
-                    up = Vector3.UnitY;
-                    break;
-                case CameraViewType.Side:
-                    right = -Vector3.UnitZ;
-                    up = Vector3.UnitY;
-                    break;
-                default:
-                    right = Vector3.UnitX;
-                    up = Vector3.UnitY;
-                    break;
-            }
+            // Pixel-perfect pan
+            panScale = OrthoSize / MathF.Max(viewportHeight, 1.0f);
         }
         else
         {
-            var fwd = Vector3.Normalize(Front);
-            right = Vector3.Normalize(Vector3.Cross(fwd, Vector3.UnitY));
-            up = Vector3.Normalize(Vector3.Cross(right, fwd));
             panScale = _distance * PanSpeed;
         }
 
-        _target += -right * deltaX * panScale + up * deltaY * panScale;
+        _target += -Right * deltaX * panScale + Up * deltaY * panScale;
     }
 
     public void Fly(float forward, float rightInput, float upInput, float dt)
     {
         if (IsOrthographic) return; // No fly in ortho views
-        var fwd = Vector3.Normalize(Front);
-        var right = Vector3.Normalize(Vector3.Cross(fwd, Vector3.UnitY));
         
-        _target += (fwd * forward + right * rightInput + Vector3.UnitY * upInput) * FlySpeed * dt;
+        _target += (Front * forward + Right * rightInput + Vector3.UnitY * upInput) * FlySpeed * dt;
     }
 
     public Matrix4x4 ViewMatrix
@@ -128,7 +114,7 @@ public class ViewportCamera
     {
         if (IsOrthographic)
         {
-            return Matrix4x4.CreateOrthographic(OrthoSize * aspect, OrthoSize, 0.1f, 1000.0f);
+            return Matrix4x4.CreateOrthographic(OrthoSize * aspect, OrthoSize, -10000.0f, 10000.0f);
         }
         return Matrix4x4.CreatePerspectiveFieldOfView(
             float.DegreesToRadians(45.0f), aspect, 0.1f, 500.0f);
@@ -164,12 +150,9 @@ public class ViewportCamera
         {
             switch (ViewType)
             {
-                case CameraViewType.Top:
-                    return -Vector3.UnitY;
-                case CameraViewType.Front:
-                    return -Vector3.UnitZ;
-                case CameraViewType.Side:
-                    return -Vector3.UnitX;
+                case CameraViewType.Top: return -Vector3.UnitY;
+                case CameraViewType.Front: return -Vector3.UnitZ;
+                case CameraViewType.Side: return -Vector3.UnitX;
                 default:
                     float yawRad = float.DegreesToRadians(_yaw);
                     float pitchRad = float.DegreesToRadians(_pitch);
@@ -177,6 +160,36 @@ public class ViewportCamera
                         -MathF.Cos(yawRad) * MathF.Cos(pitchRad),
                         -MathF.Sin(pitchRad),
                         -MathF.Sin(yawRad) * MathF.Cos(pitchRad)));
+            }
+        }
+    }
+
+    public Vector3 Right
+    {
+        get
+        {
+            switch (ViewType)
+            {
+                case CameraViewType.Top: return Vector3.UnitX;
+                case CameraViewType.Front: return Vector3.UnitX;
+                case CameraViewType.Side: return -Vector3.UnitZ;
+                default:
+                    return Vector3.Normalize(Vector3.Cross(Front, Vector3.UnitY));
+            }
+        }
+    }
+
+    public Vector3 Up
+    {
+        get
+        {
+            switch (ViewType)
+            {
+                case CameraViewType.Top: return -Vector3.UnitZ;
+                case CameraViewType.Front: return Vector3.UnitY;
+                case CameraViewType.Side: return Vector3.UnitY;
+                default:
+                    return Vector3.Normalize(Vector3.Cross(Right, Front));
             }
         }
     }
