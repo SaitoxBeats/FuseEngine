@@ -22,7 +22,7 @@ public unsafe class EditorUI
     private bool _showHollowDialog;
     private bool _showHitBoxes = true;
     private float _hollowThickness = 0.5f;
-    private string _saveMapName = "map.json";
+    private string _saveMapName = "map.bth";
 
     private bool _showMapWindow = true;
     private bool _showJsonWindow = false;
@@ -596,7 +596,7 @@ public unsafe class EditorUI
         if (string.IsNullOrEmpty(sceneService.MapPath))
         {
             _showSaveAsDialog = true;
-            _saveMapName = "map.json";
+            _saveMapName = "map.bth";
             return;
         }
         sceneService.SaveMap();
@@ -609,7 +609,7 @@ public unsafe class EditorUI
         if (string.IsNullOrEmpty(sceneService.MapPath))
         {
             _showSaveAsDialog = true;
-            _saveMapName = "map.json";
+            _saveMapName = "map.bth";
         }
         else
         {
@@ -621,7 +621,7 @@ public unsafe class EditorUI
     {
         if (!Directory.Exists(initialDir))
             initialDir = AppContext.BaseDirectory;
-        var files = Directory.GetFiles(initialDir, "*.json");
+        var files = Directory.GetFiles(initialDir, "*.bth");
         return files.Length > 0 ? files[0] : null;
     }
 
@@ -701,7 +701,7 @@ public unsafe class EditorUI
                 {
                     string mapsDir = Path.Combine(ResPath.Path, "Maps");
                     if (Directory.Exists(mapsDir))
-                        _availableMaps = Directory.GetFiles(mapsDir, "*.json");
+                        _availableMaps = Directory.GetFiles(mapsDir, "*.bth");
                     _selectedOpenMapIndex = -1;
                     _showOpenDialog = true;
                 }
@@ -714,7 +714,7 @@ public unsafe class EditorUI
                     _showSaveAsDialog = true;
                     _saveMapName = !string.IsNullOrEmpty(sceneService.MapPath)
                         ? Path.GetFileName(sceneService.MapPath)
-                        : "map.json";
+                        : "map.bth";
                 }
                 ImGui.Separator();
                 if (ImGui.MenuItem("Play", "F5"))
@@ -2415,7 +2415,7 @@ public unsafe class EditorUI
 
             if (_availableMaps.Length == 0)
             {
-                ImGui.TextColored(new Vector4(1, 0, 0, 1), "No .json maps found in res/Maps/.");
+                ImGui.TextColored(new Vector4(1, 0, 0, 1), "No .bth maps found in res/Maps/.");
             }
             else
             {
@@ -2475,9 +2475,9 @@ public unsafe class EditorUI
                 string name = _saveMapName.Trim();
                 if (!string.IsNullOrEmpty(name))
                 {
-                    if (!name.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                    if (!name.EndsWith(".bth", StringComparison.OrdinalIgnoreCase))
                     {
-                        name += ".json";
+                        name += ".bth";
                     }
                     string mapsDir = Path.Combine(ResPath.Path, "Maps");
                     if (!Directory.Exists(mapsDir))

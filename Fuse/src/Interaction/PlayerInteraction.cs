@@ -1,0 +1,48 @@
+using System.Numerics;
+using Fuse.Input;
+using Fuse.Physics;
+
+namespace Fuse.Interaction;
+
+public class PlayerInteraction
+{
+    private readonly PhysicsWorld _physics;
+    private readonly Player.Player _player;
+    private readonly UI.HUDImage _crosshairNode;
+    private readonly Renderer.Texture _crosshairTexture;
+    private readonly Renderer.Texture _crosshairInteractTexture;
+
+    private IInteractable? _lookingAt;
+
+    public PlayerInteraction(PhysicsWorld physics, Player.Player player, UI.HUDImage crosshairNode, Renderer.Texture crosshairNormal, Renderer.Texture crosshairInteract)
+    {
+        _physics = physics;
+        _player = player;
+        _crosshairNode = crosshairNode;
+        _crosshairTexture = crosshairNormal;
+        _crosshairInteractTexture = crosshairInteract;
+    }
+
+    public void Update()
+    {
+        Vector3 origin = _player.EyePosition;
+        Vector3 dir = _player.Camera.Front;
+        float range = 5.0f;
+
+        var hit = InteractionSystem.RaycastInteractable(_physics, origin, dir, range);
+
+        if (hit != _lookingAt)
+        {
+            _lookingAt = hit;
+            if (hit != null)
+                _crosshairNode.Texture = _crosshairInteractTexture;
+            else
+                _crosshairNode.Texture = _crosshairTexture;
+        }
+
+        if (Input.Input.KeyPressed(KeyCodes.E) && _lookingAt != null)
+        {
+            _lookingAt.OnInteract();
+        }
+    }
+}

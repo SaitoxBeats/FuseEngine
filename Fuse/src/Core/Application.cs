@@ -1,9 +1,5 @@
 using System.Numerics;
-using System.Runtime.InteropServices;
-using Fuse.Behaviours;
 using Fuse.Input;
-using Fuse.Interaction;
-using Fuse.Renderer;
 using Silk.NET.OpenGL;
 
 namespace Fuse.Core;
@@ -15,68 +11,25 @@ public unsafe class Application : IDisposable
     private bool _paused;
     private int _scrWidth = 1280, _scrHeight = 800;
 
-    // Physics
+    // Core Systems
     private readonly Physics.PhysicsWorld _physics;
+    private AssetManagement.AssetManager _assets = null!;
+    private Renderer.MasterRenderer _renderer = null!;
+    private Scene.SceneManager _sceneManager = null!;
+    private Interaction.PlayerInteraction _interaction = null!;
 
     // Player
     private Player.Player _player = null!;
     private Player.PickupController _pickup = null!;
 
-    // Asset manager
-    private AssetManagement.AssetManager _assets = null!;
-
-    // Shaders (from AssetManager)
-    private Renderer.Shader _shader = null!;
-    private Renderer.Shader _skyboxShader = null!;
-    private Renderer.Shader _shadowShader = null!;
-    private Renderer.ShadowMap _shadowMap = null!;
-
-    // Shadow Settings
-    private float _shadowBiasFactor = 0.0f;
-    private float _shadowBiasBase = 0.0000f;
-    private float _shadowNearPlane = 1.0f;
-    private float _shadowFarPlane = 300.0f;
-    private float _shadowSpread = 2.0f;
-    private bool _shadowsEnabled = false;
-
-    // Meshes (from AssetManager)
-    private Renderer.Mesh _cubeMesh = null!;
-    private Renderer.Mesh _groundMesh = null!;
-
-    // Textures (from AssetManager)
-    private Renderer.Texture _crateTexture = null!;
-    private Renderer.Texture _skyboxTexture = null!;
-    private Renderer.Texture _crosshairTexture = null!;
-    private Renderer.Texture _crosshairInteractTexture = null!;
-    private Vector3 _skyboxDominantColor = Vector3.One;
-
-    // Scene
-    //public string mapPath = $"{Fuse.ResPath.Path}/Maps/default.json";
-    public string mapPath = null!;
-    private Renderer.Scene _scene = null!;
-    private readonly List<Physics.RigidBody> _bodies = [];
-
-    // UI
+    // UI & Debug
     private Renderer.UIRenderer _ui = null!;
     private UI.HUD _hud = null!;
     private UI.HUDText _fpsText = null!;
     private UI.HUDImage _crosshairNode = null!;
-
-    // Debug
     private Debug.DebugDrawer _debugDrawer = null!;
-
-    // ImGui
     private Imgui.ImGuiBackEnd _imgui = null!;
     private Imgui.Console _console = null!;
-
-    // Interaction
-    private readonly List<IInteractable> _interactables = [];
-    private Interaction.IInteractable? _lookingAt;
-    private readonly Dictionary<JoltPhysicsSharp.BodyID, GCHandle> _interactableHandles = [];
-
-    // Behaviours
-    private readonly List<IBehaviour> _behaviours = [];
-    private Behaviours.TriggerSystem _triggerSystem = null!;
 
     public Application()
     {
@@ -84,7 +37,7 @@ public unsafe class Application : IDisposable
         _physics = new Physics.PhysicsWorld(new Vector3(0, -9.81f, 0));
     }
 
-    public bool Init()
+    public bool Init(string initialMap)
     {
         if (_window.Handle == null)
         {
@@ -94,23 +47,19 @@ public unsafe class Application : IDisposable
 
         var gl = _window.GL;
 
-        // Asset manager
+        // Managers & Core
         _assets = new AssetManagement.AssetManager(gl);
-
-        // Debug drawer
+        _renderer = new Renderer.MasterRenderer(gl);
+        _sceneManager = new Scene.SceneManager(_physics, _assets);
         _debugDrawer = new Debug.DebugDrawer(gl);
-
-        // UI
+        
+        // UI & ImGui
         _ui = new Renderer.UIRenderer(gl, _scrWidth, _scrHeight);
-
-        // ImGui
         _imgui = new Imgui.ImGuiBackEnd(gl);
         _imgui.Init();
 
-        // Player (must be after UI)
+        // Player setup
         _player = new Player.Player(_physics, new Vector3(0, 2, 0));
-
-        // Pickup
         var emptyID = new JoltPhysicsSharp.BodyID();
         _pickup = new Player.PickupController(_physics, _player.Camera, emptyID);
 
@@ -118,208 +67,64 @@ public unsafe class Application : IDisposable
         _console = new Imgui.Console();
         _console.SetPlayer(_player);
         _console.StartCapture();
-        _console.OnLoadMap = LoadMap;
-
-        // Triggers
-        _triggerSystem = new Behaviours.TriggerSystem(
-            _player.NativeCharacter,
-            _behaviours,
-            id => _scene.GetEntityByBody(id),
-            _player.GetBodyLockInterface()
-        );
-
-        // Assets via AssetManager
-        _shader = _assets.GetShader($"{Fuse.ResPath.Path}/Shaders/default.vert", $"{Fuse.ResPath.Path}/Shaders/default.frag")!;
-        _skyboxShader = _assets.GetShader($"{Fuse.ResPath.Path}/Shaders/skybox.vert", $"{Fuse.ResPath.Path}/Shaders/skybox.frag")!;
-        _shadowShader = _assets.GetShader($"{Fuse.ResPath.Path}/Shaders/shadow.vert", $"{Fuse.ResPath.Path}/Shaders/shadow.frag")!;
-        _shadowMap = new Renderer.ShadowMap(gl, 512, 512);
-        _cubeMesh = _assets.GetMesh("cube")!;
-        _groundMesh = _assets.GetMesh("ground")!;
-        _crateTexture = _assets.GetTexture($"{Fuse.ResPath.Path}/Textures/dev_measurecrate01.bmp");
-        _skyboxTexture = _assets.GetTexture($"{Fuse.ResPath.Path}/Textures/skybox_1.png");
-        if (_skyboxTexture.ID != 0)
-            _skyboxDominantColor = _skyboxTexture.GetDominantColor();
-        _crosshairTexture = _assets.GetTexture($"{Fuse.ResPath.Path}/Textures/UI/crosshair.png");
-        _crosshairInteractTexture = _assets.GetTexture($"{Fuse.ResPath.Path}/Textures/UI/crosshair_interact.png");
-
-        // Scene
-        InitScene();
-
-        // Wire-up callbacks
-        RegisterWindowCallbacks();
+        _console.OnLoadMap = (map) => LoadMap(map);
+        _console.OnLoadSky = (fileName) =>
+        {
+            var tex = _assets.GetTexture($"{Fuse.ResPath.Path}/Textures/{fileName}");
+            if (tex.ID == 0)
+                Logger.Error($"Failed to load skybox: {fileName}");
+            else
+                _renderer.SetSkyboxTexture(tex);
+        };
 
         // HUD
         _hud = new UI.HUD();
         _fpsText = _hud.AddText("FPS: 0", UI.HUDAnchor.TopLeft, new Vector2(20, 20), 2.0f, new Vector4(0, 1, 1, 1));
-        _crosshairNode = _hud.AddImage(_crosshairTexture, UI.HUDAnchor.Center, Vector2.Zero, new Vector2(8, 8));
+        var crosshairTexture = _assets.GetTexture($"{Fuse.ResPath.Path}/Textures/UI/crosshair.png");
+        var crosshairInteractTexture = _assets.GetTexture($"{Fuse.ResPath.Path}/Textures/UI/crosshair_interact.png");
+        _crosshairNode = _hud.AddImage(crosshairTexture, UI.HUDAnchor.Center, Vector2.Zero, new Vector2(8, 8));
 
-        // Register interactables
-        RegisterInteractablesAndBehaviours();
+        // Initialization
+        _renderer.Init(_assets, _scrWidth, _scrHeight);
+        _interaction = new Interaction.PlayerInteraction(_physics, _player, _crosshairNode, crosshairTexture, crosshairInteractTexture);
+
+        // Default Map Loading
+        LoadMap(initialMap);
+
+        RegisterWindowCallbacks();
 
         _lastTime = _window.GlfwApi.GetTime();
         Logger.Info(":: Application ready ::");
         return true;
     }
 
-    private void LoadMap(string fileName)
+    private void LoadMap(string mapName)
     {
-        string loadPath = $"{Fuse.ResPath.Path}/Maps/{fileName}";
-        if (!File.Exists(loadPath))
+        var spawn = _sceneManager.LoadMap(mapName);
+        if (spawn.HasValue)
         {
-            Logger.Error($"Map not found: {loadPath}");
-            return;
+            _player.NativeCharacter.Position = spawn.Value.Position;
+            _player.NativeCharacter.LinearVelocity = Vector3.Zero;
+            _player.Camera.SetRotation(spawn.Value.Yaw, spawn.Value.Pitch);
         }
-
-        _interactables.Clear();
-        _behaviours.Clear();
-
-        foreach (var b in _bodies)
-        {
-            if (b.IsBuilt)
-                _physics.DestroyBody(b.Native);
-        }
-        _bodies.Clear();
-
-        foreach (var handle in _interactableHandles.Values)
-            handle.Free();
-        _interactableHandles.Clear();
-
-        var loaded = Fuse.Scene.MapSerializer.LoadFromFile(
-            loadPath, _scene, _physics, _assets, out var spawn, Fuse.ResPath.Path);
-
-        if (loaded != null)
-        {
-            _bodies.AddRange(loaded);
-            if (spawn.HasValue)
-            {
-                _player.NativeCharacter.Position = spawn.Value.Position;
-                _player.NativeCharacter.LinearVelocity = Vector3.Zero;
-                _player.Camera.SetRotation(spawn.Value.Yaw, spawn.Value.Pitch);
-            }
-        }
-
-        RegisterInteractablesAndBehaviours();
-        mapPath = loadPath;
-        Logger.Info($"Map loaded: {fileName}");
+        _sceneManager.InitTriggerSystem(_player);
     }
     
     private void ReloadMap()
     {
-        _interactables.Clear();
-        _behaviours.Clear();
-        string loadPath = mapPath;
-        foreach (var b in _bodies)
+        var spawn = _sceneManager.ReloadMap();
+        if (spawn.HasValue)
         {
-            if (b.IsBuilt)
-                _physics.DestroyBody(b.Native);
+            _player.NativeCharacter.Position = spawn.Value.Position;
+            _player.NativeCharacter.LinearVelocity = Vector3.Zero;
+            _player.Camera.SetRotation(spawn.Value.Yaw, spawn.Value.Pitch);
         }
-        _bodies.Clear();
-        foreach (var handle in _interactableHandles.Values)
-            handle.Free();
-        _interactableHandles.Clear();
-
-        var loaded = Fuse.Scene.MapSerializer.LoadFromFile(loadPath, _scene, _physics, _assets, out var spawn, Fuse.ResPath.Path);
-        if (loaded != null)
-        {
-            _bodies.AddRange(loaded);
-            if (spawn.HasValue)
-            {
-                _player.NativeCharacter.Position = spawn.Value.Position;
-                _player.NativeCharacter.LinearVelocity = Vector3.Zero;
-                _player.Camera.SetRotation(spawn.Value.Yaw, spawn.Value.Pitch);
-            }
-        }
-
-        RegisterInteractablesAndBehaviours();
-    }
-    private void RegisterInteractablesAndBehaviours()
-    {
-        foreach (var entity in _scene.Entities)
-        {
-            if (entity.Body != null)
-                _scene.RegisterBody(entity);
-        }
-
-        foreach (var entity in _scene.Entities)
-        {
-            if (entity.Body != null && entity.Body.IsBuilt && !string.IsNullOrEmpty(entity.InteractableType))
-            {
-                var interactable = Interaction.InteractionSystem.CreateInteractable(entity.InteractableType);
-                if (interactable != null)
-                {
-                    interactable.Entity = entity;
-                    interactable.World = _physics;
-                    _interactables.Add(interactable);
-                    var gcHandle = GCHandle.Alloc(interactable);
-                    _interactableHandles[entity.Body.Native] = gcHandle;
-                    _physics.BodyInterface.SetUserData(entity.Body.Native, (ulong)GCHandle.ToIntPtr(gcHandle));
-                }
-            }
-        }
-
-        foreach (var entity in _scene.Entities)
-        {
-            if (entity.Body != null && entity.Body.IsBuilt && !string.IsNullOrEmpty(entity.BehaviourType))
-            {
-                var behaviour = BehaviourSystem.Create(entity.BehaviourType);
-                if (behaviour != null)
-                {
-                    behaviour.Entity = entity;
-                    behaviour.World = _physics;
-                    _behaviours.Add(behaviour);
-                }
-            }
-        }
-    }
-
-    private void InitScene()
-    {
-        _scene = new Renderer.Scene();
-
-        var loaded = Fuse.Scene.MapSerializer.LoadFromFile(mapPath, _scene, _physics, _assets, out var spawn, Fuse.ResPath.Path);
-        if (loaded != null)
-        {
-            _bodies.AddRange(loaded);
-            if (spawn.HasValue)
-            {
-                _player.NativeCharacter.Position = spawn.Value.Position;
-                _player.Camera.SetRotation(spawn.Value.Yaw, spawn.Value.Pitch);
-            }
-            Logger.Important($"CURRENT MAP LOADED: {mapPath}");
-        }
-        //else
-        //{
-        //    Logger.Warn("Falling back to procedural scene");
-        //    var groundBody = new Physics.RigidBody()
-        //        .SetBox(new Vector3(20.0f, 0.5f, 20.0f))
-        //        .SetPosition(new Vector3(0, 0, 0))
-        //        .SetMass(0)
-        //        .SetFriction(0.8f);
-        //    groundBody.Build(_physics);
-        //    _bodies.Add(groundBody);
-        //    _scene.Add(_groundMesh, "ground", groundBody);
-        //
-        //    var cubeBody = new Physics.RigidBody()
-        //        .SetBox(new Vector3(0.5f, 0.5f, 0.5f))
-        //        .SetPosition(new Vector3(0, 1, -3))
-        //        .SetMass(10.0f)
-        //        .SetFriction(0.5f)
-        //        .SetRestitution(0.4f);
-        //    cubeBody.Build(_physics);
-        //    _bodies.Add(cubeBody);
-        //
-        //    var entity = _scene.Add(_cubeMesh, "cube", cubeBody);
-        //    entity.InteractableType = "CubeInteract";
-        //}
+        _sceneManager.InitTriggerSystem(_player);
     }
 
     private void RegisterWindowCallbacks()
     {
-        _window.OnMouseMove += (dx, dy) =>
-        {
-            _player.Camera.ProcessMouseMovement((float)dx, (float)dy);
-        };
-
+        _window.OnMouseMove += (dx, dy) => { _player.Camera.ProcessMouseMovement((float)dx, (float)dy); };
         _window.OnScroll += (yoffset) =>
         {
             if (!ImGuiNET.ImGui.GetIO().WantCaptureMouse)
@@ -336,23 +141,18 @@ public unsafe class Application : IDisposable
             _scrHeight = height;
             _window.SetSize(width, height);
             _ui.SetScreenSize(width, height);
+            _renderer.Resize(width, height);
         };
 
         _window.OnKeyPress += (key) =>
         {
-            if (key == KeyCodes.F12)
-            {
-                _shadowsEnabled = !_shadowsEnabled;
-            }
-            
+            if (key == KeyCodes.F12) _renderer.ShadowsEnabled = !_renderer.ShadowsEnabled;
             if (key == KeyCodes.Escape)
             {
                 _paused = !_paused;
                 _window.CursorCaptureEnabled = !_paused;
-                if (_paused)
-                    Input.Input.ShowCursor();
-                else
-                    Input.Input.DisableCursor();
+                if (_paused) Input.Input.ShowCursor();
+                else Input.Input.DisableCursor();
             }
         };
     }
@@ -371,7 +171,6 @@ public unsafe class Application : IDisposable
                 Engine.Tick(dt);
 
                 Input.Input.Update();
-
                 var gl = _window.GL;
 
                 // Update
@@ -381,29 +180,28 @@ public unsafe class Application : IDisposable
                     _physics.Step(float.Min(dt, 0.0333f));
                     _player.Update(dt);
                     _pickup.Update(dt);
-                    foreach (var interactable in _interactables)
-                        interactable.Update(dt);
-                    foreach (var behaviour in _behaviours)
-                        behaviour.Update(dt);
-                    _triggerSystem.Update(dt);
-                    foreach (var behaviour in _behaviours)
+                    
+                    _sceneManager.Update(dt);
+                    if (_sceneManager.CheckPendingResets())
                     {
-                        if (behaviour is Behaviours.TriggerReset reset && reset.PendingReset)
-                        {
-                            reset.PendingReset = false;
-                            ReloadMap();
-                            break;
-                        }
+                        ReloadMap();
                     }
                 }
 
                 HandleInput();
 
                 // Render
-                Render(gl);
+                _renderer.RenderFrame(_sceneManager.ActiveScene, _player.Camera, _physics);
 
-                // Debug physics shapes
-                DrawDebug();
+                // Debug
+                if (_debugDrawer.Enabled)
+                {
+                    _debugDrawer.Clear();
+                    _sceneManager.DrawDebug(_debugDrawer);
+                    _debugDrawer.DrawPlayerDebug(_player); // We'll move player debug to DebugDrawer
+                    float aspect = (float)_scrWidth / _scrHeight;
+                    _debugDrawer.Render(_player.Camera.GetViewMatrix(), _player.Camera.GetProjectionMatrix(aspect));
+                }
 
                 // UI
                 DrawUI(gl);
@@ -412,16 +210,16 @@ public unsafe class Application : IDisposable
                 _imgui.NewFrame(dt, _scrWidth, _scrHeight);
                 _imgui.DrawWindows(_player);
 
-                if (_paused)
-                {
-                    ImGuiNET.ImGui.Begin("Shadow Settings");
-                    ImGuiNET.ImGui.DragFloat("Bias Factor", ref _shadowBiasFactor, 0.0001f, 0.0f, 0.1f, "%.5f");
-                    ImGuiNET.ImGui.DragFloat("Bias Base", ref _shadowBiasBase, 0.00001f, 0.0f, 0.01f, "%.6f");
-                    ImGuiNET.ImGui.DragFloat("Near Plane", ref _shadowNearPlane, 1.0f, -200.0f, 200.0f, "%.1f");
-                    ImGuiNET.ImGui.DragFloat("Far Plane", ref _shadowFarPlane, 1.0f, 10.0f, 1000.0f, "%.1f");
-                    ImGuiNET.ImGui.DragFloat("Spread (Softness)", ref _shadowSpread, 0.1f, 0.0f, 20.0f, "%.1f");
-                    ImGuiNET.ImGui.End();
-                }
+                //if (_paused)
+                //{
+                //    ImGuiNET.ImGui.Begin("Shadow Settings");
+                //    ImGuiNET.ImGui.DragFloat("Bias Factor", ref _renderer.ShadowBiasFactor, 0.0001f, 0.0f, 0.1f, "%.5f");
+                //    ImGuiNET.ImGui.DragFloat("Bias Base", ref _renderer.ShadowBiasBase, 0.00001f, 0.0f, 0.01f, "%.6f");
+                //    ImGuiNET.ImGui.DragFloat("Near Plane", ref _renderer.ShadowNearPlane, 1.0f, -200.0f, 200.0f, "%.1f");
+                //    ImGuiNET.ImGui.DragFloat("Far Plane", ref _renderer.ShadowFarPlane, 1.0f, 10.0f, 1000.0f, "%.1f");
+                //    ImGuiNET.ImGui.DragFloat("Spread (Softness)", ref _renderer.ShadowSpread, 0.1f, 0.0f, 20.0f, "%.1f");
+                //    ImGuiNET.ImGui.End();
+                //}
 
                 _console.Draw();
                 _imgui.Render();
@@ -440,236 +238,24 @@ public unsafe class Application : IDisposable
 
     private void HandleInput()
     {
-        //if (Input.Input.KeyPressed(KeyCodes.F5))
-        //{
-        //    foreach (var entity in _scene.Entities)
-        //    {
-        //        if (entity.Id == "cube" && entity.Body != null && entity.Body.IsBuilt)
-        //        {
-        //            _physics.SetBodyPosition(entity.Body.Native, new Vector3(0, 1, -3));
-        //            _physics.BodyInterface.SetLinearVelocity(entity.Body.Native, Vector3.Zero);
-        //            _physics.BodyInterface.SetAngularVelocity(entity.Body.Native, Vector3.Zero);
-        //        }
-        //    }
-        //
-        //    _player.NativeCharacter.Position = new Vector3(0,2,0);
-        //    _player.NativeCharacter.LinearVelocity = Vector3.Zero;
-        //}
-
         if (Input.Input.KeyPressed(KeyCodes.F6))
         {
-            string savePath = mapPath;
+            string savePath = _sceneManager.CurrentMapPath;
             var spawn = new Fuse.Scene.PlayerSpawn(
                 _player.NativeCharacter.Position,
                 _player.Camera.Yaw,
                 _player.Camera.Pitch);
-            Fuse.Scene.MapSerializer.SaveToFile(_scene, _physics, savePath, spawn);
+            Fuse.Scene.MapSerializer.SaveToFile(_sceneManager.ActiveScene, _physics, savePath, spawn);
         }
 
-        if (Input.Input.KeyPressed(KeyCodes.F5))
-        {
-            ReloadMap();
-        }
-
-        if (Input.Input.KeyPressed(KeyCodes.F9))
-            _debugDrawer.Toggle();
-
+        if (Input.Input.KeyPressed(KeyCodes.F5)) ReloadMap();
+        if (Input.Input.KeyPressed(KeyCodes.F9)) _debugDrawer.Toggle();
         if (Input.Input.KeyPressed(KeyCodes.GraveAccent))
         {
             _console.Toggle();
-            if (_console.IsOpen)
-                Input.Input.ShowCursor();
-            else
-                Input.Input.DisableCursor();
+            if (_console.IsOpen) Input.Input.ShowCursor();
+            else Input.Input.DisableCursor();
         }
-    }
-
-    private void DrawDebug()
-    {
-        if (!_debugDrawer.Enabled) return;
-
-        _debugDrawer.Clear();
-
-        foreach (var b in _bodies)
-        {
-            if (!b.IsBuilt) continue;
-
-            var pos = b.Position(_physics);
-            var rot = b.Rotation(_physics);
-            var color = b.Mass > 0 ? new Vector3(1, 1, 0) : new Vector3(1, 0, 0);
-
-            switch (b.Type)
-            {
-                case Physics.RigidBody.ShapeType.Box:
-                    _debugDrawer.DrawBox(pos, rot, b.BoxHalfExtents, color);
-                    break;
-                case Physics.RigidBody.ShapeType.Sphere:
-                    _debugDrawer.DrawSphere(pos, rot, b.SphereRadius, color);
-                    break;
-                case Physics.RigidBody.ShapeType.Capsule:
-                    _debugDrawer.DrawCapsule(pos, rot, b.CapsuleHeight * 0.5f, b.CapsuleRadius, color);
-                    break;
-                case Physics.RigidBody.ShapeType.Trimesh:
-                    if (b.TrimeshVertices != null && b.TrimeshIndices != null)
-                        _debugDrawer.DrawTrimesh(pos, rot, b.TrimeshVertices, b.TrimeshIndices, color);
-                    break;
-            }
-        }
-
-        // Draw player character capsule
-        float capsuleHalfH = _player.IsCrouching ? 0.4f : 0.9f;
-        _debugDrawer.DrawCapsule(_player.Position, Quaternion.Identity, capsuleHalfH, 0.5f, new Vector3(0, 1, 0));
-        _debugDrawer.DrawBox(_player.FeetPosition, Quaternion.Identity, new Vector3(0.1f), new Vector3(0, 1, 1));
-        // arrow at poiting movement direction
-        // Arrow at feet pointing movement direction
-        Vector3 vel = _player.LinearVelocity;
-        Vector3 horiz = new Vector3(vel.X, 0, vel.Z);
-        if (horiz.LengthSquared() > 0.01f)
-        {
-            Vector3 dir = Vector3.Normalize(horiz);
-            Vector3 from = _player.FeetPosition;
-            float len = 0.5f;
-            Vector3 to = from + dir * len;
-            Vector3 color = new Vector3(0, 1, 1); // cyan
-
-            _debugDrawer.PushLine(from, to, color);
-
-            // Arrowhead
-            float arrowSize = 0.1f;
-            float arrowAngle = 0.4f; // ~25 degrees
-            Vector3 right = Vector3.Normalize(Vector3.Cross(dir, Vector3.UnitY)) * arrowSize;
-            Vector3 up = Vector3.Normalize(Vector3.Cross(right, dir)) * arrowSize;
-            Vector3 headLeft = to - dir * arrowSize + right * arrowAngle;
-            Vector3 headRight = to - dir * arrowSize - right * arrowAngle;
-            _debugDrawer.PushLine(to, headLeft, color);
-            _debugDrawer.PushLine(to, headRight, color);
-        }
-
-        float aspect = (float)_scrWidth / _scrHeight;
-        var view = _player.Camera.GetViewMatrix();
-        var proj = _player.Camera.GetProjectionMatrix(aspect);
-        _debugDrawer.Render(view, proj);
-    }
-
-    private void Render(GL gl)
-    {
-        float aspect = (float)_scrWidth / _scrHeight;
-        var view = _player.Camera.GetViewMatrix();
-        var proj = _player.Camera.GetProjectionMatrix(aspect);
-
-        // --- 1. Shadow Pass ---
-        Vector3 lightDir = Vector3.Normalize(new Vector3(1, 2, 1));
-        
-        float[] cascadeLevels = { _shadowFarPlane * 0.05f, _shadowFarPlane * 0.2f, _shadowFarPlane };
-        Matrix4x4[] lightSpaceMatrices = new Matrix4x4[3];
-
-        if (_shadowShader != null && _shadowShader.ID != 0 && _shadowsEnabled)
-        {
-            gl.Enable(EnableCap.DepthTest);
-            gl.Enable(EnableCap.CullFace);
-            gl.CullFace(GLEnum.Front); // Fix peter-panning
-
-            _shadowShader.Use();
-            
-            for (int i = 0; i < 3; i++)
-            {
-                float near = i == 0 ? _player.Camera.NearPlane : cascadeLevels[i - 1];
-                float far = cascadeLevels[i];
-                lightSpaceMatrices[i] = GetLightSpaceMatrix(near, far, aspect, lightDir);
-                
-                _shadowShader.SetMat4("uLightSpaceMatrix", lightSpaceMatrices[i]);
-                _shadowMap.BindForWriting(i);
-                _scene.Render(_shadowShader, _physics, _crateTexture, lightSpaceMatrices[i]); 
-            }
-        }
-
-        // --- 2. Regular Render Pass ---
-        gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-        gl.Viewport(0, 0, (uint)_scrWidth, (uint)_scrHeight);
-        gl.ClearColor(0.1f, 0.1f, 0.15f, 1.0f);
-        gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-        // Skybox
-        if (_skyboxShader.ID != 0 && _skyboxTexture.ID != 0)
-        {
-            gl.DepthMask(false);
-            gl.DepthFunc(DepthFunction.Lequal);
-            gl.CullFace(GLEnum.Front);
-
-            _skyboxShader.Use();
-            var skyView = Matrix4x4.CreateFromQuaternion(Quaternion.CreateFromRotationMatrix(view));
-            _skyboxShader.SetMat4("uView", skyView);
-            _skyboxShader.SetMat4("uProj", proj);
-            _skyboxShader.SetInt("uSkyTexture", 0);
-            _skyboxTexture.Bind(0);
-            _cubeMesh.Draw();
-
-            gl.CullFace(GLEnum.Back);
-            gl.DepthFunc(DepthFunction.Less);
-            gl.DepthMask(true);
-        }
-
-        // World geometry
-        if (_shader.ID != 0)
-        {
-            gl.Enable(EnableCap.DepthTest);
-            gl.Enable(EnableCap.CullFace);
-            gl.CullFace(GLEnum.Back);
-            gl.DepthFunc(DepthFunction.Less);
-            _shader.Use();
-            _shader.SetVec3("uLightDir", lightDir);
-
-            float lum = _skyboxDominantColor.X * 0.2126f + _skyboxDominantColor.Y * 0.7152f + _skyboxDominantColor.Z * 0.0722f;
-            _shader.SetFloat("uAmbient", 0.02f + 0.28f * lum);
-            var tinted = Vector3.Lerp(new Vector3(1, 0.95f, 0.9f), _skyboxDominantColor, 0.5f);
-            _shader.SetVec3("uLightColor", tinted * (0.5f + 0.5f * lum));
-            
-            _shader.SetMat4("uView", view);
-            _shader.SetMat4("uProj", proj);
-            
-            for (int i = 0; i < 3; i++)
-            {
-                _shader.SetMat4($"uLightSpaceMatrices[{i}]", lightSpaceMatrices[i]);
-                _shader.SetFloat($"uCascadePlaneDistances[{i}]", cascadeLevels[i]);
-            }
-            
-            _shader.SetBool("uEnableShadows", _shadowsEnabled);
-            
-            _shader.SetFloat("uShadowBiasFactor", _shadowBiasFactor);
-            _shader.SetFloat("uShadowBiasBase", _shadowBiasBase);
-            _shader.SetFloat("uShadowSpread", _shadowSpread);
-            
-            _shader.SetVec3("uColor", Vector3.One);
-            _shader.SetBool("uUseTexture", true);
-            
-            _shader.SetInt("uTexture", 0);
-            _shader.SetInt("uShadowMap", 1);
-            _shadowMap.BindForReading(TextureUnit.Texture1);
-
-            _scene.Render(_shader, _physics, _crateTexture);
-        }
-    }
-
-    private void UpdateInteractionRay()
-    {
-        if (_fpsText == null) return;
-        Vector3 origin = _player.EyePosition;
-        Vector3 dir = _player.Camera.Front;
-        float range = 5.0f;
-
-        var hit = InteractionSystem.RaycastInteractable(_physics, origin, dir, range);
-
-        if (hit != _lookingAt)
-        {
-            _lookingAt = hit;
-            if (hit != null)
-                _crosshairNode.Texture = _crosshairInteractTexture;
-            else
-                _crosshairNode.Texture = _crosshairTexture;
-        }
-
-        if (Input.Input.KeyPressed(KeyCodes.E) && _lookingAt != null)
-            _lookingAt.OnInteract();
     }
 
     private void DrawUI(GL gl)
@@ -679,21 +265,13 @@ public unsafe class Application : IDisposable
         gl.Enable(EnableCap.Blend);
         gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
-        // Update FPS text
-        if (_fpsText != null)
-            _fpsText.Text = $"FPS: {Engine.FPS}";
+        if (_fpsText != null) _fpsText.Text = $"FPS: {Engine.FPS}";
+        
+        if (!_paused) _interaction.Update();
 
-        // Paused state
-        if (_paused)
-        {
-            _crosshairNode.Texture = _crosshairTexture;
-        }
-
-        UpdateInteractionRay();
         _hud.Update(_scrWidth, _scrHeight);
         _hud.Draw(_ui, _scrWidth, _scrHeight);
 
-        // Paused overlay
         if (_paused)
         {
             Vector2 center = _ui.Center;
@@ -708,15 +286,7 @@ public unsafe class Application : IDisposable
 
     public void Dispose()
     {
-        foreach (var handle in _interactableHandles.Values)
-            handle.Free();
-
-        foreach (var b in _bodies)
-        {
-            if (b.IsBuilt)
-                _physics.DestroyBody(b.Native);
-        }
-        _scene.Clear();
+        _sceneManager.Dispose();
         _console.StopCapture();
         _player.Dispose();
         _imgui.Shutdown();
@@ -726,71 +296,5 @@ public unsafe class Application : IDisposable
         _physics.Dispose();
         _window.Dispose();
         Logger.Info("Application shutdown");
-    }
-    private Vector4[] GetFrustumCornersWorldSpace(Matrix4x4 proj, Matrix4x4 view)
-    {
-        Matrix4x4.Invert(view * proj, out Matrix4x4 invVP);
-        
-        Vector4[] corners = new Vector4[8];
-        int i = 0;
-        for (int x = 0; x < 2; ++x)
-        {
-            for (int y = 0; y < 2; ++y)
-            {
-                for (int z = 0; z < 2; ++z)
-                {
-                    Vector4 pt = Vector4.Transform(new Vector4(
-                        2.0f * x - 1.0f,
-                        2.0f * y - 1.0f,
-                        2.0f * z - 1.0f,
-                        1.0f), invVP);
-                    corners[i++] = pt / pt.W;
-                }
-            }
-        }
-        return corners;
-    }
-
-    private Matrix4x4 GetLightSpaceMatrix(float near, float far, float aspect, Vector3 lightDir)
-    {
-        var proj = Matrix4x4.CreatePerspectiveFieldOfView(
-            float.DegreesToRadians(_player.Camera.FOV), aspect, near, far);
-        var view = _player.Camera.GetViewMatrix();
-        
-        var corners = GetFrustumCornersWorldSpace(proj, view);
-        
-        Vector3 center = Vector3.Zero;
-        foreach (var v in corners)
-        {
-            center += new Vector3(v.X, v.Y, v.Z);
-        }
-        center /= corners.Length;
-
-        var lightView = Matrix4x4.CreateLookAt(center + lightDir, center, Vector3.UnitY);
-        
-        float minX = float.MaxValue;
-        float maxX = float.MinValue;
-        float minY = float.MaxValue;
-        float maxY = float.MinValue;
-        float minZ = float.MaxValue;
-        float maxZ = float.MinValue;
-        
-        foreach (var v in corners)
-        {
-            var trf = Vector4.Transform(v, lightView);
-            minX = MathF.Min(minX, trf.X);
-            maxX = MathF.Max(maxX, trf.X);
-            minY = MathF.Min(minY, trf.Y);
-            maxY = MathF.Max(maxY, trf.Y);
-            minZ = MathF.Min(minZ, trf.Z);
-            maxZ = MathF.Max(maxZ, trf.Z);
-        }
-        
-        float zMult = 10.0f;
-        if (minZ < 0) minZ *= zMult; else minZ /= zMult;
-        if (maxZ < 0) maxZ /= zMult; else maxZ *= zMult;
-
-        var lightProjection = Matrix4x4.CreateOrthographicOffCenter(minX, maxX, minY, maxY, minZ, maxZ);
-        return lightView * lightProjection;
     }
 }

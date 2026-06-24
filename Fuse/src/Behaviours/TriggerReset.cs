@@ -17,7 +17,7 @@ public sealed class TriggerReset : IBehaviour
         if (otherEntityId == "player")
         {
             PendingReset = true;
-            Logger.Info("TUDO CERTO");
+            Logger.Info("RESET MAP");
         }
     }
 

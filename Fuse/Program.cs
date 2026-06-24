@@ -1,4 +1,4 @@
-﻿using Fuse.Core;
+using Fuse.Core;
 using System.IO;
 
 internal static class Program
@@ -15,9 +15,8 @@ internal static class Program
         }
 
         Application app = new();
-        string mapNameArg = args.Length > 0 ? args[0] : "default.json";
-        app.mapPath = $"{Fuse.ResPath.Path}/Maps/{mapNameArg}";
-        if (!app.Init()) return;
+        string mapNameArg = args.Length > 0 ? args[0] : "default.bth";
+        if (!app.Init(mapNameArg)) return;
         app.Run();
     }
 }

@@ -17,7 +17,7 @@ public class EditorSceneService
 
     public void LoadMap(string fuseResPath)
     {
-        _mapPath = Path.Combine(fuseResPath, "Maps", "default.json");
+        _mapPath = Path.Combine(fuseResPath, "Maps", "default.bth");
         _doc = MapDocument.Load(_mapPath) ?? new MapDocument();
         _scene = new Scene();
         Logger.Important($"CURRENT MAP LOADED: {_mapPath}");

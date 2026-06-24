@@ -16,6 +16,7 @@ public class Console
     private TextWriter? _originalOut;
     private TextWriter? _originalError;
     public Action<string>? OnLoadMap { get; set; }
+    public Action<string>? OnLoadSky { get; set; }
 
     public Console()
     {
@@ -41,7 +42,12 @@ public class Console
             System.Console.SetError(_originalError);
     }
 
-    public void Toggle() => _open = !_open;
+    public void Toggle()
+    {
+        _open = !_open;
+        if (!_open)
+            ImGui.SetWindowFocus(null);
+    }
     public bool IsOpen => _open;
 
     public void Draw()
@@ -102,13 +108,26 @@ public class Console
             OnLoadMap?.Invoke(fileName);
             return;
         }
+        if (lower.StartsWith("loadsky "))
+        {
+            string fileName = cmd["loadsky ".Length..].Trim();
+            if (string.IsNullOrEmpty(fileName))
+            {
+                AddLog("Usage: loadSky <nome do arquivo>");
+                return;
+            }
+            AddLog($"Loading skybox: {fileName}");
+            OnLoadSky?.Invoke(fileName);
+            return;
+        }
         if (lower == "help")
         {
             AddLog("Commands:");
-            AddLog("  loadMap - Load a map (e.g. loadMap map.json)");
-            AddLog("  noClip  - Toggle noclip");
-            AddLog("  help    - Show this");
-            AddLog("  clear   - Clear console");
+            AddLog("  loadMap  - Load a map (e.g. loadMap map.bth)");
+            AddLog("  loadSky  - Load a skybox texture (e.g. loadSky skybox_1.png)");
+            AddLog("  noClip   - Toggle noclip");
+            AddLog("  help     - Show this");
+            AddLog("  clear    - Clear console");
             return;
         }
         if (lower == "clear")

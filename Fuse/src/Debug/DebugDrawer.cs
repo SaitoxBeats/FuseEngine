@@ -234,6 +234,36 @@ public unsafe class DebugDrawer : IDisposable
 
     public void Clear() => _lines.Clear();
 
+    public void DrawPlayerDebug(Player.Player player)
+    {
+        // Draw player character capsule
+        float capsuleHalfH = player.IsCrouching ? 0.4f : 0.9f;
+        DrawCapsule(player.Position, Quaternion.Identity, capsuleHalfH, 0.5f, new Vector3(0, 1, 0));
+        DrawBox(player.FeetPosition, Quaternion.Identity, new Vector3(0.1f), new Vector3(0, 1, 1));
+        
+        Vector3 vel = player.LinearVelocity;
+        Vector3 horiz = new Vector3(vel.X, 0, vel.Z);
+        if (horiz.LengthSquared() > 0.01f)
+        {
+            Vector3 dir = Vector3.Normalize(horiz);
+            Vector3 from = player.FeetPosition;
+            float len = 0.5f;
+            Vector3 to = from + dir * len;
+            Vector3 color = new Vector3(0, 1, 1); // cyan
+
+            PushLine(from, to, color);
+
+            // Arrowhead
+            float arrowSize = 0.1f;
+            float arrowAngle = 0.4f; // ~25 degrees
+            Vector3 right = Vector3.Normalize(Vector3.Cross(dir, Vector3.UnitY)) * arrowSize;
+            Vector3 headLeft = to - dir * arrowSize + right * arrowAngle;
+            Vector3 headRight = to - dir * arrowSize - right * arrowAngle;
+            PushLine(to, headLeft, color);
+            PushLine(to, headRight, color);
+        }
+    }
+
     public void Render(Matrix4x4 view, Matrix4x4 proj)
     {
         if (_lines.Count == 0) return;
