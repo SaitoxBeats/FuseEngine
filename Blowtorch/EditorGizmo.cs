@@ -6,9 +6,10 @@ namespace Blowtorch;
 
 public static class EditorGizmo
 {
-    private static int _activeAxis = -1; // 0=X, 1=Y, 2=Z
+    private static int _activeAxis = -1; // 0=X, 1=Y, 2=Z, 3=YZ, 4=XZ, 5=XY
     private static float _dragStartOffset;
     private static Vector3 _dragStartObjectPos;
+    private static Vector3 _dragStartHitPos;
     
     private static float _dragStartAngle;
     private static Quaternion _dragStartRotation;
@@ -35,28 +36,78 @@ public static class EditorGizmo
         uint[] colors = { 0xFF0000FF, 0xFF00FF00, 0xFFFF0000 };
         uint[] activeColors = { 0xFF5555FF, 0xFF55FF55, 0xFFFF5555 };
 
+        Vector3[] planeNormals = { Vector3.UnitX, Vector3.UnitY, Vector3.UnitZ }; // YZ, XZ, XY
+        uint[] planeColors = { 0x660000FF, 0x6600FF00, 0x66FF0000 };
+        uint[] planeActiveColors = { 0xAA5555FF, 0xAA55FF55, 0xAAFF5555 };
+        
+        float scale = GetGizmoScale(objectPos, view, proj);
+        float planeOffset = 0.25f * scale;
+        float planeSize = 0.35f * scale;
+
         var drawList = ImGui.GetWindowDrawList();
-        float axisLength = 1.5f;
+        float axisLength = 1.5f * scale;
         float hoverRadius = 15.0f;
 
         if (!WorldToScreen(objectPos, view, proj, vpPos, vpSize, out Vector2 center2D))
             return false;
+
+        Matrix4x4.Invert(view, out Matrix4x4 invView);
+        Vector3 camPos = new Vector3(invView.M41, invView.M42, invView.M43);
+        Vector3 dirToCam = Vector3.Normalize(camPos - objectPos);
+        Vector3 signs = new Vector3(
+            dirToCam.X >= 0 ? 1.0f : -1.0f,
+            dirToCam.Y >= 0 ? 1.0f : -1.0f,
+            dirToCam.Z >= 0 ? 1.0f : -1.0f
+        );
 
         int hoveredAxis = -1;
         float closestDist = float.MaxValue;
 
         if (interactive)
         {
+            Ray mouseRay = ScreenToWorldRay(mousePos, view, proj, vpPos, vpSize);
+            
+            // Check planes
+            float closestPlaneT = float.MaxValue;
             for (int i = 0; i < 3; i++)
             {
-                Vector3 tipPos = objectPos + axes[i] * axisLength;
-                if (WorldToScreen(tipPos, view, proj, vpPos, vpSize, out Vector2 tip2D))
+                if (GetRayPlaneIntersection(mouseRay, objectPos, planeNormals[i], out Vector3 hitPoint))
                 {
-                    float dist = DistancePointToSegment(mousePos, center2D, tip2D);
-                    if (dist < hoverRadius && dist < closestDist)
+                    Vector3 localHit = hitPoint - objectPos;
+                    Vector3 localHitAbs = new Vector3(localHit.X * signs.X, localHit.Y * signs.Y, localHit.Z * signs.Z);
+                    
+                    float u = 0, v = 0;
+                    if (i == 0) { u = localHitAbs.Y; v = localHitAbs.Z; } // YZ
+                    else if (i == 1) { u = localHitAbs.X; v = localHitAbs.Z; } // XZ
+                    else if (i == 2) { u = localHitAbs.X; v = localHitAbs.Y; } // XY
+                    
+                    if (u >= planeOffset && u <= planeOffset + planeSize &&
+                        v >= planeOffset && v <= planeOffset + planeSize)
                     {
-                        hoveredAxis = i;
-                        closestDist = dist;
+                        float t = (hitPoint - mouseRay.Origin).Length();
+                        if (t < closestPlaneT)
+                        {
+                            closestPlaneT = t;
+                            hoveredAxis = i + 3; // 3=YZ, 4=XZ, 5=XY
+                        }
+                    }
+                }
+            }
+
+            // Check axes if no plane was hovered
+            if (hoveredAxis == -1)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    Vector3 tipPos = objectPos + axes[i] * axisLength;
+                    if (WorldToScreen(tipPos, view, proj, vpPos, vpSize, out Vector2 tip2D))
+                    {
+                        float dist = DistancePointToSegment(mousePos, center2D, tip2D);
+                        if (dist < hoverRadius && dist < closestDist)
+                        {
+                            hoveredAxis = i;
+                            closestDist = dist;
+                        }
                     }
                 }
             }
@@ -70,11 +121,55 @@ public static class EditorGizmo
             _dragStartObjectPos = objectPos;
             
             Ray mouseRay = ScreenToWorldRay(mousePos, view, proj, vpPos, vpSize);
-            _dragStartOffset = GetRayAxisIntersection(mouseRay, objectPos, axes[_activeAxis], view);
+            if (_activeAxis < 3)
+            {
+                _dragStartOffset = GetRayAxisIntersection(mouseRay, objectPos, axes[_activeAxis], view);
+            }
+            else
+            {
+                if (GetRayPlaneIntersection(mouseRay, objectPos, planeNormals[_activeAxis - 3], out Vector3 hit))
+                {
+                    _dragStartHitPos = hit;
+                }
+            }
         }
 
         if (!isMouseDown) _activeAxis = -1;
 
+        // Render planes
+        for (int i = 0; i < 3; i++)
+        {
+            GetPlaneHandlePoints(i, objectPos, signs, planeOffset, planeSize, out Vector3 p0, out Vector3 p1, out Vector3 p2, out Vector3 p3);
+            
+            if (WorldToScreen(p0, view, proj, vpPos, vpSize, out Vector2 p0_2d) &&
+                WorldToScreen(p1, view, proj, vpPos, vpSize, out Vector2 p1_2d) &&
+                WorldToScreen(p2, view, proj, vpPos, vpSize, out Vector2 p2_2d) &&
+                WorldToScreen(p3, view, proj, vpPos, vpSize, out Vector2 p3_2d))
+            {
+                bool isActive = (_activeAxis == i + 3) || (_activeAxis == -1 && hoveredAxis == i + 3);
+                uint color = isActive ? planeActiveColors[i] : planeColors[i];
+                
+                Vector2[] pts = new Vector2[] { p0_2d, p1_2d, p2_2d, p3_2d };
+                unsafe 
+                {
+                    fixed (Vector2* ptsPtr = pts)
+                    {
+                        drawList.AddConvexPolyFilled(ref ptsPtr[0], 4, color);
+                    }
+                }
+                
+                uint outlineColor = isActive ? activeColors[i] : colors[i];
+                unsafe
+                {
+                    fixed (Vector2* ptsPtr = pts)
+                    {
+                        drawList.AddPolyline(ref ptsPtr[0], 4, outlineColor, ImDrawFlags.Closed, 1.5f);
+                    }
+                }
+            }
+        }
+
+        // Render axes
         for (int i = 0; i < 3; i++)
         {
             Vector3 tipPos = objectPos + axes[i] * axisLength;
@@ -90,19 +185,50 @@ public static class EditorGizmo
         if (_activeAxis != -1)
         {
             Ray mouseRay = ScreenToWorldRay(mousePos, view, proj, vpPos, vpSize);
-            float currentOffset = GetRayAxisIntersection(mouseRay, _dragStartObjectPos, axes[_activeAxis], view);
             
-            float delta = currentOffset - _dragStartOffset;
-            newPos = _dragStartObjectPos + axes[_activeAxis] * delta;
-
-            if (snapAmount > 0.0f)
+            if (_activeAxis < 3)
             {
-                if (_activeAxis == 0) // X
-                    newPos.X = MathF.Round(newPos.X / snapAmount) * snapAmount;
-                else if (_activeAxis == 1) // Y
-                    newPos.Y = MathF.Round(newPos.Y / snapAmount) * snapAmount;
-                else if (_activeAxis == 2) // Z
-                    newPos.Z = MathF.Round(newPos.Z / snapAmount) * snapAmount;
+                float currentOffset = GetRayAxisIntersection(mouseRay, _dragStartObjectPos, axes[_activeAxis], view);
+                float delta = currentOffset - _dragStartOffset;
+                newPos = _dragStartObjectPos + axes[_activeAxis] * delta;
+
+                if (snapAmount > 0.0f)
+                {
+                    if (_activeAxis == 0) // X
+                        newPos.X = MathF.Round(newPos.X / snapAmount) * snapAmount;
+                    else if (_activeAxis == 1) // Y
+                        newPos.Y = MathF.Round(newPos.Y / snapAmount) * snapAmount;
+                    else if (_activeAxis == 2) // Z
+                        newPos.Z = MathF.Round(newPos.Z / snapAmount) * snapAmount;
+                }
+            }
+            else
+            {
+                int planeIdx = _activeAxis - 3;
+                if (GetRayPlaneIntersection(mouseRay, _dragStartObjectPos, planeNormals[planeIdx], out Vector3 currentHitPos))
+                {
+                    Vector3 delta3D = currentHitPos - _dragStartHitPos;
+                    newPos = _dragStartObjectPos + delta3D;
+
+                    if (snapAmount > 0.0f)
+                    {
+                        if (planeIdx == 0) // YZ
+                        {
+                            newPos.Y = MathF.Round(newPos.Y / snapAmount) * snapAmount;
+                            newPos.Z = MathF.Round(newPos.Z / snapAmount) * snapAmount;
+                        }
+                        else if (planeIdx == 1) // XZ
+                        {
+                            newPos.X = MathF.Round(newPos.X / snapAmount) * snapAmount;
+                            newPos.Z = MathF.Round(newPos.Z / snapAmount) * snapAmount;
+                        }
+                        else if (planeIdx == 2) // XY
+                        {
+                            newPos.X = MathF.Round(newPos.X / snapAmount) * snapAmount;
+                            newPos.Y = MathF.Round(newPos.Y / snapAmount) * snapAmount;
+                        }
+                    }
+                }
             }
 
             if (newPos != objectPos)
@@ -136,8 +262,9 @@ public static class EditorGizmo
         uint[] colors = { 0xFF0000FF, 0xFF00FF00, 0xFFFF0000 };
         uint[] activeColors = { 0xFF5555FF, 0xFF55FF55, 0xFFFF5555 };
 
+        float scale = GetGizmoScale(objectPos, view, proj);
         var drawList = ImGui.GetWindowDrawList();
-        float axisLength = 1.5f;
+        float axisLength = 1.5f * scale;
         float hoverRadius = 15.0f;
 
         if (!WorldToScreen(objectPos, view, proj, vpPos, vpSize, out Vector2 center2D)) return false;
@@ -241,8 +368,9 @@ public static class EditorGizmo
         uint[] colors = { 0xFF0000FF, 0xFF00FF00, 0xFFFF0000 };
         uint[] activeColors = { 0xFF5555FF, 0xFF55FF55, 0xFFFF5555 };
 
+        float scale = GetGizmoScale(objectPos, view, proj);
         var drawList = ImGui.GetWindowDrawList();
-        float radius = 1.5f;
+        float radius = 1.5f * scale;
         int segments = 64;
 
         int hoveredAxis = -1;
@@ -452,6 +580,68 @@ public static class EditorGizmo
             return MathF.Atan2(y, x);
         }
         return 0.0f;
+    }
+
+    private static bool GetRayPlaneIntersection(Ray ray, Vector3 planeOrigin, Vector3 planeNormal, out Vector3 intersectionPoint)
+    {
+        intersectionPoint = Vector3.Zero;
+        float denom = Vector3.Dot(planeNormal, ray.Direction);
+        if (MathF.Abs(denom) > 0.0001f)
+        {
+            float t = Vector3.Dot(planeNormal, planeOrigin - ray.Origin) / denom;
+            if (t >= 0.0f)
+            {
+                intersectionPoint = ray.Origin + ray.Direction * t;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void GetPlaneHandlePoints(int planeIndex, Vector3 objectPos, Vector3 signs, float offset, float size, out Vector3 p0, out Vector3 p1, out Vector3 p2, out Vector3 p3)
+    {
+        p0 = objectPos;
+        p1 = objectPos;
+        p2 = objectPos;
+        p3 = objectPos;
+        
+        if (planeIndex == 0) // YZ
+        {
+            p0 += new Vector3(0, offset * signs.Y, offset * signs.Z);
+            p1 += new Vector3(0, (offset + size) * signs.Y, offset * signs.Z);
+            p2 += new Vector3(0, (offset + size) * signs.Y, (offset + size) * signs.Z);
+            p3 += new Vector3(0, offset * signs.Y, (offset + size) * signs.Z);
+        }
+        else if (planeIndex == 1) // XZ
+        {
+            p0 += new Vector3(offset * signs.X, 0, offset * signs.Z);
+            p1 += new Vector3((offset + size) * signs.X, 0, offset * signs.Z);
+            p2 += new Vector3((offset + size) * signs.X, 0, (offset + size) * signs.Z);
+            p3 += new Vector3(offset * signs.X, 0, (offset + size) * signs.Z);
+        }
+        else if (planeIndex == 2) // XY
+        {
+            p0 += new Vector3(offset * signs.X, offset * signs.Y, 0);
+            p1 += new Vector3((offset + size) * signs.X, offset * signs.Y, 0);
+            p2 += new Vector3((offset + size) * signs.X, (offset + size) * signs.Y, 0);
+            p3 += new Vector3(offset * signs.X, (offset + size) * signs.Y, 0);
+        }
+    }
+
+    private static float GetGizmoScale(Vector3 objectPos, Matrix4x4 view, Matrix4x4 proj)
+    {
+        bool isOrtho = MathF.Abs(proj.M44 - 1.0f) < 0.0001f;
+        if (isOrtho)
+        {
+            return 1.0f / proj.M11 * 0.2f;
+        }
+        else
+        {
+            Matrix4x4.Invert(view, out Matrix4x4 invView);
+            Vector3 camPos = new Vector3(invView.M41, invView.M42, invView.M43);
+            float dist = Vector3.Distance(camPos, objectPos);
+            return MathF.Max(0.1f, dist * 0.15f);
+        }
     }
 
     private static float DistancePointToSegment(Vector2 p, Vector2 a, Vector2 b)

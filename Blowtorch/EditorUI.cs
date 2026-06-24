@@ -1138,6 +1138,13 @@ public unsafe class EditorUI
                     hitPoint = ApplySnap(hitPoint, _snapGrid);
 
                     bool isMouseClicked = ImGui.IsMouseClicked(ImGuiMouseButton.Left);
+                    
+                    if (isMouseClicked && !_previewManager.HasPreview)
+                    {
+                        _selectedObjects.Clear();
+                        _selectedObject = null;
+                    }
+
                     _previewManager.HandleDrawingInput(viewport, hitPoint, isMouseClicked);
                 }
             }
@@ -1349,15 +1356,6 @@ public unsafe class EditorUI
         {
             Vector3 finalMin = _previewManager.IsDraggingHandle ? _previewManager.Min : boxMin;
             Vector3 finalMax = _previewManager.IsDraggingHandle ? _previewManager.Max : boxMax;
-            
-            if (!_previewManager.IsDraggingHandle && _selectedObjects.Count > 0)
-            {
-                if (GetSelectionAABB(assetService, out Vector3 tMin, out Vector3 tMax))
-                {
-                    finalMin = tMin;
-                    finalMax = tMax;
-                }
-            }
 
             Vector3 orderedMin = Vector3.Min(finalMin, finalMax);
             Vector3 orderedMax = Vector3.Max(finalMin, finalMax);
