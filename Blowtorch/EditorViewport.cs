@@ -276,23 +276,21 @@ public unsafe class EditorViewport : IDisposable
         }
 
         bool wantPan = false;
-        bool wantOrbit = false;
+        bool wantLook = false;
 
         if (_camera.IsOrthographic)
         {
-            wantPan = ImGuiNET.ImGui.IsMouseDown(ImGuiNET.ImGuiMouseButton.Right) ||
-                      ImGuiNET.ImGui.IsMouseDown(ImGuiNET.ImGuiMouseButton.Middle);
+            wantPan = ImGuiNET.ImGui.IsMouseDown(ImGuiNET.ImGuiMouseButton.Middle);
         }
         else
         {
-            wantOrbit = ImGuiNET.ImGui.IsMouseDown(ImGuiNET.ImGuiMouseButton.Right);
-            wantPan = ImGuiNET.ImGui.IsMouseDown(ImGuiNET.ImGuiMouseButton.Middle);
+            wantLook = ImGuiNET.ImGui.IsMouseDown(ImGuiNET.ImGuiMouseButton.Right);
         }
 
         if (ActiveViewport != null && ActiveViewport != this)
         {
             wantPan = false;
-            wantOrbit = false;
+            wantLook = false;
         }
 
         if (wantPan)
@@ -332,7 +330,7 @@ public unsafe class EditorViewport : IDisposable
             if (ActiveViewport == this) ActiveViewport = null;
         }
 
-        if (wantOrbit)
+        if (wantLook)
         {
             if (!_isOrbiting)
             {
@@ -340,7 +338,7 @@ public unsafe class EditorViewport : IDisposable
                 _firstMove = true;
                 ActiveViewport = this;
                 if (glfw != null && win != null)
-                    glfw.SetInputMode(win, Silk.NET.GLFW.CursorStateAttribute.Cursor, Silk.NET.GLFW.CursorModeValue.CursorHidden);
+                    glfw.SetInputMode(win, Silk.NET.GLFW.CursorStateAttribute.Cursor, Silk.NET.GLFW.CursorModeValue.CursorDisabled);
             }
             else
             {
@@ -352,18 +350,11 @@ public unsafe class EditorViewport : IDisposable
                 Vector2 mouse = io.MousePos;
                 float dx = mouse.X - _lastMouse.X;
                 float dy = mouse.Y - _lastMouse.Y;
-                _camera.Orbit(dx, dy);
+                _camera.Look(dx, dy);
                 _lastMouse = mouse;
-                if (glfw != null && win != null)
-                {
-                    float cx = MathF.Round(vpPos.X + vpSize.X * 0.5f);
-                    float cy = MathF.Round(vpPos.Y + vpSize.Y * 0.5f);
-                    glfw.SetCursorPos(win, cx, cy);
-                    _lastMouse = new Vector2(cx, cy);
-                }
             }
 
-            // Keyboard navigation in 3D
+            // Keyboard navigation in 3D (FPS Noclip)
             if (!_camera.IsOrthographic)
             {
                 float fwd = 0, right = 0, up = 0;
@@ -380,7 +371,12 @@ public unsafe class EditorViewport : IDisposable
         }
         else
         {
-            _isOrbiting = false;
+            if (_isOrbiting)
+            {
+                _isOrbiting = false;
+                if (glfw != null && win != null)
+                    glfw.SetInputMode(win, Silk.NET.GLFW.CursorStateAttribute.Cursor, Silk.NET.GLFW.CursorModeValue.CursorNormal);
+            }
             if (ActiveViewport == this) ActiveViewport = null;
         }
     }

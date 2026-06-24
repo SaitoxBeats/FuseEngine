@@ -161,10 +161,10 @@ public unsafe class EditorUI
         if (_newDocumentRequested)
         {
             _newDocumentRequested = false;
-            viewport3D.Camera.Target = Vector3.Zero;
-            viewportTop.Camera.Target = Vector3.Zero;
-            viewportFront.Camera.Target = Vector3.Zero;
-            viewportSide.Camera.Target = Vector3.Zero;
+            viewport3D.Camera.Position = Vector3.Zero;
+            viewportTop.Camera.Position = Vector3.Zero;
+            viewportFront.Camera.Position = Vector3.Zero;
+            viewportSide.Camera.Position = Vector3.Zero;
         }
 
         ImGui.End();
@@ -1532,10 +1532,10 @@ public unsafe class EditorUI
     {
         if (obj.Body == null) return;
         Vector3 pos = obj.Body.Position;
-        vp3D.Camera.Target = pos;
-        vpTop.Camera.Target = pos;
-        vpFront.Camera.Target = pos;
-        vpSide.Camera.Target = pos;
+        vp3D.Camera.Position = pos;
+        vpTop.Camera.Position = pos;
+        vpFront.Camera.Position = pos;
+        vpSide.Camera.Position = pos;
     }
 
     private void DrawMapWindow(

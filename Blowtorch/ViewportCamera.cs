@@ -13,10 +13,10 @@ public enum CameraViewType
 
 public class ViewportCamera
 {
-    private float _distance = 8.0f;
     private float _yaw;
     private float _pitch = -20.0f;
-    private Vector3 _target;
+    
+    public Vector3 Position { get; set; } = new Vector3(0, 5, 8);
 
     public float Sensitivity { get; set; } = 0.3f;
     public float ScrollSpeed { get; set; } = 1.5f;
@@ -30,15 +30,9 @@ public class ViewportCamera
 
     public bool IsOrthographic => ViewType != CameraViewType.Perspective3D;
 
-    public Vector3 Target
+    public void Look(float deltaX, float deltaY)
     {
-        get => _target;
-        set => _target = value;
-    }
-
-    public void Orbit(float deltaX, float deltaY)
-    {
-        if (IsOrthographic) return; // No orbit in ortho views
+        if (IsOrthographic) return; // No look in ortho views
         _yaw += deltaX * Sensitivity;
         _pitch += deltaY * Sensitivity;
         _pitch = float.Clamp(_pitch, -89.0f, 89.0f);
@@ -59,37 +53,26 @@ public class ViewportCamera
             OrthoSize = float.Clamp(OrthoSize, 0.1f, 10000.0f);
             
             Vector3 offsetAfter = Right * (nx * OrthoSize * aspect * 0.5f) + Up * (ny * OrthoSize * 0.5f);
-            _target += offsetBefore - offsetAfter;
+            Position += offsetBefore - offsetAfter;
         }
-        else
-        {
-            _distance -= delta * ScrollSpeed;
-            _distance = float.Clamp(_distance, MinDistance, MaxDistance);
-        }
+        // No zoom needed for 3D FPS noclip
     }
 
     public void Pan(float deltaX, float deltaY, float viewportHeight)
     {
-        float panScale;
-
         if (IsOrthographic)
         {
             // Pixel-perfect pan
-            panScale = OrthoSize / MathF.Max(viewportHeight, 1.0f);
+            float panScale = OrthoSize / MathF.Max(viewportHeight, 1.0f);
+            Position += -Right * deltaX * panScale + Up * deltaY * panScale;
         }
-        else
-        {
-            panScale = _distance * PanSpeed;
-        }
-
-        _target += -Right * deltaX * panScale + Up * deltaY * panScale;
     }
 
     public void Fly(float forward, float rightInput, float upInput, float dt)
     {
         if (IsOrthographic) return; // No fly in ortho views
         
-        _target += (Front * forward + Right * rightInput + Vector3.UnitY * upInput) * FlySpeed * dt;
+        Position += (Front * forward + Right * rightInput + Vector3.UnitY * upInput) * FlySpeed * dt;
     }
 
     public Matrix4x4 ViewMatrix
@@ -99,13 +82,13 @@ public class ViewportCamera
             switch (ViewType)
             {
                 case CameraViewType.Top:
-                    return Matrix4x4.CreateLookAt(_target + new Vector3(0, 100, 0), _target, -Vector3.UnitZ);
+                    return Matrix4x4.CreateLookAt(Position, Position - Vector3.UnitY, -Vector3.UnitZ);
                 case CameraViewType.Front:
-                    return Matrix4x4.CreateLookAt(_target + new Vector3(0, 0, 100), _target, Vector3.UnitY);
+                    return Matrix4x4.CreateLookAt(Position, Position - Vector3.UnitZ, Vector3.UnitY);
                 case CameraViewType.Side:
-                    return Matrix4x4.CreateLookAt(_target + new Vector3(100, 0, 0), _target, Vector3.UnitY);
+                    return Matrix4x4.CreateLookAt(Position, Position - Vector3.UnitX, Vector3.UnitY);
                 default:
-                    return Matrix4x4.CreateLookAt(Position, _target, Vector3.UnitY);
+                    return Matrix4x4.CreateLookAt(Position, Position + Front, Vector3.UnitY);
             }
         }
     }
@@ -120,29 +103,7 @@ public class ViewportCamera
             float.DegreesToRadians(45.0f), aspect, 0.1f, 500.0f);
     }
 
-    public Vector3 Position
-    {
-        get
-        {
-            switch (ViewType)
-            {
-                case CameraViewType.Top:
-                    return _target + new Vector3(0, 100, 0);
-                case CameraViewType.Front:
-                    return _target + new Vector3(0, 0, 100);
-                case CameraViewType.Side:
-                    return _target + new Vector3(100, 0, 0);
-                default:
-                    float yawRad = float.DegreesToRadians(_yaw);
-                    float pitchRad = float.DegreesToRadians(_pitch);
-                    var offset = new Vector3(
-                        MathF.Cos(yawRad) * MathF.Cos(pitchRad),
-                        MathF.Sin(pitchRad),
-                        MathF.Sin(yawRad) * MathF.Cos(pitchRad)) * _distance;
-                    return _target + offset;
-            }
-        }
-    }
+    // Position is now an auto-property
 
     public Vector3 Front
     {
