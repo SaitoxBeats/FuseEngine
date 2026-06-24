@@ -179,6 +179,7 @@
     {
       "id": "brush_8c73dcd0",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -355,7 +356,7 @@
         "shape": "box",
         "position": [
           -11.75,
-          2.25,
+          2.1875,
           15.25
         ],
         "rotation": [
@@ -378,6 +379,7 @@
     {
       "id": "brush_b62bdade",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -578,7 +580,7 @@
         "shape": "box",
         "position": [
           -11.75,
-          2.25,
+          2.1875,
           5.75
         ],
         "rotation": [
@@ -601,6 +603,7 @@
     {
       "id": "brush_54b45bef",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -825,7 +828,7 @@
         "shape": "box",
         "position": [
           -11.75,
-          5.25,
+          5.1875,
           10.5
         ],
         "rotation": [
@@ -848,6 +851,7 @@
     {
       "id": "brush_767d2992",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -1144,7 +1148,7 @@
         "shape": "box",
         "position": [
           -19.25,
-          2.2499998,
+          2.1874998,
           10.5
         ],
         "rotation": [
@@ -1167,6 +1171,7 @@
     {
       "id": "brush_e0160449",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -1175,7 +1180,7 @@
             0,
             1
           ],
-          "d": -2.25,
+          "d": -2.5714288,
           "texture": "default",
           "u_axis": [
             1,
@@ -1199,7 +1204,7 @@
             0,
             -1
           ],
-          "d": -8.75,
+          "d": -10.000001,
           "texture": "default",
           "u_axis": [
             1,
@@ -1319,7 +1324,7 @@
             0,
             1
           ],
-          "d": -1.75,
+          "d": -2.0000002,
           "texture": "default",
           "u_axis": [
             1,
@@ -1343,7 +1348,7 @@
             0,
             -1
           ],
-          "d": -8.25,
+          "d": -9.428572,
           "texture": "default",
           "u_axis": [
             1,
@@ -1439,7 +1444,7 @@
             -0,
             -1
           ],
-          "d": -1.75,
+          "d": -2.0000002,
           "texture": "default",
           "u_axis": [
             1,
@@ -1463,8 +1468,8 @@
         "shape": "box",
         "position": [
           -4.25,
-          2,
-          13.75
+          1.9375,
+          13.5
         ],
         "rotation": [
           1,
@@ -1479,13 +1484,14 @@
         "half_extents": [
           0.25,
           3,
-          1.75
+          2
         ]
       }
     },
     {
       "id": "brush_20a694eb",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -1829,6 +1835,7 @@
     {
       "id": "brush_56acb0e8",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -1837,7 +1844,7 @@
             0,
             1
           ],
-          "d": -5,
+          "d": -3.7500002,
           "texture": "default",
           "u_axis": [
             1,
@@ -1861,7 +1868,7 @@
             0,
             -1
           ],
-          "d": -6,
+          "d": -4.5,
           "texture": "default",
           "u_axis": [
             1,
@@ -1885,7 +1892,7 @@
             1,
             0
           ],
-          "d": -1.9642861,
+          "d": -1.9233634,
           "texture": "default",
           "u_axis": [
             1,
@@ -1909,7 +1916,7 @@
             -1,
             0
           ],
-          "d": -4.5357146,
+          "d": -4.4412208,
           "texture": "default",
           "u_axis": [
             1,
@@ -1981,7 +1988,7 @@
             0,
             1
           ],
-          "d": -4.5,
+          "d": -3.375,
           "texture": "default",
           "u_axis": [
             1,
@@ -2005,7 +2012,7 @@
             0,
             -1
           ],
-          "d": -5.5,
+          "d": -4.125,
           "texture": "default",
           "u_axis": [
             1,
@@ -2029,7 +2036,7 @@
             1,
             0
           ],
-          "d": -1.5000001,
+          "d": -1.4687501,
           "texture": "default",
           "u_axis": [
             1,
@@ -2053,7 +2060,7 @@
             -1,
             0
           ],
-          "d": -4.071429,
+          "d": -3.9866073,
           "texture": "default",
           "u_axis": [
             1,
@@ -2101,7 +2108,7 @@
             0,
             1
           ],
-          "d": -1,
+          "d": -0.75,
           "texture": "default",
           "u_axis": [
             1,
@@ -2125,7 +2132,7 @@
             0,
             -1
           ],
-          "d": -1,
+          "d": -0.75,
           "texture": "default",
           "u_axis": [
             1,
@@ -2149,7 +2156,7 @@
             -1,
             -0
           ],
-          "d": -1.5000001,
+          "d": -1.4687501,
           "texture": "default",
           "u_axis": [
             1,
@@ -2173,8 +2180,8 @@
         "shape": "box",
         "position": [
           -4.25,
-          3.5,
-          11
+          3.46875,
+          10.75
         ],
         "rotation": [
           1,
@@ -2188,14 +2195,15 @@
         "is_trigger": false,
         "half_extents": [
           0.25,
-          1.5,
-          1
+          1.46875,
+          0.75
         ]
       }
     },
     {
       "id": "brush_ca917a1a",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -2252,7 +2260,7 @@
             1,
             0
           ],
-          "d": -1.6875001,
+          "d": -1.71875,
           "texture": "default",
           "u_axis": [
             1,
@@ -2276,7 +2284,7 @@
             -1,
             0
           ],
-          "d": -1.6875001,
+          "d": -1.71875,
           "texture": "default",
           "u_axis": [
             1,
@@ -2348,7 +2356,7 @@
         "shape": "box",
         "position": [
           -4.25,
-          0.6875,
+          0.65625,
           9.75
         ],
         "rotation": [
@@ -2363,7 +2371,7 @@
         "is_trigger": false,
         "half_extents": [
           0.5,
-          1.6875,
+          1.71875,
           0.125
         ]
       }
@@ -2371,6 +2379,7 @@
     {
       "id": "brush_05197d83",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -2379,7 +2388,7 @@
             0,
             1
           ],
-          "d": -1.125,
+          "d": -0.875,
           "texture": "default",
           "u_axis": [
             1,
@@ -2403,7 +2412,7 @@
             0,
             -1
           ],
-          "d": -1.125,
+          "d": -0.875,
           "texture": "default",
           "u_axis": [
             1,
@@ -2524,7 +2533,7 @@
         "position": [
           -4.25,
           2.25,
-          11
+          10.75
         ],
         "rotation": [
           1,
@@ -2539,13 +2548,14 @@
         "half_extents": [
           0.5,
           0.125,
-          1.125
+          0.87500006
         ]
       }
     },
     {
       "id": "brush_ca917a1a_copy",
       "visible": true,
+      "parent": "group_1",
       "type": "brush",
       "faces": [
         {
@@ -2602,7 +2612,7 @@
             1,
             0
           ],
-          "d": -1.6875001,
+          "d": -1.71875,
           "texture": "default",
           "u_axis": [
             1,
@@ -2626,7 +2636,7 @@
             -1,
             0
           ],
-          "d": -1.6875001,
+          "d": -1.71875,
           "texture": "default",
           "u_axis": [
             1,
@@ -2698,8 +2708,8 @@
         "shape": "box",
         "position": [
           -4.25,
-          0.6875,
-          12.25
+          0.65625,
+          11.75
         ],
         "rotation": [
           1,
@@ -2713,9 +2723,56 @@
         "is_trigger": false,
         "half_extents": [
           0.5,
-          1.6875,
+          1.71875,
           0.125
         ]
+      }
+    },
+    {
+      "id": "group_1",
+      "visible": true,
+      "body": {
+        "shape": "none",
+        "position": [
+          -8,
+          2.25,
+          10.75
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0,
+        "restitution": 0,
+        "is_trigger": false
+      }
+    },
+    {
+      "id": "door_Cube.004",
+      "visible": true,
+      "model": "Models/door.obj#0",
+      "texture": "Textures/door01a_skin3.bmp",
+      "interactable": "Door",
+      "body": {
+        "shape": "trimesh",
+        "position": [
+          -4.2806654,
+          -1,
+          10
+        ],
+        "rotation": [
+          0.7071068,
+          0,
+          -0.7071068,
+          0
+        ],
+        "mass": 0,
+        "friction": 0.5,
+        "restitution": 0,
+        "is_trigger": false
       }
     }
   ],

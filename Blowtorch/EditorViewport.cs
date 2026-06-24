@@ -338,7 +338,7 @@ public unsafe class EditorViewport : IDisposable
                 _firstMove = true;
                 ActiveViewport = this;
                 if (glfw != null && win != null)
-                    glfw.SetInputMode(win, Silk.NET.GLFW.CursorStateAttribute.Cursor, Silk.NET.GLFW.CursorModeValue.CursorDisabled);
+                    glfw.SetInputMode(win, Silk.NET.GLFW.CursorStateAttribute.Cursor, Silk.NET.GLFW.CursorModeValue.CursorHidden);
             }
             else
             {
@@ -352,6 +352,14 @@ public unsafe class EditorViewport : IDisposable
                 float dy = mouse.Y - _lastMouse.Y;
                 _camera.Look(dx, dy);
                 _lastMouse = mouse;
+
+                if (glfw != null && win != null)
+                {
+                    float cx = MathF.Round(vpPos.X + vpSize.X * 0.5f);
+                    float cy = MathF.Round(vpPos.Y + vpSize.Y * 0.5f);
+                    glfw.SetCursorPos(win, cx, cy);
+                    _lastMouse = new Vector2(cx, cy);
+                }
             }
 
             // Keyboard navigation in 3D (FPS Noclip)

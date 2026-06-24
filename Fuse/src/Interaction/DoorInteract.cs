@@ -3,7 +3,7 @@ using Fuse.Core;
 
 namespace Fuse.Interaction;
 
-[InteractableType("DoorInteract")]
+[InteractableType("Door")]
 public sealed class DoorInteract : IInteractable
 {
     public Renderer.Entity? Entity { get; set; }
