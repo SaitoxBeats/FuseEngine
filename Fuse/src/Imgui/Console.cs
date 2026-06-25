@@ -220,6 +220,8 @@ public class Console
                 AddLog("Usage: loadMap <Filename>", new Vector4(1, 1, 0, 1));
                 return;
             }
+            if (!fileName.Contains('.'))
+                fileName += ".bth";
             AddLog($"Loading Map: {fileName}", new Vector4(0, 1, 0, 1));
             OnLoadMap?.Invoke(fileName);
             return;

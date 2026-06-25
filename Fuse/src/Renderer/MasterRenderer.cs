@@ -24,7 +24,12 @@ public class MasterRenderer
     {
         _skyboxTexture = tex;
         if (_skyboxTexture.ID != 0)
+        {
             _skyboxDominantColor = _skyboxTexture.GetDominantColor();
+            _gl.BindTexture(TextureTarget.Texture2D, _skyboxTexture.ID);
+            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)GLEnum.ClampToEdge);
+            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)GLEnum.ClampToEdge);
+        }
     }
 
     // Meshes
@@ -60,7 +65,12 @@ public class MasterRenderer
         _skyboxTexture = assets.GetTexture($"{Fuse.ResPath.Path}/Textures/skybox_1.png");
         
         if (_skyboxTexture.ID != 0)
+        {
             _skyboxDominantColor = _skyboxTexture.GetDominantColor();
+            _gl.BindTexture(TextureTarget.Texture2D, _skyboxTexture.ID);
+            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)GLEnum.ClampToEdge);
+            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)GLEnum.ClampToEdge);
+        }
     }
 
     public void Resize(int width, int height)

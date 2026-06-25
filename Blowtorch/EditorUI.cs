@@ -959,9 +959,6 @@ public unsafe class EditorUI
             var view = viewport.Camera.ViewMatrix;
             var proj = viewport.Camera.ProjectionMatrix(vpSize.X / vpSize.Y);
 
-            bool isUsing = EditorGizmo.IsUsing();
-            if (isUsing && !_wasUsingGizmo) _preEditState = _frameBeginState;
-
             float snapVal = _snapEnabled ? _snapGrid : 0.0f;
             float angleSnap = _snapEnabled ? _snapAngle : 0.0f;
             bool changed = false;
@@ -970,11 +967,6 @@ public unsafe class EditorUI
 
             if (canManipulate)
             {
-                if (isUsing && _activeDraggingViewport == null)
-                {
-                    _activeDraggingViewport = viewport;
-                }
-
                 bool selectionDelayActive = (ImGui.GetTime() - _lastSelectionTime) < 0.5;
 
                 var objectsToTransform = GetObjectsToTransform(sceneService.Document);
@@ -1105,12 +1097,24 @@ public unsafe class EditorUI
                     }
                 }
 
-                if (!isUsing && _wasUsingGizmo)
+                bool isUsingNow = EditorGizmo.IsUsing();
+                
+                if (isUsingNow && _activeDraggingViewport == null)
+                {
+                    _activeDraggingViewport = viewport;
+                }
+
+                if (isUsingNow && !_wasUsingGizmo) 
+                {
+                    _preEditState = _frameBeginState;
+                }
+
+                if (!isUsingNow && _wasUsingGizmo)
                 {
                     var postEditState = sceneService.Document.Serialize();
                     history.PushCommand(new SnapshotCommand(sceneService, assetService, _preEditState, postEditState));
                 }
-                _wasUsingGizmo = isUsing;
+                _wasUsingGizmo = isUsingNow;
             }
         }
 

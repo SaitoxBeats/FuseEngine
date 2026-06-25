@@ -7,7 +7,10 @@ uniform sampler2D uSkyTexture;
 
 void main() {
     vec3 dir = normalize(vWorldPos);
-    float u = 0.5 + atan(dir.z, dir.x) / (2.0 * 3.14159265);
-    float v = 0.5 + asin(dir.y) / 3.14159265;
-    fragColor = texture(uSkyTexture, vec2(u, v));
+        vec2 uv = vec2(
+        atan(dir.z, dir.x) * 0.15915494 + 0.5,
+        asin(clamp(dir.y, -0.9999, 0.9999)) * 0.31830988 + 0.5
+    );
+    uv.x = uv.x * 0.9999 + 0.00005;
+    fragColor = texture(uSkyTexture, uv);
 }
