@@ -2419,118 +2419,167 @@ public unsafe class EditorUI
                 Silk.NET.Assimp.TextureType.Unknown
             };
 
-            for (int i = 0; i < scene->MNumMeshes; i++)
+            int nodeCounter = 0;
+            void ProcessNode(Silk.NET.Assimp.Node* node, string? parentId, System.Numerics.Matrix4x4 parentGlobalMatrix)
             {
-                var mesh = scene->MMeshes[i];
-                string meshName = mesh->MName.AsString;
-                if (string.IsNullOrEmpty(meshName))
-                {
-                    meshName = $"{baseName}_mesh_{i}";
-                }
-                else
-                {
-                    meshName = $"{baseName}_{meshName}";
-                }
+                string nodeName = node->MName.AsString;
+                if (string.IsNullOrEmpty(nodeName)) nodeName = $"node_{nodeCounter}";
+                nodeCounter++;
 
-                string? meshTexturePath = null;
-                uint matIdx = mesh->MMaterialIndex;
-                if (matIdx < scene->MNumMaterials)
+                // Assimp matrix is row-major (translation in 4th col). System.Numerics is row-vector (translation in 4th row).
+                // Silk.NET exposes node->MTransformation directly as System.Numerics.Matrix4x4 but with Assimp's layout, so we just transpose it.
+                var localMat = System.Numerics.Matrix4x4.Transpose(node->MTransformation);
+                var globalMat = localMat * parentGlobalMatrix;
+                
+                System.Numerics.Matrix4x4.Decompose(globalMat, out System.Numerics.Vector3 scale, out System.Numerics.Quaternion rotation, out System.Numerics.Vector3 translation);
+
+                bool hasMeshes = node->MNumMeshes > 0;
+                bool hasChildren = node->MNumChildren > 0;
+                
+                string? currentObjId = parentId;
+
+                // Create a node MapObject if it has meshes or children, or if it is the root
+                if (hasChildren || hasMeshes || parentId == null)
                 {
-                    var mat = scene->MMaterials[matIdx];
-                    Silk.NET.Assimp.AssimpString path;
-                    
-                    foreach (var type in texTypes)
+                    string id = $"{baseName}_{nodeName}";
+                    int dupCount = 1;
+                    string orig = id;
+                    while (importedObjects.Any(o => o.Id == id) || doc.Objects.Any(o => o.Id == id))
                     {
-                        if (api.GetMaterialTexture(mat, type, 0, &path, null, null, null, null, null, null) == Silk.NET.Assimp.Return.Success)
-                        {
-                            string texPath = path.AsString;
-                            if (string.IsNullOrEmpty(texPath)) continue;
+                        id = $"{orig}_{dupCount++}";
+                    }
 
-                            if (texPath.StartsWith("*"))
+                    var nodeObj = new MapObject
+                    {
+                        Id = id,
+                        Visible = true,
+                        ParentId = parentId,
+                        ModelScale = (scale.X + scale.Y + scale.Z) / 3.0f, // average scale
+                        Body = new MapBody
+                        {
+                            Shape = MapShapeType.None,
+                            Position = translation,
+                            Rotation = rotation
+                        }
+                    };
+                    importedObjects.Add(nodeObj);
+                    currentObjId = id;
+                }
+
+                // Create child MapObjects for each mesh referenced by this node
+                for (int i = 0; i < node->MNumMeshes; i++)
+                {
+                    uint meshIndex = node->MMeshes[i];
+                    var mesh = scene->MMeshes[meshIndex];
+                    
+                    string meshName = mesh->MName.AsString;
+                    if (string.IsNullOrEmpty(meshName)) meshName = $"mesh_{meshIndex}";
+                    
+                    string mId = $"{currentObjId}_{meshName}";
+                    int dupCount = 1;
+                    string orig = mId;
+                    while (importedObjects.Any(o => o.Id == mId) || doc.Objects.Any(o => o.Id == mId))
+                    {
+                        mId = $"{orig}_{dupCount++}";
+                    }
+
+                    string? meshTexturePath = null;
+                    uint matIdx = mesh->MMaterialIndex;
+                    if (matIdx < scene->MNumMaterials)
+                    {
+                        var material = scene->MMaterials[matIdx];
+                        Silk.NET.Assimp.AssimpString path;
+                        foreach (var type in texTypes)
+                        {
+                            if (api.GetMaterialTexture(material, type, 0, &path, null, null, null, null, null, null) == Silk.NET.Assimp.Return.Success)
                             {
-                                if (int.TryParse(texPath.Substring(1), out int texIndex) && texIndex >= 0 && texIndex < scene->MNumTextures)
+                                string texPath = path.AsString;
+                                if (string.IsNullOrEmpty(texPath)) continue;
+
+                                if (texPath.StartsWith("*"))
                                 {
-                                    var embeddedTex = scene->MTextures[texIndex];
-                                    if (embeddedTex->MHeight == 0)
+                                    if (int.TryParse(texPath.Substring(1), out int texIndex) && texIndex >= 0 && texIndex < scene->MNumTextures)
                                     {
-                                        byte[] bytes = new byte[embeddedTex->MWidth];
-                                        System.Runtime.InteropServices.Marshal.Copy((IntPtr)embeddedTex->PcData, bytes, 0, (int)embeddedTex->MWidth);
-                                        
-                                        string targetDir = Path.Combine(assetService.FuseResPath, "Textures", baseName);
+                                        var embeddedTex = scene->MTextures[texIndex];
+                                        if (embeddedTex->MHeight == 0)
+                                        {
+                                            byte[] bytes = new byte[embeddedTex->MWidth];
+                                            System.Runtime.InteropServices.Marshal.Copy((IntPtr)embeddedTex->PcData, bytes, 0, (int)embeddedTex->MWidth);
+                                            string targetDir = Path.Combine(assetService.FuseResPath, "Textures", baseName);
+                                            Directory.CreateDirectory(targetDir);
+                                            string saveName = $"tex_{texIndex}.png";
+                                            string targetTexturePath = Path.Combine(targetDir, saveName);
+                                            File.WriteAllBytes(targetTexturePath, bytes);
+                                            meshTexturePath = $"Textures/{baseName}/{saveName}";
+                                            break;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    string nameOnly = Path.GetFileName(texPath);
+                                    string targetDir = Path.Combine(assetService.FuseResPath, "Textures", baseName);
+                                    string targetTexturePath = Path.Combine(targetDir, nameOnly);
+
+                                    if (File.Exists(targetTexturePath))
+                                    {
+                                        meshTexturePath = $"Textures/{baseName}/{nameOnly}";
+                                        break;
+                                    }
+                                    
+                                    string relativeToModel = Path.Combine(Path.GetDirectoryName(modelFullPath) ?? "", texPath);
+                                    if (File.Exists(relativeToModel))
+                                    {
                                         Directory.CreateDirectory(targetDir);
-                                        
-                                        string saveName = $"tex_{texIndex}.png";
-                                        string targetTexturePath = Path.Combine(targetDir, saveName);
-                                        
-                                        File.WriteAllBytes(targetTexturePath, bytes);
-                                        meshTexturePath = $"Textures/{baseName}/{saveName}";
+                                        File.Copy(relativeToModel, targetTexturePath, true);
+                                        meshTexturePath = $"Textures/{baseName}/{nameOnly}";
+                                        break;
+                                    }
+
+                                    string absoluteNameOnly = Path.Combine(Path.GetDirectoryName(modelFullPath) ?? "", nameOnly);
+                                    if (File.Exists(absoluteNameOnly))
+                                    {
+                                        Directory.CreateDirectory(targetDir);
+                                        File.Copy(absoluteNameOnly, targetTexturePath, true);
+                                        meshTexturePath = $"Textures/{baseName}/{nameOnly}";
                                         break;
                                     }
                                 }
                             }
-                            else
-                            {
-                                string nameOnly = Path.GetFileName(texPath);
-                                string targetDir = Path.Combine(assetService.FuseResPath, "Textures", baseName);
-                                string targetTexturePath = Path.Combine(targetDir, nameOnly);
-
-                                if (File.Exists(targetTexturePath))
-                                {
-                                    meshTexturePath = $"Textures/{baseName}/{nameOnly}";
-                                    break;
-                                }
-                                
-                                string relativeToModel = Path.Combine(Path.GetDirectoryName(modelFullPath) ?? "", texPath);
-                                if (File.Exists(relativeToModel))
-                                {
-                                    Directory.CreateDirectory(targetDir);
-                                    File.Copy(relativeToModel, targetTexturePath, true);
-                                    meshTexturePath = $"Textures/{baseName}/{nameOnly}";
-                                    break;
-                                }
-
-                                string absoluteNameOnly = Path.Combine(Path.GetDirectoryName(modelFullPath) ?? "", nameOnly);
-                                if (File.Exists(absoluteNameOnly))
-                                {
-                                    Directory.CreateDirectory(targetDir);
-                                    File.Copy(absoluteNameOnly, targetTexturePath, true);
-                                    meshTexturePath = $"Textures/{baseName}/{nameOnly}";
-                                    break;
-                                }
-                            }
                         }
                     }
-                }
 
-                if (string.IsNullOrEmpty(meshTexturePath))
-                {
-                    meshTexturePath = texturePath;
-                }
+                    if (string.IsNullOrEmpty(meshTexturePath)) meshTexturePath = texturePath;
 
-                var obj = new MapObject
-                {
-                    Id = meshName,
-                    Visible = true,
-                    Model = $"Models/{filename}#{i}",
-                    ModelScale = 1.0f,
-                    Body = new MapBody
+                    var meshObj = new MapObject
                     {
-                        Shape = MapShapeType.Trimesh,
-                        Position = new Vector3(0, 1, 0),
-                        Rotation = Quaternion.Identity,
-                        Mass = 0,
-                        Friction = 0.5f,
-                        Restitution = 0.0f
-                    }
-                };
-
-                if (!string.IsNullOrEmpty(meshTexturePath))
-                {
-                    obj.Texture = meshTexturePath;
+                        Id = mId,
+                        Visible = true,
+                        ParentId = currentObjId,
+                        Model = $"Models/{filename}#{meshIndex}",
+                        ModelScale = (scale.X + scale.Y + scale.Z) / 3.0f,
+                        Texture = meshTexturePath,
+                        Body = new MapBody
+                        {
+                            Shape = MapShapeType.Trimesh,
+                            Position = translation,
+                            Rotation = rotation,
+                            Mass = 0,
+                            Friction = 0.5f,
+                            Restitution = 0.0f
+                        }
+                    };
+                    importedObjects.Add(meshObj);
                 }
 
-                importedObjects.Add(obj);
+                for (int i = 0; i < node->MNumChildren; i++)
+                {
+                    ProcessNode(node->MChildren[i], currentObjId, globalMat);
+                }
             }
+
+            // Start recursion from root node
+            ProcessNode(scene->MRootNode, null, System.Numerics.Matrix4x4.Identity);
 
             api.ReleaseImport(scene);
 
@@ -2546,48 +2595,9 @@ public unsafe class EditorUI
             }
             SceneNameManager.EnsureAllUnique(doc);
 
-            if (importedObjects.Count > 1)
-            {
-                int groupIndex = 1;
-                string groupId = $"group_{baseName}_{groupIndex}";
-                while (doc.Objects.Any(o => o.Id == groupId))
-                {
-                    groupIndex++;
-                    groupId = $"group_{baseName}_{groupIndex}";
-                }
-
-                var groupObj = new MapObject
-                {
-                    Id = groupId,
-                    Visible = true,
-                    Body = new MapBody
-                    {
-                        Shape = MapShapeType.None,
-                        Position = new Vector3(0, 1, 0),
-                        Rotation = Quaternion.Identity
-                    }
-                };
-
-                doc.Objects.Add(groupObj);
-
-                foreach (var obj in importedObjects)
-                {
-                    obj.ParentId = groupObj.Id;
-                }
-
-                _selectedObjects.Clear();
-                _selectedObjects.Add(groupObj);
-                _selectedObject = groupObj;
-            }
-            else
-            {
-                _selectedObjects.Clear();
-                foreach (var obj in importedObjects)
-                {
-                    _selectedObjects.Add(obj);
-                }
-                _selectedObject = importedObjects[0];
-            }
+            _selectedObjects.Clear();
+            _selectedObjects.Add(importedObjects[0]); // Select root node
+            _selectedObject = importedObjects[0];
 
             var post = doc.Serialize();
             history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));

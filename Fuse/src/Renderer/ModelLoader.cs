@@ -41,7 +41,7 @@ public static unsafe class ModelLoader
         }
 
         var scene = Api.ImportFile(cleanPath,
-            (uint)(PostProcessSteps.Triangulate | PostProcessSteps.GenerateSmoothNormals | PostProcessSteps.PreTransformVertices | PostProcessSteps.TransformUVCoords));
+            (uint)(PostProcessSteps.Triangulate | PostProcessSteps.GenerateSmoothNormals | PostProcessSteps.TransformUVCoords));
 
         if (scene == null || scene->MRootNode == null || scene->MNumMeshes == 0)
         {
@@ -115,7 +115,7 @@ public static unsafe class ModelLoader
         }
 
         var scene = Api.ImportFile(cleanPath,
-            (uint)(PostProcessSteps.Triangulate | PostProcessSteps.GenerateSmoothNormals | PostProcessSteps.PreTransformVertices | PostProcessSteps.TransformUVCoords));
+            (uint)(PostProcessSteps.Triangulate | PostProcessSteps.GenerateSmoothNormals | PostProcessSteps.TransformUVCoords));
 
         if (scene == null || scene->MRootNode == null || scene->MNumMeshes == 0)
         {
