@@ -192,6 +192,7 @@
         "mass": 0,
         "friction": 0,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           10,
           2.25,
@@ -414,6 +415,7 @@
         "mass": 0,
         "friction": 0,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           10,
           2.25,
@@ -660,6 +662,7 @@
         "mass": 0,
         "friction": 0,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           10,
           0.25,
@@ -930,6 +933,7 @@
         "mass": 0,
         "friction": 0,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           10,
           0.25,
@@ -1248,6 +1252,7 @@
         "mass": 0,
         "friction": 0,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           0.25,
           1.75,
@@ -1446,6 +1451,7 @@
         "mass": 0,
         "friction": 0,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           3,
           2.25,
@@ -1692,6 +1698,7 @@
         "mass": 0,
         "friction": 0,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           3,
           0.25,
@@ -1962,6 +1969,7 @@
         "mass": 0,
         "friction": 0,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           3,
           0.25,
@@ -2256,6 +2264,7 @@
         "mass": 0,
         "friction": 0,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           0.25,
           1.75,
@@ -2574,6 +2583,7 @@
         "mass": 0,
         "friction": 0,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           0.25,
           1.75,
@@ -2748,6 +2758,7 @@
         "mass": 0,
         "friction": 0,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           2.75,
           2.25,
@@ -2922,6 +2933,7 @@
         "mass": 0,
         "friction": 0,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           0.25,
           2.25,
@@ -3096,6 +3108,7 @@
         "mass": 0,
         "friction": 0,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           2.75,
           0.25,
@@ -3270,6 +3283,7 @@
         "mass": 0,
         "friction": 0,
         "restitution": 0,
+        "is_trigger": false,
         "half_extents": [
           2.75,
           0.25,

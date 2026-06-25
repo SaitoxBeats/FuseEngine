@@ -1787,7 +1787,7 @@
       "visible": true,
       "model": "Models/door.obj",
       "texture": "Textures/door01a_skin3.bmp",
-      "interactable": "DoorInteract",
+      "interactable": "Door",
       "body": {
         "shape": "trimesh",
         "position": [

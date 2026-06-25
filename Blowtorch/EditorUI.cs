@@ -23,6 +23,7 @@ public unsafe class EditorUI
     private bool _showHitBoxes = true;
     private float _hollowThickness = 0.5f;
     private string _saveMapName = "map.bth";
+    private bool _showLaunchError;
 
     private bool _showMapWindow = true;
     private bool _showJsonWindow = false;
@@ -157,6 +158,7 @@ public unsafe class EditorUI
         DrawOpenDialog(sceneService, assetService);
         DrawSaveAsDialog(sceneService);
         DrawHollowDialog(sceneService, assetService, history);
+        //DrawLaunchErrorDialog();
 
         if (_newDocumentRequested)
         {
@@ -593,6 +595,13 @@ public unsafe class EditorUI
 
     private void LaunchGame(EditorSceneService sceneService)
     {
+        var existing = System.Diagnostics.Process.GetProcessesByName("Fuse");
+        if (existing.Length > 0)
+        {
+            Logger.WarnPopup("The game is already running.", "The game is already running.\nPlease close it before opening a new instance.");
+            return;
+        }
+        
         if (string.IsNullOrEmpty(sceneService.MapPath))
         {
             _showSaveAsDialog = true;

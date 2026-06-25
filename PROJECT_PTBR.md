@@ -102,7 +102,7 @@ O ciclo de vida do cliente do jogo é gerenciado pela classe [Application.cs](fi
 * **[Shader.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/Shader.cs)**: Compila os códigos fonte de shaders de vértices e fragmentos GLSL. Inclui métodos utilitários para localizar e configurar parâmetros uniformes (ex: `SetMat4`, `SetVec3`, `SetFloat`, `SetBool`).
 * **[Texture.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/Texture.cs)**: Carrega imagens locais para a memória usando a biblioteca `StbImageSharp`, configura parâmetros de amostragem e filtragem (filtragem por vizinho mais próximo para visuais retrô pixelados) e envia os pixels para texturas da GPU.
 * **[Camera.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/Camera.cs)**: Controla as matrizes de câmera. Gera matrizes de projeção perspectiva baseadas no campo de visão (FOV) e proporção de tela (aspect ratio), e monta matrizes de Visualização (View). Suporta propriedades configuráveis de planos próximo e distante (`NearPlane`, `FarPlane`), definindo o plano de corte distante padrão em `1000.0f` para evitar o corte visual do ambiente em mapas extensos.
-* **[Scene.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/Scene.cs)** & **[Entity.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/Scene.cs#L18)**: Estrutura uma lista de nós de renderização no cenário. As entidades (`Entity`) associam modelos visuais (`Mesh`), caminhos de texturas, posições/escalas (`Transform`) e referências de física (`RigidBody`). Durante a renderização, a matriz do transform é atualizada com a posição e rotação reais provenientes do corpo físico.
+* **[Scene.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/Scene.cs)** & **[Entity.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/Scene.cs#L18)**: Estrutura uma lista de nós de renderização no cenário. As entidades (`Entity`) associam modelos visuais (`Mesh`), caminhos de texturas, posições/escalas (`Transform`) e referências de física (`RigidBody`). Durante a renderização, a matriz do transform é atualizada com a posição e rotação reais provenientes do corpo físico. A escala visual (`ModelScale`) é manipulada dinamicamente no momento da renderização e da construção física, garantindo que os vértices dos assets em cache permaneçam intocados em sua escala original 1.0.
 
 ### 3.3. Gerenciamento de Entrada (`Fuse.Input`)
 
@@ -120,7 +120,7 @@ Gerenciado pela classe estática [Input.cs](file:///e:/DEV/Csharp/FuseEngine/Fus
   * **Sphere**: Requer o raio.
   * **Capsule**: Requer altura total e raio.
   * **Plane**: Superfície infinita configurada por normal e distância.
-  * **Trimesh**: Malha arbitrária estática construída a partir de listas de vértices e índices.
+  * **Trimesh**: Malha arbitrária estática construída a partir de listas de vértices e índices. Para evitar que personagens tropecem em arestas planas internas ("ghost collisions" / colisões fantasmas), corpos trimesh configuram `ActiveEdgeMode.CollideOnlyWithActive` e calculam arestas ativas usando um limite `CosThresholdAngle`. Além disso, a escala (`ModelScale`) é multiplicada dinamicamente aos vértices durante a etapa `Build()`, separando a escala física dos dados originais do modelo.
   * Por padrão, corpos com massa definida como `0` são montados como estáticos (`MotionType.Static`), e passam a usar movimentação dinâmica (`MotionType.Dynamic`) com cálculo automático de inércia quando possuem massa positiva.
 
 ### 3.5. Controlador do Jogador (`Fuse.Player`)
@@ -325,7 +325,7 @@ Siga os passos abaixo para criar um script customizado de interação (ex: abrir
    var minhaTextura = assets.GetTexture($"{ResPath.Path}/Textures/minha_textura.png");
 
    // Carregamento de modelo 3D (a importação do Assimp cria vértices e faces lógicas automaticamente)
-   var meuModelo = assets.GetModel($"{ResPath.Path}/Models/meu_modelo.obj", scale: 1.0f);
+   var meuModelo = assets.GetModel($"{ResPath.Path}/Models/meu_modelo.obj");
    ```
 3. **Referenciando no Arquivo de Mapa JSON**:
    ```json
@@ -398,11 +398,13 @@ Novas janelas ImGui devem ser acopladas no método `Draw()` de [EditorUI.cs](fil
 > * Sempre execute o método `Dispose()` de estruturas de física (`PhysicsSystem`, `JobSystemThreadPool`, shapes, controladores de personagem) ao encerrar a aplicação para evitar vazamento de memória do sistema.
 > * Mantenha referências ativas em variáveis gerenciadas das instâncias de filtros de colisão (`BroadPhaseLayerInterfaceTable`, `ObjectLayerPairFilterTable`). Caso sejam coletadas pelo Garbage Collector com a física em execução, a aplicação sofrerá travamentos por violação de acesso na DLL nativa.
 
-### Filtragem de Colisão
+### Filtragem de Colisão e Colisões Fantasmas
 Por padrão, a engine usa uma tabela simplificada de camadas:
 * Corpos rígidos e o jogador são criados na camada de objeto padrão `0` (`ObjectLayer`).
 * No construtor de `PhysicsWorld`, a chamada `_objectLayerFilter.EnableCollision(0, 0)` habilita colisões gerais entre todos os elementos da camada `0`.
 * Se for necessário criar novas camadas (ex: separar colisores invisíveis de gatilho da colisão do jogador), você precisará expandir as tabelas de intersecção registradas no construtor do `PhysicsWorld`.
+
+Ao construir corpos **Trimesh**, tenha cuidado com **Colisões Fantasmas (Ghost Collisions)**. Personagens arrastando-se por um chão plano formado por vários triângulos podem colidir incorretamente com as arestas internas, causando engasgos na movimentação. Para resolver isso, a configuração `ActiveEdgeMode` do Jolt deve ser utilizada na declaração do Trimesh para desativar colisões em arestas internas.
 
 ### Limitações de Brushes CSG
 > [!TIP]

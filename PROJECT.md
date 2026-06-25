@@ -102,7 +102,7 @@ The game client lifecycle is managed by [Application.cs](file:///e:/DEV/Csharp/F
 * **[Shader.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/Shader.cs)**: Compiles GLSL vertex and fragment source files. Includes methods to locate and set shader parameters (e.g. `SetMat4`, `SetVec3`, `SetFloat`).
 * **[Texture.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/Texture.cs)**: Loads local files into memory using `StbImageSharp`, configures filtering parameters (Nearest neighbor filtering for retro pixelated looks), and uploads pixels to modern GPU textures.
 * **[Camera.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/Camera.cs)**: Manages camera matrices. Generates perspective projection matrices based on Field of View (FOV) and aspect ratios, and constructs Look-At View matrices. Supports configurable near and far plane properties (`NearPlane`, `FarPlane`), defaulting the far clipping plane to `1000.0f` to prevent environment clipping in large maps.
-* **[Scene.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/Scene.cs)** & **[Entity.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/Scene.cs#L18)**: Establishes a scene tree containing active rendering nodes. Entities map visual models (`Mesh`), textures, positions/scales (`Transform`), and physical wrappers (`RigidBody`). During scene rendering, Entity transformations are matched to their corresponding physics body positions.
+* **[Scene.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/Scene.cs)** & **[Entity.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Renderer/Scene.cs#L18)**: Establishes a scene tree containing active rendering nodes. Entities map visual models (`Mesh`), textures, positions/scales (`Transform`), and physical wrappers (`RigidBody`). During scene rendering, Entity transformations are matched to their corresponding physics body positions. Visual scaling (`ModelScale`) is handled dynamically at render and physics-build time, ensuring cached asset vertices remain untouched in their original 1.0 scale.
 
 ### 3.3. Input Handling (`Fuse.Input`)
 
@@ -120,7 +120,7 @@ Managed by [Input.cs](file:///e:/DEV/Csharp/FuseEngine/Fuse/src/Input/Input.cs).
   * **Sphere**: Requires radius.
   * **Capsule**: Requires height and radius.
   * **Plane**: Infinite surface configured via normal and offset distance.
-  * **Trimesh**: Arbitrary static mesh topology built from raw vertex/index buffers.
+  * **Trimesh**: Arbitrary static mesh topology built from raw vertex/index buffers. To prevent character controllers from stumbling over internal flat triangle edges ("ghost collisions"), trimesh bodies configure `ActiveEdgeMode.CollideOnlyWithActive` and calculate active edges based on a `CosThresholdAngle`. Additionally, `ModelScale` is applied dynamically to vertices during the `Build()` step, decoupling physical scaling from the raw asset vertex data.
   * Body configurations default to `MotionType.Static` if mass is set to `0`, and switch to `MotionType.Dynamic` (with computed inertia tensors) when mass is positive.
 
 ### 3.5. Player Controller & Mechanics (`Fuse.Player`)
@@ -325,7 +325,7 @@ Follow these steps to create a new interactive object (e.g. an animated door):
    var myTexture = assets.GetTexture($"{ResPath.Path}/Textures/my_texture.png");
 
    // Load 3D model (Assimp parser automatically builds sub-meshes and vertices)
-   var myModel = assets.GetModel($"{ResPath.Path}/Models/my_model.obj", scale: 1.0f);
+   var myModel = assets.GetModel($"{ResPath.Path}/Models/my_model.obj");
    ```
 3. **Reference in JSON maps**:
    ```json
@@ -398,11 +398,13 @@ Editor panels are created in [EditorUI.cs](file:///e:/DEV/Csharp/FuseEngine/Blow
 > * Always call `IDisposable.Dispose()` on Jolt structures (`PhysicsSystem`, `JobSystemThreadPool`, shapes, character controllers) when shutting down to prevent memory leaks.
 > * Ensure collision filters (`BroadPhaseLayerInterfaceTable`, `ObjectLayerPairFilterTable`) are kept alive via references in C# class instances. If garbage collected, the Jolt simulation will trigger access violation crashes.
 
-### Collision Filtering
+### Collision Filtering & Ghost Collisions
 By default, the engine uses simplified collision layer mapping:
 * Objects are mapped to layer `0` (`ObjectLayer`).
 * In `PhysicsWorld`'s constructor, `_objectLayerFilter.EnableCollision(0, 0)` is called, which enables collisions between all objects in the world.
 * If you introduce new collision layers (e.g., separating player controllers from static level geometry), you must expand the layer tables in `PhysicsWorld`'s constructor.
+
+When building `Trimesh` bodies, be aware of **Ghost Collisions**. Character controllers dragging along a flat floor made of multiple triangles might incorrectly collide with the internal edges of those triangles, causing stuttering. To solve this, Jolt's `ActiveEdgeMode` must be used during Trimesh configuration to disable collisions on interior edges.
 
 ### CSG Brush Mesh Generation
 > [!TIP]

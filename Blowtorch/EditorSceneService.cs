@@ -73,7 +73,10 @@ public class EditorSceneService
                 {
                     entity.Transform.Scale = new System.Numerics.Vector3(mapObj.Body.Radius.Value * 2.0f);
                 }
+                else
+                {
                     entity.Transform.Scale = mapObj.ModelScale;
+                }
             }
             else
             {
