@@ -36,7 +36,7 @@ public unsafe class EditorViewport : IDisposable
         _gl = gl;
         _fbo = _gl.GenFramebuffer();
         _camera = new ViewportCamera { ViewType = viewType };
-        _gridMesh = CreateGridMesh(_gl, 4000, 1.0f);
+        _gridMesh = CreateGridMesh(_gl, 10000.0f);
         _debugDrawer = new Fuse.Debug.DebugDrawer(_gl) { Enabled = true };
         CreateFbo(800, 600);
     }
@@ -116,24 +116,46 @@ public unsafe class EditorViewport : IDisposable
         shader.SetMat4("uProj", proj);
 
         // Draw Grid
-        _gl.Disable(EnableCap.CullFace);
-        shader.SetBool("uUseTexture", false);
-        shader.SetVec2("uUvScale", Vector2.One);
-        shader.SetFloat("uAmbient", 1.0f);
-        shader.SetVec3("uColor", new Vector3(0.35f, 0.35f, 0.4f));
-        
-        Matrix4x4 model = Matrix4x4.CreateScale(snapGrid);
-        if (_camera.ViewType == CameraViewType.Front)
+        var gridShader = assetService.GridShader;
+        if (gridShader != null && gridShader.ID != 0)
         {
-            model *= Matrix4x4.CreateRotationX(MathF.PI / 2.0f);
+            gridShader.Use();
+            gridShader.SetMat4("uView", view);
+            gridShader.SetMat4("uProj", proj);
+            gridShader.SetVec3("uColor", new Vector3(0.35f, 0.35f, 0.4f));
+            
+            // Distância de Fade do Grid (infinita para 2D, 1500 unidades para 3D)
+            float fadeDist = _camera.IsOrthographic ? 10000.0f : 100.0f;
+            gridShader.SetFloat("uFadeDistance", fadeDist);
+            gridShader.SetFloat("uSnapGrid", snapGrid);
+            gridShader.SetVec3("uCameraPos", _camera.Position);
+
+            _gl.Disable(EnableCap.CullFace);
+            _gl.Enable(EnableCap.Blend);
+            _gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+
+            Vector3 camPos = _camera.Position;
+            Matrix4x4 model = Matrix4x4.CreateTranslation(camPos.X, 0, camPos.Z);
+            
+            if (_camera.ViewType == CameraViewType.Front)
+            {
+                model = Matrix4x4.CreateRotationX(MathF.PI / 2.0f) * Matrix4x4.CreateTranslation(camPos.X, camPos.Y, 0);
+            }
+            else if (_camera.ViewType == CameraViewType.Side)
+            {
+                model = Matrix4x4.CreateRotationZ(MathF.PI / 2.0f) * Matrix4x4.CreateTranslation(0, camPos.Y, camPos.Z);
+            }
+            gridShader.SetMat4("uModel", model);
+            
+            // Agora desenhamos um plano usando triângulos
+            _gridMesh.Draw(PrimitiveType.Triangles);
+            
+            _gl.Disable(EnableCap.Blend);
+            _gl.Enable(EnableCap.CullFace);
+            
+            // Restaura o shader original para o resto da cena
+            shader.Use();
         }
-        else if (_camera.ViewType == CameraViewType.Side)
-        {
-            model *= Matrix4x4.CreateRotationZ(MathF.PI / 2.0f);
-        }
-        shader.SetMat4("uModel", model);
-        _gridMesh.Draw(PrimitiveType.Lines);
-        _gl.Enable(EnableCap.CullFace);
 
         // Draw Entities
         bool isWireframe = _camera.IsOrthographic;
@@ -319,8 +341,15 @@ public unsafe class EditorViewport : IDisposable
                 {
                     float cx = MathF.Round(vpPos.X + vpSize.X * 0.5f);
                     float cy = MathF.Round(vpPos.Y + vpSize.Y * 0.5f);
-                    glfw.SetCursorPos(win, cx, cy);
-                    _lastMouse = new Vector2(cx, cy);
+                    float distSq = (mouse.X - cx) * (mouse.X - cx) + (mouse.Y - cy) * (mouse.Y - cy);
+                    
+                    // Teleporta o mouse de volta pro centro APENAS se ele se afastar mais de 100 pixels,
+                    // evitando a perda massiva de delta-mouse do sistema operacional em framerates baixos.
+                    if (distSq > 10000.0f)
+                    {
+                        glfw.SetCursorPos(win, cx, cy);
+                        _lastMouse = new Vector2(cx, cy);
+                    }
                 }
             }
         }
@@ -357,8 +386,13 @@ public unsafe class EditorViewport : IDisposable
                 {
                     float cx = MathF.Round(vpPos.X + vpSize.X * 0.5f);
                     float cy = MathF.Round(vpPos.Y + vpSize.Y * 0.5f);
-                    glfw.SetCursorPos(win, cx, cy);
-                    _lastMouse = new Vector2(cx, cy);
+                    float distSq = (mouse.X - cx) * (mouse.X - cx) + (mouse.Y - cy) * (mouse.Y - cy);
+                    
+                    if (distSq > 10000.0f)
+                    {
+                        glfw.SetCursorPos(win, cx, cy);
+                        _lastMouse = new Vector2(cx, cy);
+                    }
                 }
             }
 
@@ -389,25 +423,18 @@ public unsafe class EditorViewport : IDisposable
         }
     }
 
-    private Mesh CreateGridMesh(GL gl, int size, float spacing)
+    private Mesh CreateGridMesh(GL gl, float extent)
     {
-        int half = size / 2;
-        var verts = new List<Vertex>();
-        var idxs = new List<uint>();
-
-        for (int i = -half; i <= half; i++)
+        var verts = new[]
         {
-            float p = i * spacing;
-            verts.Add(new Vertex { Position = new Vector3(p, 0, -half * spacing), Normal = Vector3.UnitY });
-            verts.Add(new Vertex { Position = new Vector3(p, 0, half * spacing), Normal = Vector3.UnitY });
-            verts.Add(new Vertex { Position = new Vector3(-half * spacing, 0, p), Normal = Vector3.UnitY });
-            verts.Add(new Vertex { Position = new Vector3(half * spacing, 0, p), Normal = Vector3.UnitY });
-        }
+            new Vertex { Position = new Vector3(-extent, 0, -extent), Normal = Vector3.UnitY },
+            new Vertex { Position = new Vector3( extent, 0, -extent), Normal = Vector3.UnitY },
+            new Vertex { Position = new Vector3( extent, 0,  extent), Normal = Vector3.UnitY },
+            new Vertex { Position = new Vector3(-extent, 0,  extent), Normal = Vector3.UnitY },
+        };
+        var idxs = new uint[] { 0, 1, 2, 0, 2, 3 };
 
-        for (uint i = 0; i < verts.Count; i++)
-            idxs.Add(i);
-
-        return new Mesh(gl, verts.ToArray(), idxs.ToArray());
+        return new Mesh(gl, verts, idxs);
     }
 
     public void Dispose()

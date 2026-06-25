@@ -19,7 +19,7 @@ public class ViewportCamera
     public Vector3 Position { get; set; } = new Vector3(0, 5, 8);
 
     public float Sensitivity { get; set; } = 0.3f;
-    public float PanTwoDSensitivity { get; set; } = 1.5f;
+    public float PanTwoDSensitivity { get; set; } = 1.8f;
     public float ScrollSpeed { get; set; } = 1.5f;
     public float PanSpeed { get; set; } = 0.005f;
     public float FlySpeed { get; set; } = 15.0f;
