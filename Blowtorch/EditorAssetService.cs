@@ -73,7 +73,7 @@ public class EditorAssetService : IDisposable
             string modelPath = Path.GetFullPath(Path.Combine(_fuseResPath, mapObj.Model));
             if (!_meshCache.TryGetValue(modelPath, out var mesh))
             {
-                var model = _assets.GetModel(modelPath, mapObj.ModelScale);
+                var model = _assets.GetModel(modelPath);
                 mesh = model?.Mesh;
                 _meshCache[modelPath] = mesh;
             }

@@ -99,7 +99,14 @@ public class MapDocument
         mo.ParentId = obj.TryGetPropertyValue("parent", out var parentNode) ? (string)parentNode! : null;
         mo.Mesh = obj.TryGetPropertyValue("mesh", out var meshNode) ? (string)meshNode! : null;
         mo.Model = obj.TryGetPropertyValue("model", out var modelNode) ? (string)modelNode! : null;
-        mo.ModelScale = obj.TryGetPropertyValue("model_scale", out var scaleNode) ? (float)scaleNode! : 1.0f;
+        if (obj.TryGetPropertyValue("model_scale", out var scaleNode))
+        {
+            if (scaleNode is JsonArray arr && arr.Count >= 3)
+                mo.ModelScale = new System.Numerics.Vector3((float)arr[0]!, (float)arr[1]!, (float)arr[2]!);
+            else
+                mo.ModelScale = new System.Numerics.Vector3((float)scaleNode!);
+        }
+        else mo.ModelScale = System.Numerics.Vector3.One;
         mo.UvScale = obj.TryGetPropertyValue("uv_scale", out var uvNode) ? Vec2FromJson(uvNode!.AsArray()) : Vector2.One;
         mo.Texture = obj.TryGetPropertyValue("texture", out var texNode) ? (string)texNode! : null;
         mo.Interactable = obj.TryGetPropertyValue("interactable", out var interactNode) ? (string)interactNode! : null;
@@ -191,8 +198,8 @@ public class MapDocument
         if (obj.IsModel)
         {
             j["model"] = obj.Model!;
-            if (obj.ModelScale != 1.0f)
-                j["model_scale"] = obj.ModelScale;
+            if (obj.ModelScale != System.Numerics.Vector3.One)
+                j["model_scale"] = new JsonArray { obj.ModelScale.X, obj.ModelScale.Y, obj.ModelScale.Z };
         }
         else if (obj.Mesh != null)
         {

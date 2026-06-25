@@ -123,8 +123,8 @@ public static class MapSerializer
             if (e.MeshKey.Contains('/') || e.MeshKey.Contains('\\'))
             {
                 obj["model"] = e.MeshKey;
-                if (e.ModelScale != 1.0f)
-                    obj["model_scale"] = e.ModelScale;
+                if (e.ModelScale != Vector3.One)
+                    obj["model_scale"] = new JsonArray { e.ModelScale.X, e.ModelScale.Y, e.ModelScale.Z };
             }
             else
             {
@@ -236,8 +236,14 @@ public static class MapSerializer
                 : (obj.TryGetPropertyValue("mesh", out var meshNode)
                     ? (string)meshNode! : "");
 
-            float modelScale = obj.TryGetPropertyValue("model_scale", out var scaleNode)
-                ? (float)scaleNode! : 1.0f;
+            Vector3 modelScale = Vector3.One;
+            if (obj.TryGetPropertyValue("model_scale", out var scaleNode))
+            {
+                if (scaleNode is JsonArray arr && arr.Count >= 3)
+                    modelScale = new Vector3((float)arr[0]!, (float)arr[1]!, (float)arr[2]!);
+                else
+                    modelScale = new Vector3((float)scaleNode!);
+            }
 
             Vector2 uvScale = Vector2.One;
             if (obj.TryGetPropertyValue("uv_scale", out var uvNode))
@@ -262,7 +268,7 @@ public static class MapSerializer
             }
             else if (isModel)
             {
-                var model = assets.GetModel(modelPath, modelScale);
+                var model = assets.GetModel(modelPath);
                 if (model != null) mesh = model.Mesh;
             }
             else
@@ -337,15 +343,17 @@ public static class MapSerializer
 
                 if (isTrimesh && isModel)
                 {
-                    var model = assets.GetModel(modelPath, modelScale);
+                    var model = assets.GetModel(modelPath);
                     if (model != null && model.CollVertices.Length > 0)
-                        body.SetTrimesh(model.CollVertices, model.CollIndices, new Vector3(modelScale));
+                        body.SetTrimesh(model.CollVertices, model.CollIndices, modelScale);
                     else
                         body.SetBox(new Vector3(0.5f));
                 }
 
                 body.Build(physics);
                 entity.Body = body;
+                entity.Transform.Position = body.Position(physics);
+                entity.Transform.Rotation = body.Rotation(physics);
                 scene.RegisterBody(entity);
                 
                 if (isBrush)
@@ -355,13 +363,13 @@ public static class MapSerializer
                 else if (body.Type == RigidBody.ShapeType.Sphere)
                     entity.Transform.Scale = new Vector3(body.SphereRadius * 2.0f);
                 else
-                    entity.Transform.Scale = new Vector3(modelScale);
+                    entity.Transform.Scale = modelScale;
                     
                 createdBodies.Add(body);
             }
             else
             {
-                entity.Transform.Scale = isBrush ? Vector3.One : new Vector3(modelScale);
+                entity.Transform.Scale = isBrush ? Vector3.One : modelScale;
             }
         }
 
@@ -373,10 +381,12 @@ public static class MapSerializer
                 var parent = scene.Entities.FirstOrDefault(e => e.Id == entity.ParentId);
                 if (parent != null)
                 {
-                    entity.InitialRelativePosition = entity.Transform.Position - parent.Transform.Position;
+                    var globalOffset = entity.Transform.Position - parent.Transform.Position;
+                    entity.InitialRelativePosition = Vector3.Transform(globalOffset, Quaternion.Inverse(parent.Transform.Rotation));
                     entity.InitialRelativeRotation = Quaternion.Inverse(parent.Transform.Rotation) * entity.Transform.Rotation;
                 }
             }
+            Logger.Info($"[DebugMapSerializer] Entity {entity.Id} - TransformPos: {entity.Transform.Position}, InitialRelPos: {entity.InitialRelativePosition}");
         }
 
         Logger.Info($"Map loaded ({scene.Entities.Count} entities)");

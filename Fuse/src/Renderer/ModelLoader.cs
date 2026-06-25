@@ -23,7 +23,7 @@ public static unsafe class ModelLoader
 
     private static Assimp Api => s_assimp ??= Assimp.GetApi();
 
-    public static LoadedModel? Load(GL gl, string path, float scale = 1.0f)
+    public static LoadedModel? Load(GL gl, string path)
     {
         string cleanPath = path;
         int meshIndex = -1;
@@ -106,7 +106,7 @@ public static unsafe class ModelLoader
         };
     }
 
-    public static LoadedModel?[] LoadAllSubmeshes(GL gl, string cleanPath, float scale = 1.0f)
+    public static LoadedModel?[] LoadAllSubmeshes(GL gl, string cleanPath)
     {
         if (!System.IO.File.Exists(cleanPath))
         {

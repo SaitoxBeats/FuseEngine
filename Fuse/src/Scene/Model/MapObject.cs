@@ -8,7 +8,7 @@ public class MapObject
 
     public string? Mesh { get; set; }
     public string? Model { get; set; }
-    public float ModelScale { get; set; } = 1.0f;
+    public System.Numerics.Vector3 ModelScale { get; set; } = System.Numerics.Vector3.One;
     public System.Numerics.Vector2 UvScale { get; set; } = System.Numerics.Vector2.One;
 
     public string? Texture { get; set; }

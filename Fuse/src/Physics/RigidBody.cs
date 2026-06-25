@@ -212,13 +212,13 @@ public class RigidBody
 
     public Vector3 Position(PhysicsWorld world)
     {
-        if (!_built) return _position;
+        if (!_built || Type == ShapeType.None) return _position;
         return world.GetBodyPosition(_bodyID);
     }
 
     public Quaternion Rotation(PhysicsWorld world)
     {
-        if (!_built) return _rotation;
+        if (!_built || Type == ShapeType.None) return _rotation;
         return world.GetBodyRotation(_bodyID);
     }
 

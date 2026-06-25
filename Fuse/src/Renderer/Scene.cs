@@ -23,7 +23,7 @@ public class Entity
     public string TexturePath { get; set; } = "";
     public string InteractableType { get; set; } = "";
     public string BehaviourType { get; set; } = "";
-    public float ModelScale { get; set; } = 1.0f;
+    public System.Numerics.Vector3 ModelScale { get; set; } = System.Numerics.Vector3.One;
     public Vector2 UvScale { get; set; } = Vector2.One;
     public Mesh? Mesh { get; set; }
     public Texture? Texture { get; set; }

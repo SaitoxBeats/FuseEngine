@@ -56,7 +56,7 @@ public class AssetManager
         return mesh;
     }
 
-    public Renderer.LoadedModel? GetModel(string path, float scale = 1.0f)
+    public Renderer.LoadedModel? GetModel(string path)
     {
         if (_models.TryGetValue(path, out var model))
             return model;
@@ -73,7 +73,7 @@ public class AssetManager
 
             _loadedCleanPaths.Add(cleanPath);
 
-            var submeshes = Renderer.ModelLoader.LoadAllSubmeshes(_gl, cleanPath, scale);
+            var submeshes = Renderer.ModelLoader.LoadAllSubmeshes(_gl, cleanPath);
             for (int i = 0; i < submeshes.Length; i++)
             {
                 if (submeshes[i] != null)
@@ -88,7 +88,7 @@ public class AssetManager
             return null;
         }
 
-        var loaded = Renderer.ModelLoader.Load(_gl, path, scale);
+        var loaded = Renderer.ModelLoader.Load(_gl, path);
         _models[path] = loaded!;
         return loaded;
     }

@@ -257,9 +257,9 @@ public unsafe class EditorViewport : IDisposable
                     break;
                 case MapShapeType.Trimesh when mapObj.IsModel && mapObj.Model != null:
                     string modelPath = Path.GetFullPath(Path.Combine(fuseResPath, mapObj.Model));
-                    var model = assets.GetModel(modelPath, mapObj.ModelScale);
+                    var model = assets.GetModel(modelPath);
                     if (model != null && model.CollVertices.Length > 0)
-                        _debugDrawer.DrawTrimesh(body.Position, body.Rotation, model.CollVertices, model.CollIndices, color, new Vector3(mapObj.ModelScale));
+                        _debugDrawer.DrawTrimesh(body.Position, body.Rotation, model.CollVertices, model.CollIndices, color, mapObj.ModelScale);
                     break;
             }
         }

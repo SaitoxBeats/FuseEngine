@@ -1021,7 +1021,7 @@ public unsafe class EditorUI
                     Vector3 currentScale = Vector3.One;
                     if (body.Shape == MapShapeType.Box && body.HalfExtents.HasValue) currentScale = body.HalfExtents.Value * 2.0f;
                     else if (body.Shape == MapShapeType.Sphere && body.Radius.HasValue) currentScale = new Vector3(body.Radius.Value * 2.0f);
-                    else currentScale = new Vector3(_selectedObject.ModelScale);
+                    else currentScale = _selectedObject.ModelScale;
 
                     if (EditorGizmo.ManipulateScale(body.Position, currentScale, view, proj, vpPos, vpSize, out Vector3 newScale, snapVal, !selectionDelayActive))
                     {
@@ -1057,7 +1057,7 @@ public unsafe class EditorUI
                                 else
                                 {
                                     float maxMult = MathF.Max(scaleMult.X, MathF.Max(scaleMult.Y, scaleMult.Z));
-                                    obj.ModelScale = MathF.Max(0.01f, obj.ModelScale * maxMult);
+                                    obj.ModelScale = Vector3.Max(new Vector3(0.01f), obj.ModelScale * maxMult);
                                 }
                             }
                         }
@@ -1092,7 +1092,7 @@ public unsafe class EditorUI
                             else if (obj.Body.Shape == MapShapeType.Sphere && obj.Body.Radius.HasValue)
                                 entity.Transform.Scale = new Vector3(obj.Body.Radius.Value * 2.0f);
                             else
-                                entity.Transform.Scale = new Vector3(obj.ModelScale);
+                                entity.Transform.Scale = obj.ModelScale;
                         }
                     }
                 }
@@ -1323,7 +1323,7 @@ public unsafe class EditorUI
                 {
                     float r = 1.0f;
                     if (selObj.Body.Shape == MapShapeType.Capsule && selObj.Body.Height.HasValue) r = selObj.Body.Height.Value;
-                    if (selObj.IsModel) r = selObj.ModelScale * 1.5f;
+                    if (selObj.IsModel) r = selObj.ModelScale.Length() * 1.5f;
                     sMin = selObj.Body.Position - new Vector3(r);
                     sMax = selObj.Body.Position + new Vector3(r);
                 }
@@ -1439,7 +1439,7 @@ public unsafe class EditorUI
             else if (obj.Body.Shape == MapShapeType.Trimesh && obj.IsModel && obj.Model != null)
             {
                 string modelPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(assetService.FuseResPath, obj.Model));
-                var model = assetService.AssetManager.GetModel(modelPath, obj.ModelScale);
+                var model = assetService.AssetManager.GetModel(modelPath);
                 if (model != null && model.CollVertices.Length > 0)
                 {
                     Vector3 min = new(float.MaxValue);
@@ -1943,8 +1943,8 @@ public unsafe class EditorUI
                     else
                     {
                         ImGui.Text($"Model File: {obj.Model}");
-                        float scale = obj.ModelScale;
-                        bool scaleChanged = ImGui.DragFloat("Model Scale##inspectScale", ref scale, 0.01f, 0.01f, 100.0f);
+                        Vector3 scale = obj.ModelScale;
+                        bool scaleChanged = ImGui.DragFloat3("Model Scale##inspectScale", ref scale, 0.01f);
                         HandleUndoStart(sceneService);
                         if (scaleChanged)
                         {
@@ -1957,7 +1957,7 @@ public unsafe class EditorUI
                                 else if (obj.Body != null && obj.Body.Shape == MapShapeType.Sphere && obj.Body.Radius.HasValue)
                                     entity.Transform.Scale = new Vector3(obj.Body.Radius.Value * 2.0f);
                                 else
-                                    entity.Transform.Scale = new Vector3(scale);
+                                    entity.Transform.Scale = scale;
                             }
                         }
                         HandleUndoEnd(sceneService, assetService, history);
@@ -2360,7 +2360,7 @@ public unsafe class EditorUI
             Id = Path.GetFileNameWithoutExtension(filename),
             Visible = true,
             Model = $"Models/{filename}",
-            ModelScale = 1.0f,
+            ModelScale = Vector3.One,
             Body = new MapBody
             {
                 Shape = MapShapeType.Trimesh,
@@ -2426,12 +2426,21 @@ public unsafe class EditorUI
                 if (string.IsNullOrEmpty(nodeName)) nodeName = $"node_{nodeCounter}";
                 nodeCounter++;
 
-                // Assimp matrix is row-major (translation in 4th col). System.Numerics is row-vector (translation in 4th row).
-                // Silk.NET exposes node->MTransformation directly as System.Numerics.Matrix4x4 but with Assimp's layout, so we just transpose it.
+                // Assimp matrix is row-major but mathematically column-vector. System.Numerics is row-vector.
+                // Transposing it converts it correctly so that Translation goes into M41, M42, M43 and Rotation axes are correct.
                 var localMat = System.Numerics.Matrix4x4.Transpose(node->MTransformation);
                 var globalMat = localMat * parentGlobalMatrix;
                 
                 System.Numerics.Matrix4x4.Decompose(globalMat, out System.Numerics.Vector3 scale, out System.Numerics.Quaternion rotation, out System.Numerics.Vector3 translation);
+                
+                // If Decompose fails (e.g. due to negative scale/determinant from GLTF right-handed flips),
+                // it wipes the translation to 0,0,0. We MUST manually extract it!
+                if (translation == System.Numerics.Vector3.Zero && (globalMat.M41 != 0 || globalMat.M42 != 0 || globalMat.M43 != 0))
+                {
+                    translation = new System.Numerics.Vector3(globalMat.M41, globalMat.M42, globalMat.M43);
+                    scale = System.Numerics.Vector3.One;
+                    rotation = System.Numerics.Quaternion.Identity;
+                }
 
                 bool hasMeshes = node->MNumMeshes > 0;
                 bool hasChildren = node->MNumChildren > 0;
@@ -2454,7 +2463,7 @@ public unsafe class EditorUI
                         Id = id,
                         Visible = true,
                         ParentId = parentId,
-                        ModelScale = (scale.X + scale.Y + scale.Z) / 3.0f, // average scale
+                        ModelScale = scale,
                         Body = new MapBody
                         {
                             Shape = MapShapeType.None,
@@ -2557,7 +2566,7 @@ public unsafe class EditorUI
                         Visible = true,
                         ParentId = currentObjId,
                         Model = $"Models/{filename}#{meshIndex}",
-                        ModelScale = (scale.X + scale.Y + scale.Z) / 3.0f,
+                        ModelScale = scale,
                         Texture = meshTexturePath,
                         Body = new MapBody
                         {
@@ -3034,7 +3043,7 @@ public unsafe class EditorUI
             if (body.Shape == MapShapeType.Trimesh && selObj.IsModel && selObj.Model != null)
             {
                 string modelPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(assetService.FuseResPath, selObj.Model));
-                var model = assetService.AssetManager.GetModel(modelPath, selObj.ModelScale);
+                var model = assetService.AssetManager.GetModel(modelPath);
                 if (model != null && model.CollVertices.Length > 0)
                 {
                     foreach (var v in model.CollVertices)
