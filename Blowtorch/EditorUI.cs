@@ -2456,12 +2456,14 @@ public unsafe class EditorUI
                                         byte[] bytes = new byte[embeddedTex->MWidth];
                                         System.Runtime.InteropServices.Marshal.Copy((IntPtr)embeddedTex->PcData, bytes, 0, (int)embeddedTex->MWidth);
                                         
-                                        string saveName = $"{baseName}_tex_{texIndex}.png";
-                                        string targetTexturePath = Path.Combine(assetService.FuseResPath, "Textures", saveName);
+                                        string targetDir = Path.Combine(assetService.FuseResPath, "Textures", baseName);
+                                        Directory.CreateDirectory(targetDir);
                                         
-                                        Directory.CreateDirectory(Path.Combine(assetService.FuseResPath, "Textures"));
+                                        string saveName = $"tex_{texIndex}.png";
+                                        string targetTexturePath = Path.Combine(targetDir, saveName);
+                                        
                                         File.WriteAllBytes(targetTexturePath, bytes);
-                                        meshTexturePath = $"Textures/{saveName}";
+                                        meshTexturePath = $"Textures/{baseName}/{saveName}";
                                         break;
                                     }
                                 }
@@ -2469,29 +2471,30 @@ public unsafe class EditorUI
                             else
                             {
                                 string nameOnly = Path.GetFileName(texPath);
-                                string targetTexturePath = Path.Combine(assetService.FuseResPath, "Textures", nameOnly);
+                                string targetDir = Path.Combine(assetService.FuseResPath, "Textures", baseName);
+                                string targetTexturePath = Path.Combine(targetDir, nameOnly);
 
                                 if (File.Exists(targetTexturePath))
                                 {
-                                    meshTexturePath = $"Textures/{nameOnly}";
+                                    meshTexturePath = $"Textures/{baseName}/{nameOnly}";
                                     break;
                                 }
                                 
                                 string relativeToModel = Path.Combine(Path.GetDirectoryName(modelFullPath) ?? "", texPath);
                                 if (File.Exists(relativeToModel))
                                 {
-                                    Directory.CreateDirectory(Path.Combine(assetService.FuseResPath, "Textures"));
+                                    Directory.CreateDirectory(targetDir);
                                     File.Copy(relativeToModel, targetTexturePath, true);
-                                    meshTexturePath = $"Textures/{nameOnly}";
+                                    meshTexturePath = $"Textures/{baseName}/{nameOnly}";
                                     break;
                                 }
 
                                 string absoluteNameOnly = Path.Combine(Path.GetDirectoryName(modelFullPath) ?? "", nameOnly);
                                 if (File.Exists(absoluteNameOnly))
                                 {
-                                    Directory.CreateDirectory(Path.Combine(assetService.FuseResPath, "Textures"));
+                                    Directory.CreateDirectory(targetDir);
                                     File.Copy(absoluteNameOnly, targetTexturePath, true);
-                                    meshTexturePath = $"Textures/{nameOnly}";
+                                    meshTexturePath = $"Textures/{baseName}/{nameOnly}";
                                     break;
                                 }
                             }

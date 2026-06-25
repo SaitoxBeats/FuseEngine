@@ -182,7 +182,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#0",
-      "texture": "Textures/Shops_06.png",
+      "texture": "Textures/Buildings/Shops_06.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -207,7 +207,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#1",
-      "texture": "Textures/Shops_08.png",
+      "texture": "Textures/Buildings/Shops_08.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -232,7 +232,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#2",
-      "texture": "Textures/Shops_09.png",
+      "texture": "Textures/Buildings/Shops_09.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -257,7 +257,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#3",
-      "texture": "Textures/building_06.jpg",
+      "texture": "Textures/Buildings/building_06.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -282,7 +282,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#4",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -307,7 +307,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#5",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -332,7 +332,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#6",
-      "texture": "Textures/brick_modern_04.jpg",
+      "texture": "Textures/Buildings/brick_modern_04.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -357,7 +357,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#7",
-      "texture": "Textures/Shops_06.png",
+      "texture": "Textures/Buildings/Shops_06.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -382,7 +382,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#8",
-      "texture": "Textures/Shops_08.png",
+      "texture": "Textures/Buildings/Shops_08.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -407,7 +407,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#9",
-      "texture": "Textures/Shops_09.png",
+      "texture": "Textures/Buildings/Shops_09.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -432,7 +432,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#10",
-      "texture": "Textures/building_06.jpg",
+      "texture": "Textures/Buildings/building_06.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -457,7 +457,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#11",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -482,7 +482,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#12",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -507,7 +507,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#13",
-      "texture": "Textures/brick_modern_04.jpg",
+      "texture": "Textures/Buildings/brick_modern_04.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -532,7 +532,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#14",
-      "texture": "Textures/Shops_06.png",
+      "texture": "Textures/Buildings/Shops_06.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -557,7 +557,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#15",
-      "texture": "Textures/Shops_08.png",
+      "texture": "Textures/Buildings/Shops_08.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -582,7 +582,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#16",
-      "texture": "Textures/Shops_09.png",
+      "texture": "Textures/Buildings/Shops_09.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -607,7 +607,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#17",
-      "texture": "Textures/building_06.jpg",
+      "texture": "Textures/Buildings/building_06.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -632,7 +632,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#18",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -657,7 +657,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#19",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -682,7 +682,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#20",
-      "texture": "Textures/brick_modern_04.jpg",
+      "texture": "Textures/Buildings/brick_modern_04.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -707,7 +707,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#21",
-      "texture": "Textures/Shops_06.png",
+      "texture": "Textures/Buildings/Shops_06.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -732,7 +732,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#22",
-      "texture": "Textures/Shops_08.png",
+      "texture": "Textures/Buildings/Shops_08.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -757,7 +757,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#23",
-      "texture": "Textures/Shops_09.png",
+      "texture": "Textures/Buildings/Shops_09.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -782,7 +782,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#24",
-      "texture": "Textures/building_06.jpg",
+      "texture": "Textures/Buildings/building_06.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -807,7 +807,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#25",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -832,7 +832,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#26",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -857,7 +857,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#27",
-      "texture": "Textures/brick_modern_04.jpg",
+      "texture": "Textures/Buildings/brick_modern_04.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -882,7 +882,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#28",
-      "texture": "Textures/Shops_03.png",
+      "texture": "Textures/Buildings/Shops_03.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -907,7 +907,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#29",
-      "texture": "Textures/Shops_04.png",
+      "texture": "Textures/Buildings/Shops_04.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -932,7 +932,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#30",
-      "texture": "Textures/Shops_05.png",
+      "texture": "Textures/Buildings/Shops_05.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -957,7 +957,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#31",
-      "texture": "Textures/building_04.jpg",
+      "texture": "Textures/Buildings/building_04.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -982,7 +982,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#32",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1007,7 +1007,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#33",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1032,7 +1032,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#34",
-      "texture": "Textures/brick_modern_03.jpg",
+      "texture": "Textures/Buildings/brick_modern_03.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1057,7 +1057,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#35",
-      "texture": "Textures/Shops_03.png",
+      "texture": "Textures/Buildings/Shops_03.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1082,7 +1082,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#36",
-      "texture": "Textures/Shops_04.png",
+      "texture": "Textures/Buildings/Shops_04.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1107,7 +1107,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#37",
-      "texture": "Textures/Shops_05.png",
+      "texture": "Textures/Buildings/Shops_05.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1132,7 +1132,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#38",
-      "texture": "Textures/building_04.jpg",
+      "texture": "Textures/Buildings/building_04.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1157,7 +1157,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#39",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1182,7 +1182,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#40",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1207,7 +1207,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#41",
-      "texture": "Textures/brick_modern_03.jpg",
+      "texture": "Textures/Buildings/brick_modern_03.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1232,7 +1232,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#42",
-      "texture": "Textures/Shops_03.png",
+      "texture": "Textures/Buildings/Shops_03.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1257,7 +1257,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#43",
-      "texture": "Textures/Shops_04.png",
+      "texture": "Textures/Buildings/Shops_04.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1282,7 +1282,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#44",
-      "texture": "Textures/Shops_05.png",
+      "texture": "Textures/Buildings/Shops_05.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1307,7 +1307,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#45",
-      "texture": "Textures/building_04.jpg",
+      "texture": "Textures/Buildings/building_04.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1332,7 +1332,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#46",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1357,7 +1357,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#47",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1382,7 +1382,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#48",
-      "texture": "Textures/brick_modern_03.jpg",
+      "texture": "Textures/Buildings/brick_modern_03.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1407,7 +1407,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#49",
-      "texture": "Textures/Shops_03.png",
+      "texture": "Textures/Buildings/Shops_03.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1432,7 +1432,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#50",
-      "texture": "Textures/Shops_04.png",
+      "texture": "Textures/Buildings/Shops_04.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1457,7 +1457,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#51",
-      "texture": "Textures/Shops_05.png",
+      "texture": "Textures/Buildings/Shops_05.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1482,7 +1482,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#52",
-      "texture": "Textures/building_04.jpg",
+      "texture": "Textures/Buildings/building_04.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1507,7 +1507,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#53",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1532,7 +1532,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#54",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1557,7 +1557,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#55",
-      "texture": "Textures/brick_modern_03.jpg",
+      "texture": "Textures/Buildings/brick_modern_03.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1582,7 +1582,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#56",
-      "texture": "Textures/Shops_10.png",
+      "texture": "Textures/Buildings/Shops_10.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1607,7 +1607,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#57",
-      "texture": "Textures/Shops_11.png",
+      "texture": "Textures/Buildings/Shops_11.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1632,7 +1632,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#58",
-      "texture": "Textures/Shops_12.png",
+      "texture": "Textures/Buildings/Shops_12.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1657,7 +1657,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#59",
-      "texture": "Textures/Shops_13.png",
+      "texture": "Textures/Buildings/Shops_13.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1682,7 +1682,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#60",
-      "texture": "Textures/Shops_14.png",
+      "texture": "Textures/Buildings/Shops_14.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1707,7 +1707,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#61",
-      "texture": "Textures/building_08.jpg",
+      "texture": "Textures/Buildings/building_08.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1732,7 +1732,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#62",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1757,7 +1757,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#63",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1782,7 +1782,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#64",
-      "texture": "Textures/brick_modern_02.jpg",
+      "texture": "Textures/Buildings/brick_modern_02.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1807,7 +1807,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#65",
-      "texture": "Textures/Shops_10.png",
+      "texture": "Textures/Buildings/Shops_10.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1832,7 +1832,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#66",
-      "texture": "Textures/Shops_11.png",
+      "texture": "Textures/Buildings/Shops_11.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1857,7 +1857,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#67",
-      "texture": "Textures/Shops_12.png",
+      "texture": "Textures/Buildings/Shops_12.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1882,7 +1882,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#68",
-      "texture": "Textures/Shops_13.png",
+      "texture": "Textures/Buildings/Shops_13.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1907,7 +1907,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#69",
-      "texture": "Textures/Shops_14.png",
+      "texture": "Textures/Buildings/Shops_14.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1932,7 +1932,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#70",
-      "texture": "Textures/building_08.jpg",
+      "texture": "Textures/Buildings/building_08.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1957,7 +1957,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#71",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -1982,7 +1982,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#72",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2007,7 +2007,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#73",
-      "texture": "Textures/brick_modern_02.jpg",
+      "texture": "Textures/Buildings/brick_modern_02.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2032,7 +2032,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#74",
-      "texture": "Textures/Shops.png",
+      "texture": "Textures/Buildings/Shops.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2057,7 +2057,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#75",
-      "texture": "Textures/Shops_01.png",
+      "texture": "Textures/Buildings/Shops_01.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2082,7 +2082,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#76",
-      "texture": "Textures/Shops_02.png",
+      "texture": "Textures/Buildings/Shops_02.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2107,7 +2107,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#77",
-      "texture": "Textures/building_09.jpg",
+      "texture": "Textures/Buildings/building_09.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2132,7 +2132,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#78",
-      "texture": "Textures/brick_modern_03.jpg",
+      "texture": "Textures/Buildings/brick_modern_03.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2157,7 +2157,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#79",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2182,7 +2182,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#80",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2207,7 +2207,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#81",
-      "texture": "Textures/Shops.png",
+      "texture": "Textures/Buildings/Shops.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2232,7 +2232,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#82",
-      "texture": "Textures/Shops_01.png",
+      "texture": "Textures/Buildings/Shops_01.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2257,7 +2257,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#83",
-      "texture": "Textures/Shops_02.png",
+      "texture": "Textures/Buildings/Shops_02.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2282,7 +2282,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#84",
-      "texture": "Textures/building_09.jpg",
+      "texture": "Textures/Buildings/building_09.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2307,7 +2307,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#85",
-      "texture": "Textures/brick_modern_03.jpg",
+      "texture": "Textures/Buildings/brick_modern_03.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2332,7 +2332,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#86",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2357,7 +2357,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#87",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2382,7 +2382,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#88",
-      "texture": "Textures/Shops.png",
+      "texture": "Textures/Buildings/Shops.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2407,7 +2407,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#89",
-      "texture": "Textures/Shops_01.png",
+      "texture": "Textures/Buildings/Shops_01.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2432,7 +2432,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#90",
-      "texture": "Textures/Shops_02.png",
+      "texture": "Textures/Buildings/Shops_02.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2457,7 +2457,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#91",
-      "texture": "Textures/building_09.jpg",
+      "texture": "Textures/Buildings/building_09.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2482,7 +2482,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#92",
-      "texture": "Textures/brick_modern_03.jpg",
+      "texture": "Textures/Buildings/brick_modern_03.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2507,7 +2507,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#93",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2532,7 +2532,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#94",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2557,7 +2557,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#95",
-      "texture": "Textures/Shops.png",
+      "texture": "Textures/Buildings/Shops.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2582,7 +2582,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#96",
-      "texture": "Textures/Shops_01.png",
+      "texture": "Textures/Buildings/Shops_01.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2607,7 +2607,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#97",
-      "texture": "Textures/Shops_02.png",
+      "texture": "Textures/Buildings/Shops_02.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2632,7 +2632,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#98",
-      "texture": "Textures/building_09.jpg",
+      "texture": "Textures/Buildings/building_09.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2657,7 +2657,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#99",
-      "texture": "Textures/brick_modern_03.jpg",
+      "texture": "Textures/Buildings/brick_modern_03.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2682,7 +2682,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#100",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2707,7 +2707,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#101",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2732,7 +2732,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#102",
-      "texture": "Textures/Shops_15.png",
+      "texture": "Textures/Buildings/Shops_15.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2757,7 +2757,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#103",
-      "texture": "Textures/Shops_16.png",
+      "texture": "Textures/Buildings/Shops_16.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2782,7 +2782,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#104",
-      "texture": "Textures/Shops_17.png",
+      "texture": "Textures/Buildings/Shops_17.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2807,7 +2807,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#105",
-      "texture": "Textures/building_01.jpg",
+      "texture": "Textures/Buildings/building_01.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2832,7 +2832,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#106",
-      "texture": "Textures/brick_modern_03.jpg",
+      "texture": "Textures/Buildings/brick_modern_03.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2857,7 +2857,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#107",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2882,7 +2882,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#108",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2907,7 +2907,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#109",
-      "texture": "Textures/Shops_15.png",
+      "texture": "Textures/Buildings/Shops_15.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2932,7 +2932,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#110",
-      "texture": "Textures/Shops_16.png",
+      "texture": "Textures/Buildings/Shops_16.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2957,7 +2957,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#111",
-      "texture": "Textures/Shops_17.png",
+      "texture": "Textures/Buildings/Shops_17.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -2982,7 +2982,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#112",
-      "texture": "Textures/building_01.jpg",
+      "texture": "Textures/Buildings/building_01.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3007,7 +3007,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#113",
-      "texture": "Textures/brick_modern_03.jpg",
+      "texture": "Textures/Buildings/brick_modern_03.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3032,7 +3032,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#114",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3057,7 +3057,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#115",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3082,7 +3082,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#116",
-      "texture": "Textures/Shops_15.png",
+      "texture": "Textures/Buildings/Shops_15.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3107,7 +3107,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#117",
-      "texture": "Textures/Shops_16.png",
+      "texture": "Textures/Buildings/Shops_16.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3132,7 +3132,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#118",
-      "texture": "Textures/Shops_17.png",
+      "texture": "Textures/Buildings/Shops_17.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3157,7 +3157,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#119",
-      "texture": "Textures/building_01.jpg",
+      "texture": "Textures/Buildings/building_01.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3182,7 +3182,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#120",
-      "texture": "Textures/brick_modern_03.jpg",
+      "texture": "Textures/Buildings/brick_modern_03.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3207,7 +3207,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#121",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3232,7 +3232,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#122",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3257,7 +3257,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#123",
-      "texture": "Textures/Shops_15.png",
+      "texture": "Textures/Buildings/Shops_15.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3282,7 +3282,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#124",
-      "texture": "Textures/Shops_16.png",
+      "texture": "Textures/Buildings/Shops_16.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3307,7 +3307,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#125",
-      "texture": "Textures/Shops_17.png",
+      "texture": "Textures/Buildings/Shops_17.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3332,7 +3332,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#126",
-      "texture": "Textures/building_01.jpg",
+      "texture": "Textures/Buildings/building_01.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3357,7 +3357,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#127",
-      "texture": "Textures/brick_modern_03.jpg",
+      "texture": "Textures/Buildings/brick_modern_03.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3382,7 +3382,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#128",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3407,7 +3407,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#129",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3432,7 +3432,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#130",
-      "texture": "Textures/Shops_19.png",
+      "texture": "Textures/Buildings/Shops_19.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3457,7 +3457,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#131",
-      "texture": "Textures/Shops_20.png",
+      "texture": "Textures/Buildings/Shops_20.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3482,7 +3482,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#132",
-      "texture": "Textures/Shops_21.png",
+      "texture": "Textures/Buildings/Shops_21.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3507,7 +3507,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#133",
-      "texture": "Textures/Shops_22.png",
+      "texture": "Textures/Buildings/Shops_22.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3532,7 +3532,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#134",
-      "texture": "Textures/building_03.jpg",
+      "texture": "Textures/Buildings/building_03.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3557,7 +3557,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#135",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3582,7 +3582,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#136",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3607,7 +3607,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#137",
-      "texture": "Textures/brick_modern_01.jpg",
+      "texture": "Textures/Buildings/brick_modern_01.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3632,7 +3632,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#138",
-      "texture": "Textures/Shops_19.png",
+      "texture": "Textures/Buildings/Shops_19.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3657,7 +3657,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#139",
-      "texture": "Textures/Shops_20.png",
+      "texture": "Textures/Buildings/Shops_20.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3682,7 +3682,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#140",
-      "texture": "Textures/Shops_21.png",
+      "texture": "Textures/Buildings/Shops_21.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3707,7 +3707,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#141",
-      "texture": "Textures/Shops_22.png",
+      "texture": "Textures/Buildings/Shops_22.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3732,7 +3732,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#142",
-      "texture": "Textures/building_03.jpg",
+      "texture": "Textures/Buildings/building_03.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3757,7 +3757,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#143",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3782,7 +3782,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#144",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3807,7 +3807,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#145",
-      "texture": "Textures/brick_modern_01.jpg",
+      "texture": "Textures/Buildings/brick_modern_01.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3832,7 +3832,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#146",
-      "texture": "Textures/Shops_19.png",
+      "texture": "Textures/Buildings/Shops_19.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3857,7 +3857,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#147",
-      "texture": "Textures/Shops_20.png",
+      "texture": "Textures/Buildings/Shops_20.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3882,7 +3882,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#148",
-      "texture": "Textures/Shops_21.png",
+      "texture": "Textures/Buildings/Shops_21.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3907,7 +3907,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#149",
-      "texture": "Textures/Shops_22.png",
+      "texture": "Textures/Buildings/Shops_22.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3932,7 +3932,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#150",
-      "texture": "Textures/building_03.jpg",
+      "texture": "Textures/Buildings/building_03.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3957,7 +3957,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#151",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -3982,7 +3982,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#152",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4007,7 +4007,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#153",
-      "texture": "Textures/brick_modern_01.jpg",
+      "texture": "Textures/Buildings/brick_modern_01.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4032,7 +4032,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#154",
-      "texture": "Textures/Shops_19.png",
+      "texture": "Textures/Buildings/Shops_19.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4057,7 +4057,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#155",
-      "texture": "Textures/Shops_20.png",
+      "texture": "Textures/Buildings/Shops_20.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4082,7 +4082,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#156",
-      "texture": "Textures/Shops_21.png",
+      "texture": "Textures/Buildings/Shops_21.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4107,7 +4107,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#157",
-      "texture": "Textures/Shops_22.png",
+      "texture": "Textures/Buildings/Shops_22.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4132,7 +4132,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#158",
-      "texture": "Textures/building_03.jpg",
+      "texture": "Textures/Buildings/building_03.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4157,7 +4157,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#159",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4182,7 +4182,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#160",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4207,7 +4207,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#161",
-      "texture": "Textures/brick_modern_01.jpg",
+      "texture": "Textures/Buildings/brick_modern_01.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4232,7 +4232,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#162",
-      "texture": "Textures/Shops_28.png",
+      "texture": "Textures/Buildings/Shops_28.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4257,7 +4257,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#163",
-      "texture": "Textures/Shops_29.png",
+      "texture": "Textures/Buildings/Shops_29.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4282,7 +4282,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#164",
-      "texture": "Textures/building_07.jpg",
+      "texture": "Textures/Buildings/building_07.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4307,7 +4307,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#165",
-      "texture": "Textures/Shops_30.png",
+      "texture": "Textures/Buildings/Shops_30.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4332,7 +4332,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#166",
-      "texture": "Textures/Shops_31.png",
+      "texture": "Textures/Buildings/Shops_31.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4357,7 +4357,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#167",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4382,7 +4382,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#168",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4407,7 +4407,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#169",
-      "texture": "Textures/BrickSmallBrown.jpg",
+      "texture": "Textures/Buildings/BrickSmallBrown.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4432,7 +4432,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#170",
-      "texture": "Textures/Shops_28.png",
+      "texture": "Textures/Buildings/Shops_28.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4457,7 +4457,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#171",
-      "texture": "Textures/Shops_29.png",
+      "texture": "Textures/Buildings/Shops_29.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4482,7 +4482,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#172",
-      "texture": "Textures/building_07.jpg",
+      "texture": "Textures/Buildings/building_07.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4507,7 +4507,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#173",
-      "texture": "Textures/Shops_30.png",
+      "texture": "Textures/Buildings/Shops_30.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4532,7 +4532,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#174",
-      "texture": "Textures/Shops_31.png",
+      "texture": "Textures/Buildings/Shops_31.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4557,7 +4557,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#175",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4582,7 +4582,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#176",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4607,7 +4607,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#177",
-      "texture": "Textures/BrickSmallBrown.jpg",
+      "texture": "Textures/Buildings/BrickSmallBrown.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4632,7 +4632,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#178",
-      "texture": "Textures/Shops_28.png",
+      "texture": "Textures/Buildings/Shops_28.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4657,7 +4657,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#179",
-      "texture": "Textures/Shops_29.png",
+      "texture": "Textures/Buildings/Shops_29.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4682,7 +4682,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#180",
-      "texture": "Textures/building_07.jpg",
+      "texture": "Textures/Buildings/building_07.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4707,7 +4707,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#181",
-      "texture": "Textures/Shops_30.png",
+      "texture": "Textures/Buildings/Shops_30.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4732,7 +4732,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#182",
-      "texture": "Textures/Shops_31.png",
+      "texture": "Textures/Buildings/Shops_31.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4757,7 +4757,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#183",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4782,7 +4782,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#184",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4807,7 +4807,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#185",
-      "texture": "Textures/BrickSmallBrown.jpg",
+      "texture": "Textures/Buildings/BrickSmallBrown.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4832,7 +4832,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#186",
-      "texture": "Textures/Shops_28.png",
+      "texture": "Textures/Buildings/Shops_28.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4857,7 +4857,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#187",
-      "texture": "Textures/Shops_29.png",
+      "texture": "Textures/Buildings/Shops_29.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4882,7 +4882,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#188",
-      "texture": "Textures/building_07.jpg",
+      "texture": "Textures/Buildings/building_07.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4907,7 +4907,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#189",
-      "texture": "Textures/Shops_30.png",
+      "texture": "Textures/Buildings/Shops_30.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4932,7 +4932,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#190",
-      "texture": "Textures/Shops_31.png",
+      "texture": "Textures/Buildings/Shops_31.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4957,7 +4957,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#191",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -4982,7 +4982,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#192",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5007,7 +5007,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#193",
-      "texture": "Textures/BrickSmallBrown.jpg",
+      "texture": "Textures/Buildings/BrickSmallBrown.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5032,7 +5032,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#194",
-      "texture": "Textures/Shops_23.png",
+      "texture": "Textures/Buildings/Shops_23.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5057,7 +5057,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#195",
-      "texture": "Textures/Shops_24.png",
+      "texture": "Textures/Buildings/Shops_24.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5082,7 +5082,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#196",
-      "texture": "Textures/Shops_25.png",
+      "texture": "Textures/Buildings/Shops_25.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5107,7 +5107,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#197",
-      "texture": "Textures/building.jpg",
+      "texture": "Textures/Buildings/building.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5132,7 +5132,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#198",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5157,7 +5157,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#199",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5182,7 +5182,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#200",
-      "texture": "Textures/brick_modern_05.jpg",
+      "texture": "Textures/Buildings/brick_modern_05.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5207,7 +5207,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#201",
-      "texture": "Textures/Shops_23.png",
+      "texture": "Textures/Buildings/Shops_23.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5232,7 +5232,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#202",
-      "texture": "Textures/Shops_24.png",
+      "texture": "Textures/Buildings/Shops_24.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5257,7 +5257,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#203",
-      "texture": "Textures/Shops_25.png",
+      "texture": "Textures/Buildings/Shops_25.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5282,7 +5282,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#204",
-      "texture": "Textures/building.jpg",
+      "texture": "Textures/Buildings/building.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5307,7 +5307,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#205",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5332,7 +5332,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#206",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5357,7 +5357,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#207",
-      "texture": "Textures/brick_modern_05.jpg",
+      "texture": "Textures/Buildings/brick_modern_05.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5382,7 +5382,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#208",
-      "texture": "Textures/Shops_23.png",
+      "texture": "Textures/Buildings/Shops_23.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5407,7 +5407,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#209",
-      "texture": "Textures/Shops_24.png",
+      "texture": "Textures/Buildings/Shops_24.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5432,7 +5432,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#210",
-      "texture": "Textures/Shops_25.png",
+      "texture": "Textures/Buildings/Shops_25.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5457,7 +5457,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#211",
-      "texture": "Textures/building.jpg",
+      "texture": "Textures/Buildings/building.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5482,7 +5482,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#212",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5507,7 +5507,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#213",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5532,7 +5532,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#214",
-      "texture": "Textures/brick_modern_05.jpg",
+      "texture": "Textures/Buildings/brick_modern_05.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5557,7 +5557,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#215",
-      "texture": "Textures/Shops_23.png",
+      "texture": "Textures/Buildings/Shops_23.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5582,7 +5582,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#216",
-      "texture": "Textures/Shops_24.png",
+      "texture": "Textures/Buildings/Shops_24.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5607,7 +5607,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#217",
-      "texture": "Textures/Shops_25.png",
+      "texture": "Textures/Buildings/Shops_25.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5632,7 +5632,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#218",
-      "texture": "Textures/building.jpg",
+      "texture": "Textures/Buildings/building.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5657,7 +5657,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#219",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5682,7 +5682,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#220",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5707,7 +5707,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#221",
-      "texture": "Textures/brick_modern_05.jpg",
+      "texture": "Textures/Buildings/brick_modern_05.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5732,7 +5732,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#222",
-      "texture": "Textures/Shops_26.png",
+      "texture": "Textures/Buildings/Shops_26.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5757,7 +5757,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#223",
-      "texture": "Textures/Shops_27.png",
+      "texture": "Textures/Buildings/Shops_27.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5782,7 +5782,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#224",
-      "texture": "Textures/building_11.jpg",
+      "texture": "Textures/Buildings/building_11.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5807,7 +5807,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#225",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5832,7 +5832,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#226",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5857,7 +5857,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#227",
-      "texture": "Textures/BrickSmallPainted.jpg",
+      "texture": "Textures/Buildings/BrickSmallPainted.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5882,7 +5882,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#228",
-      "texture": "Textures/Shops_26.png",
+      "texture": "Textures/Buildings/Shops_26.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5907,7 +5907,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#229",
-      "texture": "Textures/Shops_27.png",
+      "texture": "Textures/Buildings/Shops_27.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5932,7 +5932,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#230",
-      "texture": "Textures/building_11.jpg",
+      "texture": "Textures/Buildings/building_11.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5957,7 +5957,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#231",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -5982,7 +5982,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#232",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6007,7 +6007,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#233",
-      "texture": "Textures/BrickSmallPainted.jpg",
+      "texture": "Textures/Buildings/BrickSmallPainted.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6032,7 +6032,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#234",
-      "texture": "Textures/Shops_26.png",
+      "texture": "Textures/Buildings/Shops_26.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6057,7 +6057,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#235",
-      "texture": "Textures/Shops_27.png",
+      "texture": "Textures/Buildings/Shops_27.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6082,7 +6082,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#236",
-      "texture": "Textures/building_11.jpg",
+      "texture": "Textures/Buildings/building_11.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6107,7 +6107,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#237",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6132,7 +6132,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#238",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6157,7 +6157,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#239",
-      "texture": "Textures/BrickSmallPainted.jpg",
+      "texture": "Textures/Buildings/BrickSmallPainted.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6182,7 +6182,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#240",
-      "texture": "Textures/Shops_26.png",
+      "texture": "Textures/Buildings/Shops_26.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6207,7 +6207,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#241",
-      "texture": "Textures/Shops_27.png",
+      "texture": "Textures/Buildings/Shops_27.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6232,7 +6232,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#242",
-      "texture": "Textures/building_11.jpg",
+      "texture": "Textures/Buildings/building_11.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6257,7 +6257,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#243",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6282,7 +6282,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#244",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6307,7 +6307,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#245",
-      "texture": "Textures/BrickSmallPainted.jpg",
+      "texture": "Textures/Buildings/BrickSmallPainted.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6332,7 +6332,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#246",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6357,7 +6357,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#247",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6382,7 +6382,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#248",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6407,7 +6407,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#249",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6432,7 +6432,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#250",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6457,7 +6457,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#251",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6482,7 +6482,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#252",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6507,7 +6507,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#253",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6532,7 +6532,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#254",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6557,7 +6557,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#255",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6582,7 +6582,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#256",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6607,7 +6607,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#257",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6632,7 +6632,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#258",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6657,7 +6657,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#259",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6682,7 +6682,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#260",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6707,7 +6707,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#261",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6732,7 +6732,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#262",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6757,7 +6757,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#263",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6782,7 +6782,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#264",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6807,7 +6807,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#265",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6832,7 +6832,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#266",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6857,7 +6857,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#267",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6882,7 +6882,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#268",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6907,7 +6907,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#269",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6932,7 +6932,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#270",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6957,7 +6957,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#271",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -6982,7 +6982,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#272",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7007,7 +7007,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#273",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7032,7 +7032,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#274",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7057,7 +7057,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#275",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7082,7 +7082,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#276",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7107,7 +7107,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#277",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7132,7 +7132,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#278",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7157,7 +7157,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#279",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7182,7 +7182,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#280",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7207,7 +7207,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#281",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7232,7 +7232,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#282",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7257,7 +7257,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#283",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7282,7 +7282,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#284",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7307,7 +7307,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#285",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7332,7 +7332,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#286",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7357,7 +7357,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#287",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7382,7 +7382,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#288",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7407,7 +7407,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#289",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7432,7 +7432,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#290",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7457,7 +7457,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#291",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7482,7 +7482,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#292",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7507,7 +7507,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#293",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7532,7 +7532,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#294",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7557,7 +7557,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#295",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7582,7 +7582,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#296",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7607,7 +7607,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#297",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7632,7 +7632,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#298",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7657,7 +7657,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#299",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7682,7 +7682,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#300",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7707,7 +7707,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#301",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7732,7 +7732,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#302",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7757,7 +7757,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#303",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7782,7 +7782,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#304",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7807,7 +7807,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#305",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7832,7 +7832,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#306",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7857,7 +7857,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#307",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7882,7 +7882,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#308",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7907,7 +7907,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#309",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7932,7 +7932,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#310",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7957,7 +7957,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#311",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -7982,7 +7982,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#312",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8007,7 +8007,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#313",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8032,7 +8032,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#314",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8057,7 +8057,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#315",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8082,7 +8082,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#316",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8107,7 +8107,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#317",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8132,7 +8132,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#318",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8157,7 +8157,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#319",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8182,7 +8182,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#320",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8207,7 +8207,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#321",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8232,7 +8232,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#322",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8257,7 +8257,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#323",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8282,7 +8282,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#324",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8307,7 +8307,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#325",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8332,7 +8332,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#326",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8357,7 +8357,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#327",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8382,7 +8382,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#328",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8407,7 +8407,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#329",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8432,7 +8432,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#330",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8457,7 +8457,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#331",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8482,7 +8482,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#332",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8507,7 +8507,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#333",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8532,7 +8532,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#334",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8557,7 +8557,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#335",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8582,7 +8582,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#336",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8607,7 +8607,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#337",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8632,7 +8632,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#338",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8657,7 +8657,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#339",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8682,7 +8682,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#340",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8707,7 +8707,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#341",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8732,7 +8732,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#342",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8757,7 +8757,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#343",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8782,7 +8782,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#344",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8807,7 +8807,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#345",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8832,7 +8832,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#346",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8857,7 +8857,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#347",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8882,7 +8882,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#348",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8907,7 +8907,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#349",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8932,7 +8932,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#350",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8957,7 +8957,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#351",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -8982,7 +8982,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#352",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9007,7 +9007,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#353",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9032,7 +9032,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#354",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9057,7 +9057,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#355",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9082,7 +9082,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#356",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9107,7 +9107,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#357",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9132,7 +9132,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#358",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9157,7 +9157,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#359",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9182,7 +9182,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#360",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9207,7 +9207,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#361",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9232,7 +9232,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#362",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9257,7 +9257,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#363",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9282,7 +9282,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#364",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9307,7 +9307,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#365",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9332,7 +9332,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#366",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9357,7 +9357,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#367",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9382,7 +9382,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#368",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9407,7 +9407,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#369",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9432,7 +9432,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#370",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9457,7 +9457,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#371",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9482,7 +9482,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#372",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9507,7 +9507,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#373",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9532,7 +9532,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#374",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9557,7 +9557,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#375",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9582,7 +9582,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#376",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9607,7 +9607,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#377",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9632,7 +9632,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#378",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9657,7 +9657,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#379",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9682,7 +9682,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#380",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9707,7 +9707,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#381",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9732,7 +9732,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#382",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9757,7 +9757,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#383",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9782,7 +9782,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#384",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9807,7 +9807,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#385",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9832,7 +9832,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#386",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9857,7 +9857,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#387",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9882,7 +9882,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#388",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9907,7 +9907,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#389",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9932,7 +9932,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#390",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9957,7 +9957,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#391",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -9982,7 +9982,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#392",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10007,7 +10007,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#393",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10032,7 +10032,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#394",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10057,7 +10057,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#395",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10082,7 +10082,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#396",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10107,7 +10107,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#397",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10132,7 +10132,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#398",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10157,7 +10157,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#399",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10182,7 +10182,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#400",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10207,7 +10207,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#401",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10232,7 +10232,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#402",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10257,7 +10257,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#403",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10282,7 +10282,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#404",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10307,7 +10307,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#405",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10332,7 +10332,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#406",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10357,7 +10357,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#407",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10382,7 +10382,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#408",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10407,7 +10407,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#409",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10432,7 +10432,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#410",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10457,7 +10457,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#411",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10482,7 +10482,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#412",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10507,7 +10507,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#413",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10532,7 +10532,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#414",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10557,7 +10557,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#415",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10582,7 +10582,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#416",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10607,7 +10607,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#417",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10632,7 +10632,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#418",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10657,7 +10657,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#419",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10682,7 +10682,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#420",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10707,7 +10707,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#421",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10732,7 +10732,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#422",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10757,7 +10757,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#423",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10782,7 +10782,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#424",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10807,7 +10807,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#425",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10832,7 +10832,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#426",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10857,7 +10857,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#427",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10882,7 +10882,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#428",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10907,7 +10907,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#429",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10932,7 +10932,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#430",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10957,7 +10957,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#431",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -10982,7 +10982,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#432",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11007,7 +11007,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#433",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11032,7 +11032,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#434",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11057,7 +11057,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#435",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11082,7 +11082,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#436",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11107,7 +11107,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#437",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11132,7 +11132,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#438",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11157,7 +11157,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#439",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11182,7 +11182,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#440",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11207,7 +11207,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#441",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11232,7 +11232,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#442",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11257,7 +11257,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#443",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11282,7 +11282,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#444",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11307,7 +11307,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#445",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11332,7 +11332,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#446",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11357,7 +11357,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#447",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11382,7 +11382,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#448",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11407,7 +11407,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#449",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11432,7 +11432,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#450",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11457,7 +11457,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#451",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11482,7 +11482,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#452",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11507,7 +11507,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#453",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11532,7 +11532,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#454",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11557,7 +11557,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#455",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11582,7 +11582,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#456",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11607,7 +11607,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#457",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11632,7 +11632,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#458",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11657,7 +11657,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#459",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11682,7 +11682,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#460",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11707,7 +11707,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#461",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11732,7 +11732,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#462",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11757,7 +11757,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#463",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11782,7 +11782,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#464",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11807,7 +11807,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#465",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11832,7 +11832,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#466",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11857,7 +11857,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#467",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11882,7 +11882,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#468",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11907,7 +11907,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#469",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11932,7 +11932,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#470",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11957,7 +11957,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#471",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -11982,7 +11982,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#472",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12007,7 +12007,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#473",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12032,7 +12032,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#474",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12057,7 +12057,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#475",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12082,7 +12082,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#476",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12107,7 +12107,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#477",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12132,7 +12132,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#478",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12157,7 +12157,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#479",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12182,7 +12182,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#480",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12207,7 +12207,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#481",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12232,7 +12232,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#482",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12257,7 +12257,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#483",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12282,7 +12282,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#484",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12307,7 +12307,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#485",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12332,7 +12332,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#486",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12357,7 +12357,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#487",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12382,7 +12382,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#488",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12407,7 +12407,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#489",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12432,7 +12432,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#490",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12457,7 +12457,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#491",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12482,7 +12482,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#492",
-      "texture": "Textures/Shops_07.png",
+      "texture": "Textures/Buildings/Shops_07.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12507,7 +12507,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#493",
-      "texture": "Textures/Shops_18.png",
+      "texture": "Textures/Buildings/Shops_18.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12532,7 +12532,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#494",
-      "texture": "Textures/building_10.jpg",
+      "texture": "Textures/Buildings/building_10.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12557,7 +12557,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#495",
-      "texture": "Textures/brick_modern.jpg",
+      "texture": "Textures/Buildings/brick_modern.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12582,7 +12582,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#496",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12607,7 +12607,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#497",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12632,7 +12632,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#498",
-      "texture": "Textures/Shops_10.png",
+      "texture": "Textures/Buildings/Shops_10.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12657,7 +12657,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#499",
-      "texture": "Textures/Shops_11.png",
+      "texture": "Textures/Buildings/Shops_11.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12682,7 +12682,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#500",
-      "texture": "Textures/Shops_12.png",
+      "texture": "Textures/Buildings/Shops_12.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12707,7 +12707,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#501",
-      "texture": "Textures/Shops_13.png",
+      "texture": "Textures/Buildings/Shops_13.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12732,7 +12732,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#502",
-      "texture": "Textures/Shops_14.png",
+      "texture": "Textures/Buildings/Shops_14.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12757,7 +12757,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#503",
-      "texture": "Textures/building_08.jpg",
+      "texture": "Textures/Buildings/building_08.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12782,7 +12782,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#504",
-      "texture": "Textures/ConcreteBare.png",
+      "texture": "Textures/Buildings/ConcreteBare.png",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12807,7 +12807,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#505",
-      "texture": "Textures/Roof_tiles.jpg",
+      "texture": "Textures/Buildings/Roof_tiles.jpg",
       "body": {
         "shape": "trimesh",
         "position": [
@@ -12832,7 +12832,7 @@
       "visible": true,
       "parent": "group_Buildings_1",
       "model": "Models/Buildings/Buildings.gltf#506",
-      "texture": "Textures/brick_modern_02.jpg",
+      "texture": "Textures/Buildings/brick_modern_02.jpg",
       "body": {
         "shape": "trimesh",
         "position": [

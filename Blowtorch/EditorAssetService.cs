@@ -17,6 +17,7 @@ public class EditorAssetService : IDisposable
     private readonly GL _gl;
     private readonly AssetManager _assets;
     private Shader _shader = null!;
+    private Shader _gridShader = null!;
     private uint _defaultTex;
     private readonly Dictionary<string, uint> _texCache = [];
     private readonly Dictionary<string, Mesh?> _meshCache = [];
@@ -30,6 +31,7 @@ public class EditorAssetService : IDisposable
 
     public string FuseResPath => _fuseResPath;
     public Shader DefaultShader => _shader;
+    public Shader GridShader => _gridShader;
     public uint DefaultTexture => _defaultTex;
     public AssetManager AssetManager => _assets;
 
@@ -41,6 +43,10 @@ public class EditorAssetService : IDisposable
         _shader = _assets.GetShader(
             Path.Combine(_fuseResPath, "Shaders", "default.vert"),
             Path.Combine(_fuseResPath, "Shaders", "default.frag"));
+
+        _gridShader = _assets.GetShader(
+            Path.Combine(_fuseResPath, "Shaders", "grid.vert"),
+            Path.Combine(_fuseResPath, "Shaders", "grid.frag"));
 
         string crateTexPath = Path.Combine(_fuseResPath, "Textures", "dev_measurecrate01.bmp");
         if (File.Exists(crateTexPath))
