@@ -40,7 +40,7 @@ public class SceneManager
         );
     }
 
-    public PlayerSpawn? LoadMap(string fileName)
+    public PlayerSpawn? LoadMap(string fileName, Action<float, string>? onProgress = null)
     {
         string loadPath = $"{Fuse.ResPath.Path}/Maps/{fileName}";
         if (!File.Exists(loadPath))
@@ -49,38 +49,48 @@ public class SceneManager
             return null;
         }
 
+        onProgress?.Invoke(0f, "Clearing scene...");
         ClearCurrentMap();
 
+        onProgress?.Invoke(0.05f, "Loading map data...");
         var loaded = MapSerializer.LoadFromFile(
-            loadPath, _scene, _physics, _assets, out var spawn, Fuse.ResPath.Path);
+            loadPath, _scene, _physics, _assets, out var spawn, Fuse.ResPath.Path, onProgress);
 
         if (loaded != null)
         {
             _bodies.AddRange(loaded);
         }
 
+        onProgress?.Invoke(0.85f, "Registering interactions...");
         RegisterInteractablesAndBehaviours();
         CurrentMapPath = loadPath;
+
+        onProgress?.Invoke(1.0f, "Done!");
         Logger.Info($"Map loaded: {fileName}");
         
         return spawn;
     }
 
-    public PlayerSpawn? ReloadMap()
+    public PlayerSpawn? ReloadMap(Action<float, string>? onProgress = null)
     {
         if (string.IsNullOrEmpty(CurrentMapPath)) return null;
 
+        onProgress?.Invoke(0f, "Clearing scene...");
         ClearCurrentMap();
 
+        onProgress?.Invoke(0.05f, "Loading map data...");
         var loaded = MapSerializer.LoadFromFile(
-            CurrentMapPath, _scene, _physics, _assets, out var spawn, Fuse.ResPath.Path);
+            CurrentMapPath, _scene, _physics, _assets, out var spawn, Fuse.ResPath.Path, onProgress);
             
         if (loaded != null)
         {
             _bodies.AddRange(loaded);
         }
 
+        onProgress?.Invoke(0.85f, "Registering interactions...");
         RegisterInteractablesAndBehaviours();
+
+        onProgress?.Invoke(1.0f, "Done!");
         return spawn;
     }
 

@@ -155,7 +155,8 @@ public static class MapSerializer
         Renderer.Scene scene, PhysicsWorld physics,
         AssetManagement.AssetManager assets,
         out PlayerSpawn? playerSpawn,
-        string? resPath = null)
+        string? resPath = null,
+        Action<float, string>? onProgress = null)
     {
         playerSpawn = null;
         scene.Clear();
@@ -221,6 +222,8 @@ public static class MapSerializer
             return true;
         }
 
+        int totalEntities = objects.Count;
+        int processedEntities = 0;
         foreach (var objNode in objects)
         {
             if (objNode == null) continue;
@@ -371,6 +374,9 @@ public static class MapSerializer
             {
                 entity.Transform.Scale = isBrush ? Vector3.One : modelScale;
             }
+
+            processedEntities++;
+            onProgress?.Invoke((float)processedEntities / totalEntities, $"Processing {id}...");
         }
 
         // Compute initial relative transforms for children
@@ -452,7 +458,8 @@ public static class MapSerializer
         Renderer.Scene scene, PhysicsWorld physics,
         AssetManagement.AssetManager assets,
         out PlayerSpawn? playerSpawn,
-        string? resPath = null)
+        string? resPath = null,
+        Action<float, string>? onProgress = null)
     {
         playerSpawn = null;
         if (!File.Exists(filepath))
@@ -462,6 +469,6 @@ public static class MapSerializer
         }
 
         string json = File.ReadAllText(filepath);
-        return DeserializeScene(json, scene, physics, assets, out playerSpawn, resPath);
+        return DeserializeScene(json, scene, physics, assets, out playerSpawn, resPath, onProgress);
     }
 }

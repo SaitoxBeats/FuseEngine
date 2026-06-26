@@ -148,11 +148,11 @@ public class Player : IDisposable
         }
 
         // Camera Tilt (quake reference XD)
-        _tiltTarget = 0f;
-        if (Input.Input.KeyDown(Input.KeyCodes.D)) _tiltTarget += MaxTilt;
-        if (Input.Input.KeyDown(Input.KeyCodes.A)) _tiltTarget -= MaxTilt;
-        _tiltCurrent = float.Lerp(_tiltCurrent, _tiltTarget, float.Min(dt * TiltSpeed, 1f));
-        _camera.Roll = _tiltCurrent;
+        //_tiltTarget = 0f;
+        //if (Input.Input.KeyDown(Input.KeyCodes.D)) _tiltTarget += MaxTilt;
+        //if (Input.Input.KeyDown(Input.KeyCodes.A)) _tiltTarget -= MaxTilt;
+        //_tiltCurrent = float.Lerp(_tiltCurrent, _tiltTarget, float.Min(dt * TiltSpeed, 1f));
+        //_camera.Roll = _tiltCurrent;
 
         SyncCamera();
         PushDynamicBodies();

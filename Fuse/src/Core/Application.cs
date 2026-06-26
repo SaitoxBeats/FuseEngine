@@ -32,6 +32,8 @@ public unsafe class Application : IDisposable
     private Debug.DebugDrawer _debugDrawer = null!;
     private Imgui.ImGuiBackEnd _imgui = null!;
     private Imgui.Console _console = null!;
+    private float _loadProgress;
+    private string _loadStatus = "";
 
     public Application()
     {
@@ -69,7 +71,7 @@ public unsafe class Application : IDisposable
         _console = new Imgui.Console();
         _console.SetPlayer(_player);
         _console.StartCapture();
-        _console.OnLoadMap = (map) => LoadMap(map);
+        _console.OnLoadMap = (map) => LoadMap(map, OnLoadProgress);
         _console.OnLoadSky = (fileName) =>
         {
             var tex = _assets.GetTexture($"{Fuse.ResPath.Path}/Textures/{fileName}");
@@ -91,7 +93,7 @@ public unsafe class Application : IDisposable
         _interaction = new Interaction.PlayerInteraction(_physics, _player, _crosshairNode, crosshairTexture, crosshairInteractTexture);
 
         // Default Map Loading
-        LoadMap(initialMap);
+        LoadMap(initialMap, OnLoadProgress);
 
         RegisterWindowCallbacks();
 
@@ -100,9 +102,9 @@ public unsafe class Application : IDisposable
         return true;
     }
 
-    private void LoadMap(string mapName)
+    private void LoadMap(string mapName, Action<float, string>? onProgress = null)
     {
-        var spawn = _sceneManager.LoadMap(mapName);
+        var spawn = _sceneManager.LoadMap(mapName, onProgress);
         if (spawn.HasValue)
         {
             _player.NativeCharacter.Position = spawn.Value.Position;
@@ -112,9 +114,9 @@ public unsafe class Application : IDisposable
         _sceneManager.InitTriggerSystem(_player);
     }
     
-    private void ReloadMap()
+    private void ReloadMap(Action<float, string>? onProgress = null)
     {
-        var spawn = _sceneManager.ReloadMap();
+        var spawn = _sceneManager.ReloadMap(onProgress);
         if (spawn.HasValue)
         {
             _player.NativeCharacter.Position = spawn.Value.Position;
@@ -186,7 +188,7 @@ public unsafe class Application : IDisposable
                     _sceneManager.Update(dt);
                     if (_sceneManager.CheckPendingResets())
                     {
-                        ReloadMap();
+                        ReloadMap(OnLoadProgress);
                     }
                 }
 
@@ -250,7 +252,7 @@ public unsafe class Application : IDisposable
             Fuse.Scene.MapSerializer.SaveToFile(_sceneManager.ActiveScene, _physics, savePath, spawn);
         }
 
-        if (Input.Input.KeyPressed(KeyCodes.F5)) ReloadMap();
+        if (Input.Input.KeyPressed(KeyCodes.F5)) ReloadMap(OnLoadProgress);
         if (Input.Input.KeyPressed(KeyCodes.F9)) _debugDrawer.Toggle();
         if (Input.Input.KeyPressed(KeyCodes.GraveAccent))
         {
@@ -301,6 +303,69 @@ public unsafe class Application : IDisposable
             Vector2 center = _ui.Center;
             _ui.DrawText(center.X - 60.0f, center.Y - 20.0f, "PAUSED".AsSpan(),
                 new Vector4(1, 1, 0, 1), 3.0f);
+        }
+
+        gl.Disable(EnableCap.Blend);
+        gl.Enable(EnableCap.CullFace);
+        gl.Enable(EnableCap.DepthTest);
+    }
+
+    private void OnLoadProgress(float progress, string status)
+    {
+        _loadProgress = progress;
+        _loadStatus = status;
+        RenderLoadingScreen();
+        _window.SwapBuffers();
+        _window.PollEvents();
+    }
+
+    private void RenderLoadingScreen()
+    {
+        var gl = _window.GL;
+        gl.Viewport(0, 0, (uint)_scrWidth, (uint)_scrHeight);
+        gl.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+
+        gl.Disable(EnableCap.DepthTest);
+        gl.Disable(EnableCap.CullFace);
+        gl.Enable(EnableCap.Blend);
+        gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+
+        // Title
+        string title = "LOADING";
+        float titleW = title.Length * 6 * 2.5f;
+        _ui.DrawText((_scrWidth - titleW) / 2, 50, title.AsSpan(), new Vector4(0, 1, 1, 1), 2.5f);
+
+        // Progress bar background
+        int barX = 100, barY = _scrHeight - 150, barW = _scrWidth - 200, barH = 24;
+        _ui.DrawRect(barX, barY, barW, barH, new Vector4(0.2f, 0.2f, 0.2f, 1));
+
+        // Progress bar fill
+        if (_loadProgress > 0)
+            _ui.DrawRect(barX, barY, (int)(barW * _loadProgress), barH, new Vector4(0, 0.6f, 0.8f, 1));
+
+        // Progress text
+        string pct = $"{_loadStatus} ({(int)(_loadProgress * 100)}%)";
+        _ui.DrawText(barX, barY - 20, pct.AsSpan(), new Vector4(1, 1, 1, 1), 1.0f);
+
+        // Recent logs
+        var logs = Logger.GetRecentLogs(20);
+        float logY = barY - 30;
+        for (int i = logs.Length - 1; i >= 0 && logY > 60; i--)
+        {
+            var entry = logs[i];
+            var color = entry.Level switch
+            {
+                LogLevel.Warn => new Vector4(1, 1, 0, 1),
+                LogLevel.Error => new Vector4(1, 0.3f, 0.3f, 1),
+                LogLevel.Important => new Vector4(0.4f, 0.6f, 1, 1),
+                LogLevel.Asset => new Vector4(0.3f, 0.8f, 0.3f, 1),
+                _ => new Vector4(0.7f, 0.7f, 0.7f, 1)
+            };
+            string text = $"[{entry.Level}] {entry.Message}";
+            if (text.Length > 80) text = text[..80] + "...";
+            _ui.DrawText(barX, logY, text.AsSpan(), color, 0.7f);
+            logY -= 14;
         }
 
         gl.Disable(EnableCap.Blend);
