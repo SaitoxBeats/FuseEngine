@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Runtime.Intrinsics.X86;
 using System.Threading.Tasks.Dataflow;
 using Fuse.Core;
 using Fuse.Physics;
@@ -25,6 +26,7 @@ public class Player : IDisposable
     private float _frictionValue = 4.0f;
     private float _stopSpeed = 1.5f;
     private float _jumpForce = 3.8f;
+    private float boostFactor = 1.05f;
 
     private bool _isSprinting;
     private float _sprintSpeedMul = 1.5f;
@@ -46,6 +48,7 @@ public class Player : IDisposable
     private float _tiltCurrent;
     private const float MaxTilt = MathF.PI / 55f;
     private const float TiltSpeed = 6f;
+
 
     public Player(Physics.PhysicsWorld world, Vector3 position)
     {
@@ -222,11 +225,23 @@ public class Player : IDisposable
             }
 
             if (Input.Input.KeyDown(Input.KeyCodes.Space))
+            {
                 velocity.Y = _jumpForce;
+
+                float currentSpeed = horiz.Length();
+                if (currentSpeed > 0.1f)
+                {
+                    horiz *= boostFactor;
+                    velocity.X = horiz.X;
+                    velocity.Z = horiz.Y;
+                }
+            }
         }
         else
         {
             Vector2 horiz = new(velocity.X, velocity.Z);
+            //float airCap = float.Max(horiz.Length(), _maxSpeedAir);
+            //horiz = Accelerate(horiz, wishDir, airCap, _airAccel, dt); infinite air speed bug
             horiz = Accelerate(horiz, wishDir, _maxSpeedAir, _airAccel, dt);
             velocity.X = horiz.X;
             velocity.Z = horiz.Y;

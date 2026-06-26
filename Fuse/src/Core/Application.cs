@@ -1,4 +1,5 @@
 using System.Numerics;
+using Fuse.Imgui;
 using Fuse.Input;
 using Fuse.Physics;
 using JoltPhysicsSharp;
@@ -197,6 +198,14 @@ public unsafe class Application : IDisposable
                 // Render
                 _renderer.RenderFrame(_sceneManager.ActiveScene, _player.Camera, _physics);
 
+
+                // UI
+                DrawUI(gl);
+
+                // ImGui
+                _imgui.NewFrame(dt, _scrWidth, _scrHeight);
+                _imgui.DrawWindows(_player);
+
                 // Debug
                 if (_debugDrawer.Enabled)
                 {
@@ -205,14 +214,8 @@ public unsafe class Application : IDisposable
                     _debugDrawer.DrawPlayerDebug(_player); // We'll move player debug to DebugDrawer
                     float aspect = (float)_scrWidth / _scrHeight;
                     _debugDrawer.Render(_player.Camera.GetViewMatrix(), _player.Camera.GetProjectionMatrix(aspect));
+                    OrientationGizmo.Draw(_player.Camera);
                 }
-
-                // UI
-                DrawUI(gl);
-
-                // ImGui
-                _imgui.NewFrame(dt, _scrWidth, _scrHeight);
-                _imgui.DrawWindows(_player);
 
                 //if (_paused)
                 //{

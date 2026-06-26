@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "objects": [
+    {
+      "id": "new_box",
+      "visible": true,
+      "mesh": "cube",
+      "uv_scale": [
+        1500,
+        1500
+      ],
+      "body": {
+        "shape": "box",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0.5,
+        "restitution": 0,
+        "is_trigger": false,
+        "half_extents": [
+          1500,
+          0.01,
+          1500
+        ]
+      }
+    }
+  ],
+  "player_spawn": {
+    "position": [
+      0,
+      1.4,
+      0
+    ],
+    "yaw": 0,
+    "pitch": 0
+  }
+}
