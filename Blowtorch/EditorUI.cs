@@ -986,10 +986,11 @@ public unsafe class EditorUI
         bool allowViewportInput = isHovered && !gizmoActive && !_isDraggingHandle;
         bool allowPicking = allowViewportInput && !EditorGizmo.IsHovered;
 
-        // Hammer-style: suppress gizmo when the entire selection is made of brushes
+        // Hammer-style: suppress translation and scale gizmos when the entire selection is made of brushes
         bool allSelectedAreBrushes = _selectedObjects.Count > 0 && _selectedObjects.All(o => o is Brush);
+        bool suppressGizmoForBrushes = allSelectedAreBrushes && _gizmoOperation != GizmoOperation.Rotate;
 
-        if (_selectedObject != null && _selectedObject.Body != null && sceneService.Document.Objects.Contains(_selectedObject) && !_isDraggingHandle && !allSelectedAreBrushes)
+        if (_selectedObject != null && _selectedObject.Body != null && sceneService.Document.Objects.Contains(_selectedObject) && !_isDraggingHandle && !suppressGizmoForBrushes)
         {
             var body = _selectedObject.Body;
             var view = viewport.Camera.ViewMatrix;
@@ -1027,29 +1028,26 @@ public unsafe class EditorUI
                 }
                 else if (_gizmoOperation == GizmoOperation.Rotate)
                 {
-                    if (viewport.Camera.ViewType == CameraViewType.Perspective3D)
+                    if (EditorGizmo.ManipulateRotation(body.Position, body.Rotation, view, proj, vpPos, vpSize, out Quaternion newRot, angleSnap, !selectionDelayActive))
                     {
-                        if (EditorGizmo.ManipulateRotation(body.Position, body.Rotation, view, proj, vpPos, vpSize, out Quaternion newRot, angleSnap, !selectionDelayActive))
-                        {
-                            Quaternion normalizedNewRot = Quaternion.Normalize(newRot);
-                            Quaternion deltaRot = normalizedNewRot * Quaternion.Inverse(body.Rotation);
-                            Vector3 pivot = body.Position;
+                        Quaternion normalizedNewRot = Quaternion.Normalize(newRot);
+                        Quaternion deltaRot = normalizedNewRot * Quaternion.Inverse(body.Rotation);
+                        Vector3 pivot = body.Position;
 
-                            foreach (var obj in objectsToTransform)
+                        foreach (var obj in objectsToTransform)
+                        {
+                            if (obj.Body != null)
                             {
-                                if (obj.Body != null)
+                                if (obj != _selectedObject)
                                 {
-                                    if (obj != _selectedObject)
-                                    {
-                                        Vector3 relativePos = obj.Body.Position - pivot;
-                                        Vector3 rotatedPos = Vector3.Transform(relativePos, deltaRot);
-                                        obj.Body.Position = pivot + rotatedPos;
-                                    }
-                                    obj.Body.Rotation = Quaternion.Normalize(deltaRot * obj.Body.Rotation);
+                                    Vector3 relativePos = obj.Body.Position - pivot;
+                                    Vector3 rotatedPos = Vector3.Transform(relativePos, deltaRot);
+                                    obj.Body.Position = pivot + rotatedPos;
                                 }
+                                obj.Body.Rotation = Quaternion.Normalize(deltaRot * obj.Body.Rotation);
                             }
-                            changed = true;
                         }
+                        changed = true;
                     }
                 }
                 else if (_gizmoOperation == GizmoOperation.Scale)
