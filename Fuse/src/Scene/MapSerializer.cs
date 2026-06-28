@@ -148,6 +148,29 @@ public static class MapSerializer
             objects.Add(obj);
         }
 
+        var lightsArray = new JsonArray();
+        foreach (var l in scene.Lights)
+        {
+            var lj = new JsonObject
+            {
+                ["type"] = l.Type == Renderer.LightType.Point ? "point" : "spot",
+                ["position"] = Vec3ToJson(l.Position),
+                ["color"] = Vec3ToJson(l.Color),
+                ["radius"] = l.Radius,
+                ["intensity"] = l.Intensity,
+                ["enabled"] = l.Enabled,
+            };
+            if (l.Type == Renderer.LightType.Spot)
+            {
+                lj["direction"] = Vec3ToJson(l.Direction);
+                lj["inner_cone"] = l.InnerConeAngle;
+                lj["outer_cone"] = l.OuterConeAngle;
+            }
+            lightsArray.Add(lj);
+        }
+        if (lightsArray.Count > 0)
+            j["lights"] = lightsArray;
+
         return j.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
     }
 
@@ -196,6 +219,29 @@ public static class MapSerializer
                 Vec3FromJson(sj["position"]!.AsArray()),
                 (float)sj["yaw"]!,
                 (float)sj["pitch"]!);
+        }
+
+        if (root.TryGetPropertyValue("lights", out var lightsNode))
+        {
+            foreach (var lightNode in lightsNode!.AsArray())
+            {
+                if (lightNode == null) continue;
+                var lj = lightNode.AsObject();
+                var l = new Renderer.Light();
+                l.Position = Vec3FromJson(lj["position"]!.AsArray());
+                l.Color = Vec3FromJson(lj["color"]!.AsArray());
+                l.Radius = (float)lj["radius"]!;
+                l.Intensity = (float)lj["intensity"]!;
+                l.Enabled = lj.TryGetPropertyValue("enabled", out var en) ? (bool)en! : true;
+                l.Type = (string)lj["type"]! == "spot" ? Renderer.LightType.Spot : Renderer.LightType.Point;
+                if (l.Type == Renderer.LightType.Spot)
+                {
+                    l.Direction = Vec3FromJson(lj["direction"]!.AsArray());
+                    l.InnerConeAngle = (float)lj["inner_cone"]!;
+                    l.OuterConeAngle = (float)lj["outer_cone"]!;
+                }
+                scene.AddLight(l);
+            }
         }
 
         var parentMap = new Dictionary<string, string>();

@@ -40,7 +40,18 @@ public class Entity
 public class Scene
 {
     private readonly List<Entity> _entities = [];
+    private readonly List<Light> _lights = [];
     private readonly Dictionary<BodyID, Entity> _bodyEntityMap = [];
+
+    public IReadOnlyList<Light> Lights => _lights;
+
+    public Light AddLight(Light light)
+    {
+        _lights.Add(light);
+        return light;
+    }
+
+    public void RemoveLight(Light light) => _lights.Remove(light);
 
     public Entity Add(Mesh mesh, string id, RigidBody? body = null)
     {
@@ -61,6 +72,7 @@ public class Scene
     {
         _bodyEntityMap.Clear();
         _entities.Clear();
+        _lights.Clear();
     }
 
     public IReadOnlyList<Entity> Entities => _entities;

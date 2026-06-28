@@ -113,6 +113,29 @@ public unsafe class Application : IDisposable
             _player.Camera.SetRotation(spawn.Value.Yaw, spawn.Value.Pitch);
         }
         _sceneManager.InitTriggerSystem(_player);
+
+        //var testPoint = new Renderer.Light
+        //{
+        //    Type = Renderer.LightType.Point,
+        //    Position = new Vector3(0, 3, 0),
+        //    Color = new Vector3(1, 0.3f, 0.2f),
+        //    Radius = 15.0f,
+        //    Intensity = 2.0f
+        //};
+        //_sceneManager.ActiveScene.AddLight(testPoint);
+        //
+        //var testSpot = new Renderer.Light
+        //{
+        //    Type = Renderer.LightType.Spot,
+        //    Position = new Vector3(5, 8, 0),
+        //    Direction = new Vector3(0, -1, 0),
+        //    Color = new Vector3(0.2f, 0.5f, 1.0f),
+        //    Radius = 20.0f,
+        //    Intensity = 3.0f,
+        //    InnerConeAngle = float.DegreesToRadians(15),
+        //    OuterConeAngle = float.DegreesToRadians(30)
+        //};
+        //_sceneManager.ActiveScene.AddLight(testSpot);
     }
     
     private void ReloadMap(Action<float, string>? onProgress = null)
@@ -211,7 +234,9 @@ public unsafe class Application : IDisposable
                 {
                     _debugDrawer.Clear();
                     _sceneManager.DrawDebug(_debugDrawer);
-                    _debugDrawer.DrawPlayerDebug(_player); // We'll move player debug to DebugDrawer
+                    _debugDrawer.DrawPlayerDebug(_player);
+                    foreach (var light in _sceneManager.ActiveScene.Lights)
+                        _debugDrawer.DrawLight(light);
                     float aspect = (float)_scrWidth / _scrHeight;
                     _debugDrawer.Render(_player.Camera.GetViewMatrix(), _player.Camera.GetProjectionMatrix(aspect));
                     OrientationGizmo.Draw(_player.Camera);

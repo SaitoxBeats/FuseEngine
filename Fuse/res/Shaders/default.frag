@@ -6,6 +6,30 @@ in vec3 vViewPos;
 
 out vec4 fragColor;
 
+
+#define MAX_POINT_LIGHTS 8
+#define MAX_SPOT_LIGHTS 4
+
+struct PointLight {
+    vec3 position;
+    vec3 color;
+    float radius;
+};
+
+struct SpotLight {
+    vec3 position;
+    vec3 direction;
+    vec3 color;
+    float radius;
+    float innerCos;
+    float outerCos;
+};
+
+uniform vec3 uCameraPos;
+uniform int uPointLightCount;
+uniform PointLight uPointLights[MAX_POINT_LIGHTS];
+uniform int uSpotLightCount;
+uniform SpotLight uSpotLights[MAX_SPOT_LIGHTS];
 uniform sampler2D uTexture;
 uniform sampler2DArray uShadowMap;
 uniform bool uUseTexture;
@@ -96,22 +120,77 @@ float ShadowCalculation(vec3 worldPos, vec3 normal, vec3 lightDir)
 
 void main() {
     vec3 color = uUseTexture ? texture(uTexture, vTexCoord).rgb : uColor;
+    vec3 norm = normalize(vWorldNormal);
     
-    // ambient
+    // === Luz Direcional (existente) ===
     vec3 ambient = uAmbient * uLightColor;
     
-    // diffuse
-    vec3 norm = normalize(vWorldNormal);
     vec3 lightDir = normalize(uLightDir);
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = diff * uLightColor;
     
-    // calculate shadow
+    // specular (Blinn-Phong)
+    vec3 viewDir = normalize(uCameraPos - vWorldPos);
+    vec3 halfDir = normalize(lightDir + viewDir);
+    float spec = pow(max(dot(norm, halfDir), 0.0), 32.0);
+    vec3 specular = spec * uLightColor * 0.5;
+    
     float shadow = 0.0;
     if (uEnableShadows) {
         shadow = ShadowCalculation(vWorldPos, norm, lightDir);
     }
     
-    vec3 result = (ambient + (1.0 - shadow) * diffuse) * color;
+    vec3 result = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
+    
+    // === Point Lights ===
+    for (int i = 0; i < MAX_POINT_LIGHTS; i++) {
+        vec3 pos = uPointLights[i].position;
+        vec3 col = uPointLights[i].color;
+        float radius = uPointLights[i].radius;
+        
+        vec3 lightVec = pos - vWorldPos;
+        float dist = length(lightVec);
+        if (dist > radius) continue;
+        
+        vec3 lightDirPL = normalize(lightVec);
+        float atten = 1.0 / (1.0 + 3.0 * (dist / radius) * (dist / radius));
+        
+        diff = max(dot(norm, lightDirPL), 0.0);
+        vec3 halfPL = normalize(lightDirPL + viewDir);
+        spec = pow(max(dot(norm, halfPL), 0.0), 32.0);
+        
+        result += (diff + spec * 0.5) * col * atten * color;
+    }
+    
+    // === Spot Lights ===
+    for (int i = 0; i < MAX_SPOT_LIGHTS; i++) {
+        vec3 pos = uSpotLights[i].position;
+        vec3 dir = uSpotLights[i].direction;
+        vec3 col = uSpotLights[i].color;
+        float radius = uSpotLights[i].radius;
+        float innerCos = uSpotLights[i].innerCos;
+        float outerCos = uSpotLights[i].outerCos;
+        
+        vec3 lightVec = pos - vWorldPos;
+        float dist = length(lightVec);
+        if (dist > radius) continue;
+        
+        vec3 lightDirSL = normalize(lightVec);
+        
+        // Cone falloff
+        float theta = dot(lightDirSL, normalize(dir));
+        float epsilon = innerCos - outerCos;
+        float spotFactor = clamp((theta - outerCos) / epsilon, 0.0, 1.0);
+        if (spotFactor < 0.001) continue;
+        
+        float atten = 1.0 / (1.0 + 3.0 * (dist / radius) * (dist / radius));
+        
+        diff = max(dot(norm, lightDirSL), 0.0);
+        vec3 halfSL = normalize(lightDirSL + viewDir);
+        spec = pow(max(dot(norm, halfSL), 0.0), 32.0);
+        
+        result += (diff + spec * 0.5) * col * atten * spotFactor * color;
+    }
+    
     fragColor = vec4(result, 1.0);
 }

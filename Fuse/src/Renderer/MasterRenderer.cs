@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Numerics;
 using Silk.NET.OpenGL;
 using Fuse.Core;
@@ -173,6 +174,31 @@ public class MasterRenderer
             _shader.SetInt("uTexture", 0);
             _shader.SetInt("uShadowMap", 1);
             _shadowMap.BindForReading(TextureUnit.Texture1);
+
+            _shader.SetVec3("uCameraPos", camera.Position);
+
+            var pointLights = scene.Lights.Where(l => l.Enabled && l.Type == LightType.Point).Take(8).ToList();
+            _shader.SetInt("uPointLightCount", pointLights.Count);
+            for (int i = 0; i < pointLights.Count; i++)
+            {
+                var l = pointLights[i];
+                _shader.SetVec3($"uPointLights[{i}].position", l.Position);
+                _shader.SetVec3($"uPointLights[{i}].color", l.Color * l.Intensity);
+                _shader.SetFloat($"uPointLights[{i}].radius", l.Radius);
+            }
+
+            var spotLights = scene.Lights.Where(l => l.Enabled && l.Type == LightType.Spot).Take(4).ToList();
+            _shader.SetInt("uSpotLightCount", spotLights.Count);
+            for (int i = 0; i < spotLights.Count; i++)
+            {
+                var l = spotLights[i];
+                _shader.SetVec3($"uSpotLights[{i}].position", l.Position);
+                _shader.SetVec3($"uSpotLights[{i}].direction", Vector3.Normalize(l.Direction));
+                _shader.SetVec3($"uSpotLights[{i}].color", l.Color * l.Intensity);
+                _shader.SetFloat($"uSpotLights[{i}].radius", l.Radius);
+                _shader.SetFloat($"uSpotLights[{i}].innerCos", l.InnerCos);
+                _shader.SetFloat($"uSpotLights[{i}].outerCos", l.OuterCos);
+            }
 
             scene.Render(_shader, physics, _crateTexture);
         }

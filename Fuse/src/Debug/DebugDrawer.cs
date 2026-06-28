@@ -2,6 +2,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using Silk.NET.OpenGL;
 using Fuse.Core;
+using Fuse.Renderer;
 
 namespace Fuse.Debug;
 
@@ -229,6 +230,64 @@ public unsafe class DebugDrawer : IDisposable
             PushLine(a, b, color);
             PushLine(b, c, color);
             PushLine(c, a, color);
+        }
+    }
+
+    public void DrawLight(Light light)
+    {
+        if (!light.Enabled) return;
+
+        Vector3 color = light.Color;
+        Vector3 pos = light.Position;
+
+        if (light.Type == LightType.Point)
+        {
+            DrawSphere(pos, Quaternion.Identity, 0.2f, color);
+            DrawCircleXZ(pos, light.Radius, color * 0.3f);
+        }
+        else
+        {
+            DrawSphere(pos, Quaternion.Identity, 0.15f, color);
+            Vector3 dir = Vector3.Normalize(light.Direction);
+            Vector3 end = pos + dir * 1.5f;
+            PushLine(pos, end, color);
+
+            float coneRadius = 1.5f * MathF.Tan(light.OuterConeAngle);
+            DrawRing(pos + dir * 1.5f, dir, coneRadius, color * 0.4f);
+        }
+    }
+
+    private void DrawCircleXZ(Vector3 center, float radius, Vector3 color, int segments = 24)
+    {
+        float step = MathF.PI * 2.0f / segments;
+        int prev = segments - 1;
+        for (int i = 0; i < segments; i++)
+        {
+            float a = i * step;
+            float ap = prev * step;
+            Vector3 from = center + new Vector3(MathF.Cos(ap) * radius, 0, MathF.Sin(ap) * radius);
+            Vector3 to   = center + new Vector3(MathF.Cos(a)  * radius, 0, MathF.Sin(a)  * radius);
+            PushLine(from, to, color);
+            prev = i;
+        }
+    }
+
+    private void DrawRing(Vector3 center, Vector3 normal, float radius, Vector3 color, int segments = 16)
+    {
+        Vector3 up = MathF.Abs(normal.Y) < 0.9f ? Vector3.UnitY : Vector3.UnitX;
+        Vector3 right = Vector3.Normalize(Vector3.Cross(normal, up));
+        Vector3 fwd = Vector3.Normalize(Vector3.Cross(right, normal));
+
+        float step = MathF.PI * 2.0f / segments;
+        int prev = segments - 1;
+        for (int i = 0; i < segments; i++)
+        {
+            float a = i * step;
+            float ap = prev * step;
+            Vector3 from = center + (right * MathF.Cos(ap) + fwd * MathF.Sin(ap)) * radius;
+            Vector3 to   = center + (right * MathF.Cos(a)  + fwd * MathF.Sin(a)) * radius;
+            PushLine(from, to, color);
+            prev = i;
         }
     }
 
