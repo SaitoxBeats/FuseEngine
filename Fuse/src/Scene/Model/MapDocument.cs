@@ -112,7 +112,21 @@ public class MapDocument
         mo.UvRotation = obj.TryGetPropertyValue("uv_rotation", out var uvRotNode) ? (float)uvRotNode! : 0f;
         mo.Texture = obj.TryGetPropertyValue("texture", out var texNode) ? (string)texNode! : null;
         mo.Interactable = obj.TryGetPropertyValue("interactable", out var interactNode) ? (string)interactNode! : null;
-        mo.Behaviour = obj.TryGetPropertyValue("behaviour", out var behavNode) ? (string)behavNode! : null;
+        if (obj.TryGetPropertyValue("behaviours", out var bArr) && bArr is JsonArray behavioursArray)
+        {
+            foreach (var node in behavioursArray)
+            {
+                if (node is JsonObject bObj)
+                {
+                    var bType = bObj.TryGetPropertyValue("type", out var bt) ? (string)bt! : "";
+                    var bProps = bObj.TryGetPropertyValue("properties", out var bp) ? bp as JsonObject : new JsonObject();
+                    if (!string.IsNullOrEmpty(bType))
+                    {
+                        mo.Behaviours.Add(new Fuse.Behaviours.BehaviourData { Type = bType, Properties = bProps != null ? (JsonObject)JsonNode.Parse(bProps.ToJsonString())! : new JsonObject() });
+                    }
+                }
+            }
+        }
 
         mo.LightType = obj.TryGetPropertyValue("light_type", out var ltNode) ? (string)ltNode! : null;
         if (mo.IsLight)
@@ -123,7 +137,7 @@ public class MapDocument
             mo.LightInnerCone = obj.TryGetPropertyValue("light_inner_cone", out var licNode) ? (float)licNode! : float.DegreesToRadians(20);
             mo.LightOuterCone = obj.TryGetPropertyValue("light_outer_cone", out var locNode) ? (float)locNode! : float.DegreesToRadians(30);
             mo.LightCastShadows = obj.TryGetPropertyValue("light_cast_shadows", out var csNode) && (bool)csNode!;
-            mo.LightShadowBias = obj.TryGetPropertyValue("light_shadow_bias", out var sbNode) ? (float)sbNode! : 0.00050f;
+            mo.LightShadowBias = obj.TryGetPropertyValue("light_shadow_bias", out var sbNode) ? (float)sbNode! : 0.00100f;
             mo.LightDynamic = obj.TryGetPropertyValue("light_dynamic", out var dynNode) && (bool)dynNode!;
         }
 
@@ -232,8 +246,18 @@ public class MapDocument
             j["texture"] = obj.Texture;
         if (!string.IsNullOrEmpty(obj.Interactable))
             j["interactable"] = obj.Interactable;
-        if (!string.IsNullOrEmpty(obj.Behaviour))
-            j["behaviour"] = obj.Behaviour;
+        if (obj.Behaviours.Count > 0)
+        {
+            var arr = new JsonArray();
+            foreach (var b in obj.Behaviours)
+            {
+                var bObj = new JsonObject();
+                bObj["type"] = b.Type;
+                bObj["properties"] = b.Properties != null ? JsonNode.Parse(b.Properties.ToJsonString()) : new JsonObject();
+                arr.Add(bObj);
+            }
+            j["behaviours"] = arr;
+        }
 
         if (obj.IsLight)
         {

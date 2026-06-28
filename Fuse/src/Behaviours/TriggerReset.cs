@@ -1,9 +1,9 @@
-﻿using Fuse.Core;
+using Fuse.Core;
 using Fuse.Interaction;
 
 namespace Fuse.Behaviours;
 
-[InteractableType("TrReset")]
+[Behaviour("TrReset")]
 public sealed class TriggerReset : IBehaviour
 {
     public Renderer.Entity? Entity { get; set; }

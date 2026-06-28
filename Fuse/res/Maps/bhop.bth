@@ -5,7 +5,11 @@
       "id": "BHOP_MAP",
       "visible": true,
       "model": "Models/BHOP_MAP.obj",
-      "model_scale": 2,
+      "model_scale": [
+        2,
+        2,
+        2
+      ],
       "body": {
         "shape": "trimesh",
         "position": [
@@ -29,7 +33,12 @@
       "id": "new_box",
       "visible": true,
       "mesh": "cube",
-      "behaviour": "TrReset",
+      "behaviours": [
+        {
+          "type": "TrReset",
+          "properties": {}
+        }
+      ],
       "body": {
         "shape": "box",
         "position": [
@@ -58,7 +67,12 @@
       "id": "new_box_copy",
       "visible": true,
       "mesh": "cube",
-      "behaviour": "TrReset",
+      "behaviours": [
+        {
+          "type": "TrReset",
+          "properties": {}
+        }
+      ],
       "body": {
         "shape": "box",
         "position": [

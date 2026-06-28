@@ -1,17 +1,17 @@
-﻿using System.Numerics;
+using System.Numerics;
 using Fuse.Core;
 using Fuse.Interaction;
 
 namespace Fuse.Behaviours;
 
-[InteractableType("MovingFloor")]
+[Behaviour("MovingFloor")]
 public sealed class MovingFloor : IBehaviour
 {
     public Renderer.Entity? Entity { get; set; }
     public Physics.PhysicsWorld? World { get; set; }
 
-    public float DistanceZ = -4f;
-    public float Speed = 2f;
+    [Export] public float DistanceZ { get; set; } = -4f;
+    [Export] public float Speed { get; set; } = 2f;
 
     private Vector3 _startPos;
     private Vector3 _targetPos;

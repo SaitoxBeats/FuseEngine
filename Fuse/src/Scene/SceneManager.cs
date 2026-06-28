@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Fuse.Behaviours;
 using Fuse.Core;
@@ -140,14 +141,34 @@ public class SceneManager
 
         foreach (var entity in _scene.Entities)
         {
-            if (entity.Body != null && entity.Body.IsBuilt && !string.IsNullOrEmpty(entity.BehaviourType))
+            if (entity.Body != null && entity.Body.IsBuilt && entity.Behaviours.Count > 0)
             {
-                var behaviour = BehaviourSystem.Create(entity.BehaviourType);
-                if (behaviour != null)
+                foreach (var bData in entity.Behaviours)
                 {
-                    behaviour.Entity = entity;
-                    behaviour.World = _physics;
-                    _behaviours.Add(behaviour);
+                    var behaviour = BehaviourSystem.Create(bData.Type);
+                    if (behaviour != null)
+                    {
+                        var t = behaviour.GetType();
+                        foreach (var prop in t.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance))
+                        {
+                            if (prop.GetCustomAttribute<ExportAttribute>() != null)
+                            {
+                                if (bData.Properties.TryGetPropertyValue(prop.Name, out var valNode) && valNode != null)
+                                {
+                                    try {
+                                        if (prop.PropertyType == typeof(float)) prop.SetValue(behaviour, (float)valNode);
+                                        else if (prop.PropertyType == typeof(int)) prop.SetValue(behaviour, (int)valNode);
+                                        else if (prop.PropertyType == typeof(bool)) prop.SetValue(behaviour, (bool)valNode);
+                                        else if (prop.PropertyType == typeof(string)) prop.SetValue(behaviour, (string)valNode);
+                                    } catch { }
+                                }
+                            }
+                        }
+
+                        behaviour.Entity = entity;
+                        behaviour.World = _physics;
+                        _behaviours.Add(behaviour);
+                    }
                 }
             }
         }

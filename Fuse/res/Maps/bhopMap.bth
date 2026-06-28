@@ -525,7 +525,12 @@
         }
       ],
       "texture": "Textures/dev_measurecrate01.bmp",
-      "behaviour": "TrReset",
+      "behaviours": [
+        {
+          "type": "TrReset",
+          "properties": {}
+        }
+      ],
       "body": {
         "shape": "box",
         "position": [

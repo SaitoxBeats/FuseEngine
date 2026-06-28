@@ -2110,18 +2110,85 @@ public unsafe class EditorUI
                     HandleUndoEnd(sceneService, assetService, history);
                 }
 
-                // Behaviour
-                if (ImGui.CollapsingHeader("Behaviour", ImGuiTreeNodeFlags.None))
+                // Behaviours
+                if (ImGui.CollapsingHeader("Behaviours", ImGuiTreeNodeFlags.DefaultOpen))
                 {
-                    string behaviour = obj.Behaviour ?? "";
-                    bool behavChanged = ImGui.InputText("Behaviour Type##inspectBehaviour", ref behaviour, 128);
                     HandleUndoStart(sceneService);
-                    if (behavChanged)
+                    
+                    var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
+                    
+                    for (int i = 0; i < obj.Behaviours.Count; i++)
                     {
-                        obj.Behaviour = behaviour;
-                        var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
-                        if (entity != null) entity.BehaviourType = behaviour;
+                        var behaviour = obj.Behaviours[i];
+                        if (ImGui.TreeNodeEx($"{behaviour.Type}##b_{i}", ImGuiTreeNodeFlags.DefaultOpen))
+                        {
+                            var t = Fuse.Behaviours.BehaviourSystem.GetBehaviourType(behaviour.Type);
+                            if (t != null)
+                            {
+                                foreach (var prop in t.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance))
+                                {
+                                    if (System.Reflection.CustomAttributeExtensions.GetCustomAttribute<Fuse.Behaviours.ExportAttribute>(prop) != null)
+                                    {
+                                        var pName = prop.Name;
+                                        if (prop.PropertyType == typeof(float))
+                                        {
+                                            float val = behaviour.Properties.TryGetPropertyValue(pName, out var v) && v != null ? (float)v : 0f;
+                                            if (ImGui.DragFloat($"{pName}##{i}", ref val, 0.1f))
+                                                behaviour.Properties[pName] = val;
+                                        }
+                                        else if (prop.PropertyType == typeof(int))
+                                        {
+                                            int val = behaviour.Properties.TryGetPropertyValue(pName, out var v) && v != null ? (int)v : 0;
+                                            if (ImGui.DragInt($"{pName}##{i}", ref val))
+                                                behaviour.Properties[pName] = val;
+                                        }
+                                        else if (prop.PropertyType == typeof(bool))
+                                        {
+                                            bool val = behaviour.Properties.TryGetPropertyValue(pName, out var v) && v != null ? (bool)v : false;
+                                            if (ImGui.Checkbox($"{pName}##{i}", ref val))
+                                                behaviour.Properties[pName] = val;
+                                        }
+                                        else if (prop.PropertyType == typeof(string))
+                                        {
+                                            string val = behaviour.Properties.TryGetPropertyValue(pName, out var v) && v != null ? (string)v : "";
+                                            if (ImGui.InputText($"{pName}##{i}", ref val, 128))
+                                                behaviour.Properties[pName] = val;
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            if (ImGui.Button($"Remove##{i}"))
+                            {
+                                obj.Behaviours.RemoveAt(i);
+                                i--;
+                            }
+                            ImGui.TreePop();
+                        }
                     }
+
+                    ImGui.Separator();
+                    
+                    var available = System.Linq.Enumerable.ToArray(Fuse.Behaviours.BehaviourSystem.GetAvailableBehaviours());
+                    if (ImGui.BeginCombo("Add Behaviour", "Select..."))
+                    {
+                        foreach (var bType in available)
+                        {
+                            if (ImGui.Selectable(bType))
+                            {
+                                obj.Behaviours.Add(new Fuse.Behaviours.BehaviourData { Type = bType, Properties = new System.Text.Json.Nodes.JsonObject() });
+                            }
+                        }
+                        ImGui.EndCombo();
+                    }
+
+                    if (entity != null)
+                    {
+                        entity.Behaviours.Clear();
+                        foreach (var b in obj.Behaviours)
+                            entity.Behaviours.Add(b.Clone());
+                    }
+
                     HandleUndoEnd(sceneService, assetService, history);
                 }
 
@@ -2413,7 +2480,7 @@ public unsafe class EditorUI
             LightInnerCone = float.DegreesToRadians(15),
             LightOuterCone = float.DegreesToRadians(30),
             LightCastShadows = false,
-            LightShadowBias = 0.00050f,
+            LightShadowBias = 0.00100f,
             Body = new MapBody
             {
                 Shape = MapShapeType.None,

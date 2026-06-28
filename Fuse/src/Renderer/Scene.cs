@@ -22,7 +22,7 @@ public class Entity
     public string MeshKey { get; set; } = "";
     public string TexturePath { get; set; } = "";
     public string InteractableType { get; set; } = "";
-    public string BehaviourType { get; set; } = "";
+    public List<Behaviours.BehaviourData> Behaviours { get; set; } = new();
     public System.Numerics.Vector3 ModelScale { get; set; } = System.Numerics.Vector3.One;
     public Vector2 UvScale { get; set; } = Vector2.One;
     public Vector2 UvOffset { get; set; } = Vector2.Zero;

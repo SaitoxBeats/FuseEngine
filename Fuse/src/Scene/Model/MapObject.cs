@@ -15,7 +15,7 @@ public class MapObject
 
     public string? Texture { get; set; }
     public string? Interactable { get; set; }
-    public string? Behaviour { get; set; }
+    public List<Fuse.Behaviours.BehaviourData> Behaviours { get; set; } = new();
     public MapBody? Body { get; set; }
 
     // Light properties
@@ -26,7 +26,7 @@ public class MapObject
     public float LightInnerCone { get; set; } = float.DegreesToRadians(20);
     public float LightOuterCone { get; set; } = float.DegreesToRadians(30);
     public bool LightCastShadows { get; set; } = false;
-    public float LightShadowBias { get; set; } = 0.00050f;
+    public float LightShadowBias { get; set; } = 0.00100f;
     public bool LightDynamic { get; set; } = false;
 
     public bool IsLight => !string.IsNullOrEmpty(LightType);

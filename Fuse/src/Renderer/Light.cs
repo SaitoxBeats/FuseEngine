@@ -21,7 +21,7 @@ public class Light
     public float OuterConeAngle { get; set; } = float.DegreesToRadians(30);
     public bool Enabled { get; set; } = true;
     public bool CastShadows { get; set; } = false;
-    public float ShadowBias { get; set; } = 0.00050f;
+    public float ShadowBias { get; set; } = 0.00100f;
     public bool Dynamic { get; set; } = false;
 
     public float InnerCos => MathF.Cos(InnerConeAngle);

@@ -148,8 +148,18 @@ public static class MapSerializer
             if (!string.IsNullOrEmpty(e.InteractableType))
                 obj["interactable"] = e.InteractableType;
 
-            if (!string.IsNullOrEmpty(e.BehaviourType))
-                obj["behaviour"] = e.BehaviourType;
+            if (e.Behaviours.Count > 0)
+            {
+                var arr = new JsonArray();
+                foreach (var b in e.Behaviours)
+                {
+                    var bObj = new JsonObject();
+                    bObj["type"] = b.Type;
+                    bObj["properties"] = b.Properties != null ? JsonNode.Parse(b.Properties.ToJsonString()) : new JsonObject();
+                    arr.Add(bObj);
+                }
+                obj["behaviours"] = arr;
+            }
 
             if (e.Body != null && e.Body.IsBuilt)
                 obj["body"] = SerializeBody(e, physics);
@@ -386,7 +396,7 @@ public static class MapSerializer
                 float lightInner = obj.TryGetPropertyValue("light_inner_cone", out var licNode) ? (float)licNode! : float.DegreesToRadians(20);
                 float lightOuter = obj.TryGetPropertyValue("light_outer_cone", out var locNode) ? (float)locNode! : float.DegreesToRadians(30);
                 bool lightCastShadows = obj.TryGetPropertyValue("light_cast_shadows", out var lcsNode) && (bool)lcsNode!;
-                float lightShadowBias = obj.TryGetPropertyValue("light_shadow_bias", out var lsbNode) ? (float)lsbNode! : 0.00050f;
+                float lightShadowBias = obj.TryGetPropertyValue("light_shadow_bias", out var lsbNode) ? (float)lsbNode! : 0.00100f;
 
                 var light = new Renderer.Light
                 {
@@ -419,7 +429,21 @@ public static class MapSerializer
             entity.TexturePath = texturePath;
             entity.ModelScale = modelScale;
             entity.InteractableType = obj.TryGetPropertyValue("interactable", out var it) ? (string)it! : "";
-            entity.BehaviourType = obj.TryGetPropertyValue("behaviour", out var bt) ? (string)bt! : "";
+            if (obj.TryGetPropertyValue("behaviours", out var bArr) && bArr is JsonArray behavioursArray)
+            {
+                foreach (var node in behavioursArray)
+                {
+                    if (node is JsonObject bObj)
+                    {
+                        var bType = bObj.TryGetPropertyValue("type", out var bt2) ? (string)bt2! : "";
+                        var bProps = bObj.TryGetPropertyValue("properties", out var bp) ? bp as JsonObject : new JsonObject();
+                        if (!string.IsNullOrEmpty(bType))
+                        {
+                            entity.Behaviours.Add(new Behaviours.BehaviourData { Type = bType, Properties = bProps != null ? (JsonObject)JsonNode.Parse(bProps.ToJsonString())! : new JsonObject() });
+                        }
+                    }
+                }
+            }
             entity.UvScale = uvScale;
             entity.UvOffset = uvOffset;
             entity.UvRotation = uvRotation;
@@ -460,8 +484,21 @@ public static class MapSerializer
             if (obj.TryGetPropertyValue("interactable", out var interactableNode))
                 entity.InteractableType = (string)interactableNode!;
 
-            if (obj.TryGetPropertyValue("behaviour", out var behaviourNode))
-                entity.BehaviourType = (string)behaviourNode!;
+            if (obj.TryGetPropertyValue("behaviours", out var bArrGrp) && bArrGrp is JsonArray behavioursArrayGrp)
+            {
+                foreach (var node in behavioursArrayGrp)
+                {
+                    if (node is JsonObject bObj)
+                    {
+                        var bType = bObj.TryGetPropertyValue("type", out var bt2) ? (string)bt2! : "";
+                        var bProps = bObj.TryGetPropertyValue("properties", out var bp) ? bp as JsonObject : new JsonObject();
+                        if (!string.IsNullOrEmpty(bType))
+                        {
+                            entity.Behaviours.Add(new Behaviours.BehaviourData { Type = bType, Properties = bProps != null ? (JsonObject)JsonNode.Parse(bProps.ToJsonString())! : new JsonObject() });
+                        }
+                    }
+                }
+            }
 
             if (entity.Visible && obj.TryGetPropertyValue("body", out var bodyNode))
             {
@@ -475,7 +512,7 @@ public static class MapSerializer
                 if (body.IsTrigger)
                     entity.Visible = false;
 
-                if (!string.IsNullOrEmpty(entity.BehaviourType))
+                if (entity.Behaviours.Count > 0)
                     body.SetKinematic(true);
 
                 if (isTrimesh && isModel)
