@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 
 namespace Fuse.Renderer;
 
@@ -20,6 +20,8 @@ public class Light
     public float InnerConeAngle { get; set; } = float.DegreesToRadians(20);
     public float OuterConeAngle { get; set; } = float.DegreesToRadians(30);
     public bool Enabled { get; set; } = true;
+    public bool CastShadows { get; set; } = false;
+    public float ShadowBias { get; set; } = 0.005f;
 
     public float InnerCos => MathF.Cos(InnerConeAngle);
     public float OuterCos => MathF.Cos(OuterConeAngle);

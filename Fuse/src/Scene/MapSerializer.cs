@@ -157,6 +157,8 @@ public static class MapSerializer
                 ["position"] = Vec3ToJson(l.Position),
                 ["color"] = Vec3ToJson(l.Color),
                 ["radius"] = l.Radius,
+                ["cast_shadows"] = l.CastShadows,
+                ["shadow_bias"] = l.ShadowBias,
                 ["intensity"] = l.Intensity,
                 ["enabled"] = l.Enabled,
             };
@@ -231,6 +233,8 @@ public static class MapSerializer
                 l.Position = Vec3FromJson(lj["position"]!.AsArray());
                 l.Color = Vec3FromJson(lj["color"]!.AsArray());
                 l.Radius = (float)lj["radius"]!;
+                l.CastShadows = lj.TryGetPropertyValue("cast_shadows", out var csNode) && (bool)csNode!;
+                l.ShadowBias = lj.TryGetPropertyValue("shadow_bias", out var sbNode) ? (float)sbNode! : 0.005f;
                 l.Intensity = (float)lj["intensity"]!;
                 l.Enabled = lj.TryGetPropertyValue("enabled", out var en) ? (bool)en! : true;
                 l.Type = (string)lj["type"]! == "spot" ? Renderer.LightType.Spot : Renderer.LightType.Point;
@@ -356,6 +360,8 @@ public static class MapSerializer
                 float lightRadius = obj.TryGetPropertyValue("light_radius", out var lrNode) ? (float)lrNode! : 10.0f;
                 float lightInner = obj.TryGetPropertyValue("light_inner_cone", out var licNode) ? (float)licNode! : float.DegreesToRadians(20);
                 float lightOuter = obj.TryGetPropertyValue("light_outer_cone", out var locNode) ? (float)locNode! : float.DegreesToRadians(30);
+                bool lightCastShadows = obj.TryGetPropertyValue("light_cast_shadows", out var lcsNode) && (bool)lcsNode!;
+                float lightShadowBias = obj.TryGetPropertyValue("light_shadow_bias", out var lsbNode) ? (float)lsbNode! : 0.005f;
 
                 var light = new Renderer.Light
                 {
@@ -367,6 +373,8 @@ public static class MapSerializer
                     Radius = lightRadius,
                     InnerConeAngle = lightInner,
                     OuterConeAngle = lightOuter,
+                    CastShadows = lightCastShadows,
+                    ShadowBias = lightShadowBias,
                     Enabled = IsGloballyVisible(id),
                 };
                 scene.AddLight(light);

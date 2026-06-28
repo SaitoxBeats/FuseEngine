@@ -15,6 +15,10 @@ public class MasterRenderer
     private Shader _skyboxShader = null!;
     private Shader _shadowShader = null!;
     private ShadowMap _shadowMap = null!;
+    private ShadowMap _spotShadowMap = null!;
+    private Shader _pointShadowShader = null!;
+    private PointShadowMap _pointShadowMap0 = null!;
+    private PointShadowMap _pointShadowMap1 = null!;
 
     // Textures
     private Texture _crateTexture = null!;
@@ -37,12 +41,14 @@ public class MasterRenderer
     private Mesh _skyBoxCubeMesh = null!;
 
     // Shadow Settings
+    public uint ShadowResolution = 512;
     public float ShadowBiasFactor = 0.0f;
-    public float ShadowBiasBase = 0.0000f;
+    public float ShadowBiasBase = 0.000040f;
     public float ShadowNearPlane = 1.0f;
     public float ShadowFarPlane = 300.0f;
     public float ShadowSpread = 2.0f;
     public bool ShadowsEnabled = false;
+    public bool EnableShadowFilter = true;
 
     public MasterRenderer(GL gl)
     {
@@ -57,8 +63,12 @@ public class MasterRenderer
         _shader = assets.GetShader($"{Fuse.ResPath.Path}/Shaders/default.vert", $"{Fuse.ResPath.Path}/Shaders/default.frag")!;
         _skyboxShader = assets.GetShader($"{Fuse.ResPath.Path}/Shaders/skybox.vert", $"{Fuse.ResPath.Path}/Shaders/skybox.frag")!;
         _shadowShader = assets.GetShader($"{Fuse.ResPath.Path}/Shaders/shadow.vert", $"{Fuse.ResPath.Path}/Shaders/shadow.frag")!;
+        _pointShadowShader = assets.GetShader($"{Fuse.ResPath.Path}/Shaders/point_shadow.vert", $"{Fuse.ResPath.Path}/Shaders/point_shadow.frag")!;
         
-        _shadowMap = new ShadowMap(_gl, 256, 256);
+        _shadowMap = new ShadowMap(_gl, ShadowResolution, ShadowResolution);
+        _spotShadowMap = new ShadowMap(_gl, ShadowResolution, ShadowResolution, 4);
+        _pointShadowMap0 = new PointShadowMap(_gl, ShadowResolution);
+        _pointShadowMap1 = new PointShadowMap(_gl, ShadowResolution);
         
         _skyBoxCubeMesh = assets.GetMesh("cube")!;
         
@@ -96,7 +106,7 @@ public class MasterRenderer
         {
             _gl.Enable(EnableCap.DepthTest);
             _gl.Enable(EnableCap.CullFace);
-            _gl.CullFace(GLEnum.Front); // Fix peter-panning
+            _gl.CullFace(GLEnum.Back); // Use Back instead of Front to prevent backface clipping issues
 
             _shadowShader.Use();
             
@@ -108,7 +118,81 @@ public class MasterRenderer
                 
                 _shadowShader.SetMat4("uLightSpaceMatrix", lightSpaceMatrices[i]);
                 _shadowMap.BindForWriting(i);
-                scene.Render(_shadowShader, physics, _crateTexture, lightSpaceMatrices[i]); 
+                scene.Render(_shadowShader, physics, _crateTexture, null); 
+            }
+        }
+
+        // --- 1.5. Spot Light Shadow Pass ---
+        var spotLights = scene.Lights.Where(l => l.Enabled && l.Type == LightType.Spot).Take(4).ToList();
+        Matrix4x4[] spotSpaceMatrices = new Matrix4x4[4];
+
+        if (_shadowShader != null && _shadowShader.ID != 0 && ShadowsEnabled)
+        {
+            _gl.Enable(EnableCap.DepthTest);
+            _gl.Enable(EnableCap.CullFace);
+            _gl.CullFace(GLEnum.Back); 
+            _shadowShader.Use();
+            
+            for (int i = 0; i < spotLights.Count; i++)
+            {
+                var sl = spotLights[i];
+                if (!sl.CastShadows) continue;
+                
+                var viewDir = Vector3.Normalize(sl.Direction);
+                // Evitar erro de lookat caso dir seja vetor UP
+                var up = MathF.Abs(Vector3.Dot(viewDir, Vector3.UnitY)) > 0.999f ? Vector3.UnitZ : Vector3.UnitY;
+                var spotView = Matrix4x4.CreateLookAt(sl.Position, sl.Position + viewDir, up);
+                
+                var projSpot = Matrix4x4.CreatePerspectiveFieldOfView(sl.OuterConeAngle * 2.0f, 1.0f, 0.1f, sl.Radius);
+                spotSpaceMatrices[i] = spotView * projSpot;
+                
+                _shadowShader.SetMat4("uLightSpaceMatrix", spotSpaceMatrices[i]);
+                _spotShadowMap.BindForWriting(i);
+                scene.Render(_shadowShader, physics, _crateTexture, null); 
+            }
+        }
+
+        // --- 1.7. Point Light Shadow Pass ---
+        var shadowPointLights = scene.Lights.Where(l => l.Enabled && l.Type == LightType.Point && l.CastShadows).Take(2).ToList();
+        if (_pointShadowShader != null && _pointShadowShader.ID != 0 && ShadowsEnabled)
+        {
+            _gl.Enable(EnableCap.DepthTest);
+            _gl.Enable(EnableCap.CullFace);
+            _gl.CullFace(GLEnum.Back);
+            _pointShadowShader.Use();
+
+            for (int i = 0; i < shadowPointLights.Count; i++)
+            {
+                var pl = shadowPointLights[i];
+                var shadowMap = i == 0 ? _pointShadowMap0 : _pointShadowMap1;
+                
+                _pointShadowShader.SetVec3("uLightPos", pl.Position);
+                _pointShadowShader.SetFloat("uRadius", pl.Radius);
+
+                var targets = new Vector3[]
+                {
+                    new Vector3(1, 0, 0), new Vector3(-1, 0, 0),
+                    new Vector3(0, 1, 0), new Vector3(0, -1, 0),
+                    new Vector3(0, 0, 1), new Vector3(0, 0, -1)
+                };
+                var ups = new Vector3[]
+                {
+                    new Vector3(0, -1, 0), new Vector3(0, -1, 0),
+                    new Vector3(0, 0, 1), new Vector3(0, 0, -1),
+                    new Vector3(0, -1, 0), new Vector3(0, -1, 0)
+                };
+
+                var projPoint = Matrix4x4.CreatePerspectiveFieldOfView(MathF.PI / 2.0f, 1.0f, 0.1f, pl.Radius);
+
+                for (int face = 0; face < 6; face++)
+                {
+                    var viewPoint = Matrix4x4.CreateLookAt(pl.Position, pl.Position + targets[face], ups[face]);
+                    var lightSpaceMatrix = viewPoint * projPoint;
+
+                    _pointShadowShader.SetMat4("uLightSpaceMatrix", lightSpaceMatrix);
+                    shadowMap.BindForWriting(face);
+                    scene.Render(_pointShadowShader, physics, _crateTexture, null);
+                }
             }
         }
 
@@ -173,7 +257,15 @@ public class MasterRenderer
             
             _shader.SetInt("uTexture", 0);
             _shader.SetInt("uShadowMap", 1);
+            _shader.SetInt("uSpotShadowMap", 2);
+            _shader.SetInt("uPointShadowMap0", 3);
+            _shader.SetInt("uPointShadowMap1", 4);
             _shadowMap.BindForReading(TextureUnit.Texture1);
+            _spotShadowMap.BindForReading(TextureUnit.Texture2);
+            _pointShadowMap0.BindForReading(TextureUnit.Texture3);
+            _pointShadowMap1.BindForReading(TextureUnit.Texture4);
+            
+            _shader.SetBool("uEnableShadowFilter", EnableShadowFilter);
 
             _shader.SetVec3("uCameraPos", camera.Position);
 
@@ -185,9 +277,12 @@ public class MasterRenderer
                 _shader.SetVec3($"uPointLights[{i}].position", l.Position);
                 _shader.SetVec3($"uPointLights[{i}].color", l.Color * l.Intensity);
                 _shader.SetFloat($"uPointLights[{i}].radius", l.Radius);
+                
+                int shadowMapIndex = ShadowsEnabled ? shadowPointLights.IndexOf(l) : -1;
+                _shader.SetInt($"uPointLights[{i}].shadowMapIndex", shadowMapIndex);
+                _shader.SetFloat($"uPointLights[{i}].shadowBias", l.ShadowBias);
             }
 
-            var spotLights = scene.Lights.Where(l => l.Enabled && l.Type == LightType.Spot).Take(4).ToList();
             _shader.SetInt("uSpotLightCount", spotLights.Count);
             for (int i = 0; i < spotLights.Count; i++)
             {
@@ -198,6 +293,9 @@ public class MasterRenderer
                 _shader.SetFloat($"uSpotLights[{i}].radius", l.Radius);
                 _shader.SetFloat($"uSpotLights[{i}].innerCos", l.InnerCos);
                 _shader.SetFloat($"uSpotLights[{i}].outerCos", l.OuterCos);
+                _shader.SetBool($"uSpotLights[{i}].castShadows", l.CastShadows && ShadowsEnabled);
+                _shader.SetFloat($"uSpotLights[{i}].shadowBias", l.ShadowBias);
+                _shader.SetMat4($"uSpotLightSpaceMatrices[{i}]", spotSpaceMatrices[i]);
             }
 
             scene.Render(_shader, physics, _crateTexture);
@@ -219,7 +317,7 @@ public class MasterRenderer
                     Vector4 pt = Vector4.Transform(new Vector4(
                         2.0f * x - 1.0f,
                         2.0f * y - 1.0f,
-                        2.0f * z - 1.0f,
+                        (float)z,
                         1.0f), invVP);
                     corners[i++] = pt / pt.W;
                 }
@@ -243,31 +341,40 @@ public class MasterRenderer
         }
         center /= corners.Length;
 
-        var lightView = Matrix4x4.CreateLookAt(center + lightDir, center, Vector3.UnitY);
-        
-        float minX = float.MaxValue;
-        float maxX = float.MinValue;
-        float minY = float.MaxValue;
-        float maxY = float.MinValue;
-        float minZ = float.MaxValue;
-        float maxZ = float.MinValue;
-        
+        // 1. Calculate bounding sphere radius
+        float radius = 0.0f;
         foreach (var v in corners)
         {
-            var trf = Vector4.Transform(v, lightView);
-            minX = MathF.Min(minX, trf.X);
-            maxX = MathF.Max(maxX, trf.X);
-            minY = MathF.Min(minY, trf.Y);
-            maxY = MathF.Max(maxY, trf.Y);
-            minZ = MathF.Min(minZ, trf.Z);
-            maxZ = MathF.Max(maxZ, trf.Z);
+            float distance = Vector3.Distance(center, new Vector3(v.X, v.Y, v.Z));
+            radius = MathF.Max(radius, distance);
         }
-        
-        float zMult = 10.0f;
-        if (minZ < 0) minZ *= zMult; else minZ /= zMult;
-        if (maxZ < 0) maxZ /= zMult; else maxZ *= zMult;
+        radius = MathF.Ceiling(radius * 16.0f) / 16.0f;
 
+        float minX = -radius;
+        float maxX = radius;
+        float minY = -radius;
+        float maxY = radius;
+        float minZ = -2000.0f;
+        float maxZ = 2000.0f;
+
+        // 2. Texel Snapping to avoid shimmering
+        var up = MathF.Abs(Vector3.Dot(lightDir, Vector3.UnitY)) > 0.999f ? Vector3.UnitZ : Vector3.UnitY;
+        var baseView = Matrix4x4.CreateLookAt(Vector3.Zero, -lightDir, up);
+        var centerLightSpace = Vector3.Transform(center, baseView);
+        
+        float shadowMapRes = (float)_shadowMap.Width;
+        float texelSize = (radius * 2.0f) / shadowMapRes;
+        
+        centerLightSpace.X = MathF.Floor(centerLightSpace.X / texelSize) * texelSize;
+        centerLightSpace.Y = MathF.Floor(centerLightSpace.Y / texelSize) * texelSize;
+        
+        Matrix4x4.Invert(baseView, out var invBaseView);
+        center = Vector3.Transform(centerLightSpace, invBaseView);
+
+        // 3. Final Matrices
+        var lightView = Matrix4x4.CreateLookAt(center + lightDir, center, up);
         var lightProjection = Matrix4x4.CreateOrthographicOffCenter(minX, maxX, minY, maxY, minZ, maxZ);
+        
         return lightView * lightProjection;
     }
 }

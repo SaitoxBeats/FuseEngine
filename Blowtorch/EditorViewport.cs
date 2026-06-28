@@ -125,6 +125,7 @@ public unsafe class EditorViewport : IDisposable
             shader.SetVec3($"uPointLights[{i}].position", l.Position);
             shader.SetVec3($"uPointLights[{i}].color", l.Color * l.Intensity);
             shader.SetFloat($"uPointLights[{i}].radius", l.Radius);
+            shader.SetInt($"uPointLights[{i}].shadowMapIndex", -1);
         }
 
         var spotLights = scene.Lights.Where(l => l.Enabled && l.Type == LightType.Spot).Take(4).ToList();

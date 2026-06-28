@@ -122,6 +122,8 @@ public class MapDocument
             mo.LightRadius = obj.TryGetPropertyValue("light_radius", out var lrNode) ? (float)lrNode! : 10.0f;
             mo.LightInnerCone = obj.TryGetPropertyValue("light_inner_cone", out var licNode) ? (float)licNode! : float.DegreesToRadians(20);
             mo.LightOuterCone = obj.TryGetPropertyValue("light_outer_cone", out var locNode) ? (float)locNode! : float.DegreesToRadians(30);
+            mo.LightCastShadows = obj.TryGetPropertyValue("light_cast_shadows", out var csNode) && (bool)csNode!;
+            mo.LightShadowBias = obj.TryGetPropertyValue("light_shadow_bias", out var sbNode) ? (float)sbNode! : 0.005f;
         }
 
         if (obj.TryGetPropertyValue("body", out var bodyNode))
@@ -240,6 +242,8 @@ public class MapDocument
             j["light_radius"] = obj.LightRadius;
             j["light_inner_cone"] = obj.LightInnerCone;
             j["light_outer_cone"] = obj.LightOuterCone;
+            j["light_cast_shadows"] = obj.LightCastShadows;
+            j["light_shadow_bias"] = obj.LightShadowBias;
         }
 
         if (obj.Body != null)

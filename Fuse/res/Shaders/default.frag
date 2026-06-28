@@ -14,6 +14,8 @@ struct PointLight {
     vec3 position;
     vec3 color;
     float radius;
+    int shadowMapIndex;
+    float shadowBias;
 };
 
 struct SpotLight {
@@ -23,6 +25,8 @@ struct SpotLight {
     float radius;
     float innerCos;
     float outerCos;
+    bool castShadows;
+    float shadowBias;
 };
 
 uniform vec3 uCameraPos;
@@ -32,12 +36,17 @@ uniform int uSpotLightCount;
 uniform SpotLight uSpotLights[MAX_SPOT_LIGHTS];
 uniform sampler2D uTexture;
 uniform sampler2DArray uShadowMap;
+uniform sampler2DArray uSpotShadowMap;
+uniform samplerCube uPointShadowMap0;
+uniform samplerCube uPointShadowMap1;
 uniform bool uUseTexture;
+uniform bool uEnableShadowFilter;
 uniform float uShadowBiasFactor;
 uniform float uShadowBiasBase;
 uniform float uShadowSpread;
 uniform bool uEnableShadows;
 uniform mat4 uLightSpaceMatrices[3];
+uniform mat4 uSpotLightSpaceMatrices[MAX_SPOT_LIGHTS];
 uniform float uCascadePlaneDistances[3];
 uniform vec3 uColor;
 uniform vec3 uLightDir;     // direção da luz (apontando PARA a fonte)
@@ -160,7 +169,45 @@ void main() {
         vec3 halfPL = normalize(lightDirPL + viewDir);
         spec = pow(max(dot(norm, halfPL), 0.0), 32.0);
         
-        result += (diff + spec * 0.5) * col * atten * color;
+        float pointShadow = 0.0;
+        if (uPointLights[i].shadowMapIndex >= 0) {
+            vec3 fragToLight = vWorldPos - pos;
+            float currentDepth = length(fragToLight) / radius;
+            float bias = uPointLights[i].shadowBias;
+            if (uEnableShadowFilter) {
+                // PCF com grid esférico de amostras
+                vec3 sampleOffsetDirections[20] = vec3[](
+                   vec3( 1,  1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1,  1,  1), 
+                   vec3( 1,  1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1,  1, -1),
+                   vec3( 1,  1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1,  1,  0),
+                   vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
+                   vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
+                );
+                float shadows = 0.0;
+                float diskRadius = 0.05;
+                for(int j = 0; j < 20; ++j) {
+                    vec3 offset = sampleOffsetDirections[j] * diskRadius;
+                    float pcfDepth = 1.0;
+                    if (uPointLights[i].shadowMapIndex == 0) {
+                        pcfDepth = texture(uPointShadowMap0, fragToLight + offset).r;
+                    } else if (uPointLights[i].shadowMapIndex == 1) {
+                        pcfDepth = texture(uPointShadowMap1, fragToLight + offset).r;
+                    }
+                    shadows += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+                }
+                pointShadow = shadows / 20.0;
+            } else {
+                float closestDepth = 1.0;
+                if (uPointLights[i].shadowMapIndex == 0) {
+                    closestDepth = texture(uPointShadowMap0, fragToLight).r;
+                } else if (uPointLights[i].shadowMapIndex == 1) {
+                    closestDepth = texture(uPointShadowMap1, fragToLight).r;
+                }
+                pointShadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+            }
+        }
+        
+        result += (1.0 - pointShadow) * (diff + spec * 0.5) * col * atten * color;
     }
     
     // === Spot Lights ===
@@ -191,7 +238,32 @@ void main() {
         vec3 halfSL = normalize(lightDirSL + viewDir);
         spec = pow(max(dot(norm, halfSL), 0.0), 32.0);
         
-        result += (diff + spec * 0.5) * col * atten * spotFactor * color;
+        float spotShadow = 0.0;
+        if (uSpotLights[i].castShadows) {
+            vec4 fragPosSpotSpace = uSpotLightSpaceMatrices[i] * vec4(vWorldPos, 1.0);
+            vec3 projCoords = fragPosSpotSpace.xyz / fragPosSpotSpace.w;
+            projCoords = projCoords * 0.5 + 0.5;
+            
+            if (projCoords.z <= 1.0 && projCoords.x >= 0.0 && projCoords.x <= 1.0 && projCoords.y >= 0.0 && projCoords.y <= 1.0) {
+                float currentDepth = projCoords.z;
+                float bias = max(uSpotLights[i].shadowBias * (1.0 - dot(norm, lightDirSL)), uSpotLights[i].shadowBias * 0.1);
+                if (uEnableShadowFilter) {
+                    vec2 texelSize = 1.0 / vec2(textureSize(uSpotShadowMap, 0));
+                    for(int x = -1; x <= 1; ++x) {
+                        for(int y = -1; y <= 1; ++y) {
+                            float pcfDepth = texture(uSpotShadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, i)).r; 
+                            spotShadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;        
+                        }    
+                    }
+                    spotShadow /= 9.0;
+                } else {
+                    float closestDepth = texture(uSpotShadowMap, vec3(projCoords.xy, i)).r;
+                    spotShadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+                }
+            }
+        }
+        
+        result += (1.0 - spotShadow) * (diff + spec * 0.5) * col * atten * spotFactor * color;
     }
     
     fragColor = vec4(result, 1.0);

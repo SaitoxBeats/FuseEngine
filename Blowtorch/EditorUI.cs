@@ -2160,6 +2160,20 @@ public unsafe class EditorUI
                                 obj.LightOuterCone = float.DegreesToRadians(outerDeg);
                         }
 
+                        if (obj.LightType == "spot" || obj.LightType == "point")
+                        {
+                            bool castShadows = obj.LightCastShadows;
+                            if (ImGui.Checkbox("Cast Shadows##lightShadows", ref castShadows))
+                                obj.LightCastShadows = castShadows;
+
+                            if (obj.LightCastShadows)
+                            {
+                                float shadowBias = obj.LightShadowBias;
+                                if (ImGui.DragFloat("Shadow Bias##lightShadowBias", ref shadowBias, 0.0001f, 0.0f, 0.1f, "%.5f"))
+                                    obj.LightShadowBias = float.Max(0.0f, shadowBias);
+                            }
+                        }
+
                         SyncLight(sceneService, obj);
                         HandleUndoEnd(sceneService, assetService, history);
                     }
@@ -2394,6 +2408,8 @@ public unsafe class EditorUI
             LightRadius = 15.0f,
             LightInnerCone = float.DegreesToRadians(15),
             LightOuterCone = float.DegreesToRadians(30),
+            LightCastShadows = false,
+            LightShadowBias = 0.005f,
             Body = new MapBody
             {
                 Shape = MapShapeType.None,
@@ -2430,6 +2446,8 @@ public unsafe class EditorUI
         light.Radius = obj.LightRadius;
         light.InnerConeAngle = obj.LightInnerCone;
         light.OuterConeAngle = obj.LightOuterCone;
+        light.CastShadows = obj.LightCastShadows;
+        light.ShadowBias = obj.LightShadowBias;
     }
 
     private void CommitBrush(EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
