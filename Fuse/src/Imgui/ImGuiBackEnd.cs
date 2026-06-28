@@ -55,7 +55,10 @@ public unsafe class ImGuiBackEnd : IDisposable
         float speed = vel.Length();
         ImGui.Text($"PLAYER_Speed: {speed:F2}");
         float playerFov = player.Camera.FOV;
-        ImGui.SliderFloat("FOV: ", ref playerFov, 1.0f, 120.0f); 
+        ImGui.SliderFloat("FOV: ", ref playerFov, 1.0f, 120.0f);
+        bool surfMode = player.SurfMode;
+        if (ImGui.Checkbox("Surf Mode", ref surfMode))
+            player.SurfMode = surfMode;
         ImGui.End();
     }
 
