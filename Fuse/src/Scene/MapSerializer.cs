@@ -336,6 +336,43 @@ public static class MapSerializer
                 mesh = assets.GetMesh(meshKey);
             }
 
+            // Check for inline light properties
+            string? lightType = obj.TryGetPropertyValue("light_type", out var ltNode) ? (string)ltNode! : null;
+            if (lightType != null)
+            {
+                var lightPos = Vector3.Zero;
+                var lightRot = Quaternion.Identity;
+                if (obj.TryGetPropertyValue("body", out var bodyNodeLight))
+                {
+                    var bj = bodyNodeLight!.AsObject();
+                    if (bj.TryGetPropertyValue("position", out var pn))
+                        lightPos = Vec3FromJson(pn!.AsArray());
+                    if (bj.TryGetPropertyValue("rotation", out var rn))
+                        lightRot = QuatFromJson(rn!.AsArray());
+                }
+                var lightDir = Vector3.Transform(-Vector3.UnitY, lightRot);
+                var lightCol = obj.TryGetPropertyValue("light_color", out var lcNode) ? Vec3FromJson(lcNode!.AsArray()) : Vector3.One;
+                float lightIntensity = obj.TryGetPropertyValue("light_intensity", out var liNode) ? (float)liNode! : 1.0f;
+                float lightRadius = obj.TryGetPropertyValue("light_radius", out var lrNode) ? (float)lrNode! : 10.0f;
+                float lightInner = obj.TryGetPropertyValue("light_inner_cone", out var licNode) ? (float)licNode! : float.DegreesToRadians(20);
+                float lightOuter = obj.TryGetPropertyValue("light_outer_cone", out var locNode) ? (float)locNode! : float.DegreesToRadians(30);
+
+                var light = new Renderer.Light
+                {
+                    Type = lightType == "spot" ? Renderer.LightType.Spot : Renderer.LightType.Point,
+                    Position = lightPos,
+                    Direction = lightDir,
+                    Color = lightCol,
+                    Intensity = lightIntensity,
+                    Radius = lightRadius,
+                    InnerConeAngle = lightInner,
+                    OuterConeAngle = lightOuter,
+                    Enabled = IsGloballyVisible(id),
+                };
+                scene.AddLight(light);
+                continue;
+            }
+
             if (mesh == null)
             {
                 Logger.Warn($"Map load: unknown mesh '{meshKey}' for '{id}'");

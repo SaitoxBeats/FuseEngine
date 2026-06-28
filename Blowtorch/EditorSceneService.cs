@@ -39,6 +39,29 @@ public class EditorSceneService
 
         foreach (var mapObj in _doc.Objects)
         {
+            if (mapObj.IsLight)
+            {
+                var pos = mapObj.Body?.Position ?? System.Numerics.Vector3.Zero;
+                var rot = mapObj.Body?.Rotation ?? System.Numerics.Quaternion.Identity;
+                var dir = System.Numerics.Vector3.Transform(-System.Numerics.Vector3.UnitY, rot);
+
+                var light = new Light
+                {
+                    Id = mapObj.Id,
+                    Type = mapObj.LightType == "spot" ? LightType.Spot : LightType.Point,
+                    Position = pos,
+                    Direction = dir,
+                    Color = mapObj.LightColor,
+                    Intensity = mapObj.LightIntensity,
+                    Radius = mapObj.LightRadius,
+                    InnerConeAngle = mapObj.LightInnerCone,
+                    OuterConeAngle = mapObj.LightOuterCone,
+                    Enabled = mapObj.Visible,
+                };
+                _scene.AddLight(light);
+                continue;
+            }
+
             var mesh = assetService.GetOrCreateMesh(mapObj);
             if (mesh == null) continue;
 

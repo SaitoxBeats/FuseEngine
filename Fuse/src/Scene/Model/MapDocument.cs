@@ -114,6 +114,16 @@ public class MapDocument
         mo.Interactable = obj.TryGetPropertyValue("interactable", out var interactNode) ? (string)interactNode! : null;
         mo.Behaviour = obj.TryGetPropertyValue("behaviour", out var behavNode) ? (string)behavNode! : null;
 
+        mo.LightType = obj.TryGetPropertyValue("light_type", out var ltNode) ? (string)ltNode! : null;
+        if (mo.IsLight)
+        {
+            mo.LightColor = obj.TryGetPropertyValue("light_color", out var lcNode) ? Vec3FromJson(lcNode!.AsArray()) : System.Numerics.Vector3.One;
+            mo.LightIntensity = obj.TryGetPropertyValue("light_intensity", out var liNode) ? (float)liNode! : 1.0f;
+            mo.LightRadius = obj.TryGetPropertyValue("light_radius", out var lrNode) ? (float)lrNode! : 10.0f;
+            mo.LightInnerCone = obj.TryGetPropertyValue("light_inner_cone", out var licNode) ? (float)licNode! : float.DegreesToRadians(20);
+            mo.LightOuterCone = obj.TryGetPropertyValue("light_outer_cone", out var locNode) ? (float)locNode! : float.DegreesToRadians(30);
+        }
+
         if (obj.TryGetPropertyValue("body", out var bodyNode))
             mo.Body = ParseBody(bodyNode!.AsObject());
 
@@ -221,6 +231,16 @@ public class MapDocument
             j["interactable"] = obj.Interactable;
         if (!string.IsNullOrEmpty(obj.Behaviour))
             j["behaviour"] = obj.Behaviour;
+
+        if (obj.IsLight)
+        {
+            j["light_type"] = obj.LightType!;
+            j["light_color"] = Vec3ToJson(obj.LightColor);
+            j["light_intensity"] = obj.LightIntensity;
+            j["light_radius"] = obj.LightRadius;
+            j["light_inner_cone"] = obj.LightInnerCone;
+            j["light_outer_cone"] = obj.LightOuterCone;
+        }
 
         if (obj.Body != null)
             j["body"] = SerializeBody(obj.Body);

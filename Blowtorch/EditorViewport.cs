@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Numerics;
 using System.Collections.Generic;
 using Silk.NET.OpenGL;
@@ -114,6 +115,30 @@ public unsafe class EditorViewport : IDisposable
         shader.SetFloat("uAmbient", 0.2f);
         shader.SetMat4("uView", view);
         shader.SetMat4("uProj", proj);
+        shader.SetVec3("uCameraPos", _camera.Position);
+
+        var pointLights = scene.Lights.Where(l => l.Enabled && l.Type == LightType.Point).Take(8).ToList();
+        shader.SetInt("uPointLightCount", pointLights.Count);
+        for (int i = 0; i < pointLights.Count; i++)
+        {
+            var l = pointLights[i];
+            shader.SetVec3($"uPointLights[{i}].position", l.Position);
+            shader.SetVec3($"uPointLights[{i}].color", l.Color * l.Intensity);
+            shader.SetFloat($"uPointLights[{i}].radius", l.Radius);
+        }
+
+        var spotLights = scene.Lights.Where(l => l.Enabled && l.Type == LightType.Spot).Take(4).ToList();
+        shader.SetInt("uSpotLightCount", spotLights.Count);
+        for (int i = 0; i < spotLights.Count; i++)
+        {
+            var l = spotLights[i];
+            shader.SetVec3($"uSpotLights[{i}].position", l.Position);
+            shader.SetVec3($"uSpotLights[{i}].direction", Vector3.Normalize(l.Direction));
+            shader.SetVec3($"uSpotLights[{i}].color", l.Color * l.Intensity);
+            shader.SetFloat($"uSpotLights[{i}].radius", l.Radius);
+            shader.SetFloat($"uSpotLights[{i}].innerCos", l.InnerCos);
+            shader.SetFloat($"uSpotLights[{i}].outerCos", l.OuterCos);
+        }
 
         // Draw Grid
         var gridShader = assetService.GridShader;
@@ -281,6 +306,10 @@ public unsafe class EditorViewport : IDisposable
             Vector3 eyePos = sp.Position + new Vector3(0, 0.9f, 0);
             _debugDrawer.PushLine(eyePos, eyePos + fwd * 1.5f, new Vector3(0, 1, 1));
         }
+
+        // Lights
+        foreach (var light in sceneService.Scene.Lights)
+            _debugDrawer.DrawLight(light);
 
         onDrawDebug?.Invoke(_debugDrawer, assetService);
 

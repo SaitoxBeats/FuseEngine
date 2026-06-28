@@ -18,6 +18,15 @@ public class MapObject
     public string? Behaviour { get; set; }
     public MapBody? Body { get; set; }
 
+    // Light properties
+    public string? LightType { get; set; }
+    public System.Numerics.Vector3 LightColor { get; set; } = System.Numerics.Vector3.One;
+    public float LightIntensity { get; set; } = 1.0f;
+    public float LightRadius { get; set; } = 10.0f;
+    public float LightInnerCone { get; set; } = float.DegreesToRadians(20);
+    public float LightOuterCone { get; set; } = float.DegreesToRadians(30);
+
+    public bool IsLight => !string.IsNullOrEmpty(LightType);
     public bool IsModel => !string.IsNullOrEmpty(Model);
 
     public bool IsGloballyVisible(MapDocument doc)

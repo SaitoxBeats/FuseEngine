@@ -10,6 +10,7 @@ public enum LightType
 
 public class Light
 {
+    public string Id { get; set; } = "";
     public LightType Type { get; set; } = LightType.Point;
     public Vector3 Position { get; set; }
     public Vector3 Direction { get; set; } = -Vector3.UnitY;

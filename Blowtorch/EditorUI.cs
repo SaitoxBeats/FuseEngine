@@ -1128,6 +1128,8 @@ public unsafe class EditorUI
                             else
                                 entity.Transform.Scale = obj.ModelScale;
                         }
+
+                        SyncLight(sceneService, obj);
                     }
                 }
 
@@ -1704,6 +1706,10 @@ public unsafe class EditorUI
                 _showModelImportDialog = true;
                 RefreshModelFileList(assetService.FuseResPath);
             }
+            ImGui.SameLine();
+            if (ImGui.Button("Add Pt Light")) AddNewLight(sceneService, assetService, history, "point");
+            ImGui.SameLine();
+            if (ImGui.Button("Add Spot Light")) AddNewLight(sceneService, assetService, history, "spot");
 
             ImGui.Text($"Total Objects: {doc.Objects.Count}");
         }
@@ -1967,6 +1973,7 @@ public unsafe class EditorUI
                     obj.Visible = visible;
                     var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
                     if (entity != null) entity.Visible = visible;
+                    SyncLight(sceneService, obj);
                     history.PushCommand(new SnapshotCommand(sceneService, assetService, _preEditState, sceneService.Document.Serialize()));
                 }
 
@@ -2118,8 +2125,48 @@ public unsafe class EditorUI
                     HandleUndoEnd(sceneService, assetService, history);
                 }
 
-                // Physics Body
-                if (obj.Body != null)
+                // Light Properties
+                if (obj.IsLight)
+                {
+                    if (ImGui.CollapsingHeader("Light Properties", ImGuiTreeNodeFlags.DefaultOpen))
+                    {
+                        HandleUndoStart(sceneService);
+
+                        string[] lightTypes = ["point", "spot"];
+                        int lightTypeIdx = obj.LightType == "spot" ? 1 : 0;
+                        if (ImGui.Combo("Type##lightType", ref lightTypeIdx, lightTypes, 2))
+                            obj.LightType = lightTypes[lightTypeIdx];
+
+                        Vector3 col = obj.LightColor;
+                        if (ImGui.ColorEdit3("Color##lightColor", ref col, ImGuiColorEditFlags.Float))
+                            obj.LightColor = col;
+
+                        float intensity = obj.LightIntensity;
+                        if (ImGui.DragFloat("Intensity##lightIntensity", ref intensity, 0.05f, 0.0f, 100.0f))
+                            obj.LightIntensity = float.Max(0, intensity);
+
+                        float radius = obj.LightRadius;
+                        if (ImGui.DragFloat("Radius##lightRadius", ref radius, 0.1f, 0.1f, 500.0f))
+                            obj.LightRadius = float.Max(0.1f, radius);
+
+                        if (obj.LightType == "spot")
+                        {
+                            float innerDeg = float.RadiansToDegrees(obj.LightInnerCone);
+                            if (ImGui.DragFloat("Inner Cone##lightInner", ref innerDeg, 0.5f, 0.0f, 90.0f))
+                                obj.LightInnerCone = float.DegreesToRadians(innerDeg);
+
+                            float outerDeg = float.RadiansToDegrees(obj.LightOuterCone);
+                            if (ImGui.DragFloat("Outer Cone##lightOuter", ref outerDeg, 0.5f, 0.0f, 90.0f))
+                                obj.LightOuterCone = float.DegreesToRadians(outerDeg);
+                        }
+
+                        SyncLight(sceneService, obj);
+                        HandleUndoEnd(sceneService, assetService, history);
+                    }
+                }
+
+                // Physics Body (skip for lights)
+                if (obj.Body != null && !obj.IsLight)
                 {
                     var body = obj.Body;
                     if (ImGui.CollapsingHeader("Physics Body", ImGuiTreeNodeFlags.DefaultOpen))
@@ -2143,6 +2190,7 @@ public unsafe class EditorUI
                                         o.Body.Position += delta;
                                         var entity = scene.Entities.FirstOrDefault(e => e.Id == o.Id);
                                         if (entity != null) entity.Transform.Position = o.Body.Position;
+                                        SyncLight(sceneService, o);
                                     }
                                 }
                             }
@@ -2177,6 +2225,7 @@ public unsafe class EditorUI
                                         entity.Transform.Position = o.Body.Position;
                                         entity.Transform.Rotation = o.Body.Rotation;
                                     }
+                                    SyncLight(sceneService, o);
                                 }
                             }
                         }
@@ -2328,6 +2377,59 @@ public unsafe class EditorUI
         var post = sceneService.Document.Serialize();
         history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
         sceneService.PopulateScene(assetService);
+    }
+
+    private void AddNewLight(EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history, string lightType)
+    {
+        var pre = sceneService.Document.Serialize();
+        var doc = sceneService.Document;
+
+        var obj = new MapObject
+        {
+            Id = $"new_{lightType}_light",
+            Visible = true,
+            LightType = lightType,
+            LightColor = lightType == "spot" ? new Vector3(1, 0.9f, 0.7f) : new Vector3(1, 0.3f, 0.2f),
+            LightIntensity = 2.0f,
+            LightRadius = 15.0f,
+            LightInnerCone = float.DegreesToRadians(15),
+            LightOuterCone = float.DegreesToRadians(30),
+            Body = new MapBody
+            {
+                Shape = MapShapeType.None,
+                Position = new Vector3(0, 2, 0),
+                Rotation = Quaternion.Identity,
+                Mass = 0,
+                Friction = 0.5f,
+                Restitution = 0.0f
+            }
+        };
+
+        doc.Objects.Add(obj);
+        SceneNameManager.EnsureAllUnique(doc);
+        _selectedObject = obj;
+        _selectedObjects.Clear();
+        _selectedObjects.Add(obj);
+
+        var post = sceneService.Document.Serialize();
+        history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
+        sceneService.PopulateScene(assetService);
+    }
+
+    private static void SyncLight(EditorSceneService sceneService, MapObject obj)
+    {
+        if (!obj.IsLight || obj.Body == null) return;
+        var light = sceneService.Scene.Lights.FirstOrDefault(l => l.Id == obj.Id);
+        if (light == null) return;
+        light.Type = obj.LightType == "spot" ? LightType.Spot : LightType.Point;
+        light.Position = obj.Body.Position;
+        light.Direction = Vector3.Transform(-Vector3.UnitY, obj.Body.Rotation);
+        light.Enabled = obj.Visible;
+        light.Color = obj.LightColor;
+        light.Intensity = obj.LightIntensity;
+        light.Radius = obj.LightRadius;
+        light.InnerConeAngle = obj.LightInnerCone;
+        light.OuterConeAngle = obj.LightOuterCone;
     }
 
     private void CommitBrush(EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)

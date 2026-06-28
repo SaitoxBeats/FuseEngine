@@ -143,7 +143,7 @@ void main() {
     vec3 result = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
     
     // === Point Lights ===
-    for (int i = 0; i < MAX_POINT_LIGHTS; i++) {
+    for (int i = 0; i < uPointLightCount; i++) {
         vec3 pos = uPointLights[i].position;
         vec3 col = uPointLights[i].color;
         float radius = uPointLights[i].radius;
@@ -153,7 +153,8 @@ void main() {
         if (dist > radius) continue;
         
         vec3 lightDirPL = normalize(lightVec);
-        float atten = 1.0 / (1.0 + 3.0 * (dist / radius) * (dist / radius));
+        float falloff = clamp(1.0 - (dist * dist) / (radius * radius), 0.0, 1.0);
+        float atten = falloff * falloff;
         
         diff = max(dot(norm, lightDirPL), 0.0);
         vec3 halfPL = normalize(lightDirPL + viewDir);
@@ -163,7 +164,7 @@ void main() {
     }
     
     // === Spot Lights ===
-    for (int i = 0; i < MAX_SPOT_LIGHTS; i++) {
+    for (int i = 0; i < uSpotLightCount; i++) {
         vec3 pos = uSpotLights[i].position;
         vec3 dir = uSpotLights[i].direction;
         vec3 col = uSpotLights[i].color;
@@ -177,13 +178,14 @@ void main() {
         
         vec3 lightDirSL = normalize(lightVec);
         
-        // Cone falloff
-        float theta = dot(lightDirSL, normalize(dir));
-        float epsilon = innerCos - outerCos;
+        // Cone falloff (lightDirSL = fragment→light, negate for light→fragment)
+        float theta = -dot(lightDirSL, dir); // dir is already normalized
+        float epsilon = max(innerCos - outerCos, 0.0001);
         float spotFactor = clamp((theta - outerCos) / epsilon, 0.0, 1.0);
         if (spotFactor < 0.001) continue;
         
-        float atten = 1.0 / (1.0 + 3.0 * (dist / radius) * (dist / radius));
+        float falloff = clamp(1.0 - (dist * dist) / (radius * radius), 0.0, 1.0);
+        float atten = falloff * falloff;
         
         diff = max(dot(norm, lightDirSL), 0.0);
         vec3 halfSL = normalize(lightDirSL + viewDir);
