@@ -70,11 +70,13 @@ public unsafe class EditorUI
         TopLeft,
         TopRight,
         BottomLeft,
-        BottomRight
+        BottomRight,
+        Center
     }
     private bool _isDraggingHandle = false;
     private HandleType _activeHandle = HandleType.None;
     private EditorViewport? _draggingHandleViewport;
+    private Vector3 _centerDragLastHit;
     private void SyncSelection(MapDocument doc)
     {
         if (_selectedObject != null && !doc.Objects.Contains(_selectedObject))
@@ -651,13 +653,14 @@ public unsafe class EditorUI
                 DuplicateObjects(_selectedObjects.ToList(), sceneService, assetService, history);
             }
         }
-        else if (io.KeyShift)
-        {
-            if (ImGui.IsKeyPressed(ImGuiKey.D) && _selectedObjects.Count > 0)
-            {
-                DuplicateObjects(_selectedObjects.ToList(), sceneService, assetService, history);
-            }
-        }
+        //else if (io.KeyShift)
+        //{
+        //    if (ImGui.IsKeyPressed(ImGuiKey.D) && _selectedObjects.Count > 0)
+        //    {
+        //        DuplicateObjects(_selectedObjects.ToList(), sceneService, assetService, history);
+        //    }
+        //}
+        // avoids conflict with the camera sprint.
 
         if (ImGui.IsKeyPressed(ImGuiKey.Delete) && _selectedObjects.Count > 0)
         {
@@ -931,6 +934,7 @@ public unsafe class EditorUI
             handlePositions[(int)HandleType.TopRight] = new Vector2(sMaxX, sMinY);
             handlePositions[(int)HandleType.BottomLeft] = new Vector2(sMinX, sMaxY);
             handlePositions[(int)HandleType.BottomRight] = new Vector2(sMaxX, sMaxY);
+            handlePositions[(int)HandleType.Center] = new Vector2((sMinX + sMaxX) * 0.5f, (sMinY + sMaxY) * 0.5f);
 
             // Handle hover and click interaction BEFORE picking or drawing code
             var mousePos = ImGui.GetMousePos();
@@ -939,6 +943,7 @@ public unsafe class EditorUI
                 bool selectionDelayActive = (ImGui.GetTime() - _lastSelectionTime) < 0.5;
                 if (isHovered && ImGui.IsMouseClicked(ImGuiMouseButton.Left) && (isPreview || !selectionDelayActive))
                 {
+                    // Check edge/corner handles (1-8)
                     for (int h = 1; h <= 8; h++)
                     {
                         if (Vector2.Distance(mousePos, handlePositions[h]) < 8f)
@@ -949,6 +954,25 @@ public unsafe class EditorUI
                             _previewManager.IsDraggingHandle = isPreview;
                             _preEditState = sceneService.Document.Serialize();
                             break;
+                        }
+                    }
+
+                    // Check center move handle (only for brush selections, not preview)
+                    if (!_isDraggingHandle && !isPreview)
+                    {
+                        bool allBrushes = _selectedObjects.Count > 0 && _selectedObjects.All(o => o is Brush);
+                        if (allBrushes && Vector2.Distance(mousePos, handlePositions[(int)HandleType.Center]) < 10f)
+                        {
+                            _isDraggingHandle = true;
+                            _activeHandle = HandleType.Center;
+                            _draggingHandleViewport = viewport;
+                            _previewManager.IsDraggingHandle = false;
+                            _preEditState = sceneService.Document.Serialize();
+
+                            // Record initial world-space hit for delta computation
+                            EditorGizmo.GetMouseRay(mousePos, viewport.Camera.ViewMatrix, viewport.Camera.ProjectionMatrix(vpSize.X / vpSize.Y), vpPos, vpSize, out Vector3 ro, out Vector3 rd);
+                            _centerDragLastHit = ComputeHitPoint(viewport.Camera.ViewType, ro, rd);
+                            _centerDragLastHit = ApplySnap(_centerDragLastHit, _snapGrid);
                         }
                     }
                 }
@@ -962,7 +986,10 @@ public unsafe class EditorUI
         bool allowViewportInput = isHovered && !gizmoActive && !_isDraggingHandle;
         bool allowPicking = allowViewportInput && !EditorGizmo.IsHovered;
 
-        if (_selectedObject != null && _selectedObject.Body != null && sceneService.Document.Objects.Contains(_selectedObject) && !_isDraggingHandle)
+        // Hammer-style: suppress gizmo when the entire selection is made of brushes
+        bool allSelectedAreBrushes = _selectedObjects.Count > 0 && _selectedObjects.All(o => o is Brush);
+
+        if (_selectedObject != null && _selectedObject.Body != null && sceneService.Document.Objects.Contains(_selectedObject) && !_isDraggingHandle && !allSelectedAreBrushes)
         {
             var body = _selectedObject.Body;
             var view = viewport.Camera.ViewMatrix;
@@ -1244,6 +1271,29 @@ public unsafe class EditorUI
 
             hitPoint = ApplySnap(hitPoint, _snapGrid);
 
+            // Center handle = move all selected brushes by drag delta
+            if (_activeHandle == HandleType.Center && !_previewManager.IsDraggingHandle)
+            {
+                Vector3 delta = hitPoint - _centerDragLastHit;
+                if (delta.LengthSquared() > 0.000001f)
+                {
+                    foreach (var obj in _selectedObjects)
+                    {
+                        if (obj is Brush brush && brush.Body != null)
+                        {
+                            brush.Body.Position += delta;
+
+                            var entity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == brush.Id);
+                            if (entity != null)
+                                entity.Transform.Position = brush.Body.Position;
+                        }
+                    }
+                    _centerDragLastHit = hitPoint;
+                }
+            }
+            else
+            {
+
             Vector3 currentMin = boxMin;
             Vector3 currentMax = boxMax;
 
@@ -1287,6 +1337,7 @@ public unsafe class EditorUI
                     }
                 }
             }
+            } // end else (resize handles)
 
             if (ImGui.IsMouseReleased(ImGuiMouseButton.Left))
             {
@@ -1409,12 +1460,26 @@ public unsafe class EditorUI
             finalHandlePositions[(int)HandleType.TopRight] = new Vector2(sMaxX, sMinY);
             finalHandlePositions[(int)HandleType.BottomLeft] = new Vector2(sMinX, sMaxY);
             finalHandlePositions[(int)HandleType.BottomRight] = new Vector2(sMaxX, sMaxY);
+            finalHandlePositions[(int)HandleType.Center] = new Vector2((sMinX + sMaxX) * 0.5f, (sMinY + sMaxY) * 0.5f);
 
             for (int h = 1; h <= 8; h++)
             {
                 Vector2 p = finalHandlePositions[h];
                 drawList.AddRectFilled(p - new Vector2(4), p + new Vector2(4), ImGui.GetColorU32(new Vector4(1.0f, 1.0f, 1.0f, 1.0f)));
                 drawList.AddRect(p - new Vector2(4), p + new Vector2(4), ImGui.GetColorU32(new Vector4(0.0f, 0.0f, 0.0f, 1.0f)));
+            }
+
+            // Draw center move handle (orange crosshair) only for brush-only selections
+            if (!isPreview && _selectedObjects.Count > 0 && _selectedObjects.All(o => o is Brush))
+            {
+                Vector2 cp = finalHandlePositions[(int)HandleType.Center];
+                uint orange = ImGui.GetColorU32(new Vector4(1.0f, 0.55f, 0.0f, 1.0f));
+                uint orangeDark = ImGui.GetColorU32(new Vector4(0.5f, 0.25f, 0.0f, 1.0f));
+                drawList.AddRectFilled(cp - new Vector2(6), cp + new Vector2(6), orange);
+                drawList.AddRect(cp - new Vector2(6), cp + new Vector2(6), orangeDark);
+                // Crosshair lines
+                drawList.AddLine(cp - new Vector2(10, 0), cp + new Vector2(10, 0), orange, 1.5f);
+                drawList.AddLine(cp - new Vector2(0, 10), cp + new Vector2(0, 10), orange, 1.5f);
             }
         }
 
@@ -3004,6 +3069,18 @@ public unsafe class EditorUI
         float x = vpPos.X + (ndc.X + 1.0f) * 0.5f * vpSize.X;
         float y = vpPos.Y + (1.0f - ndc.Y) * 0.5f * vpSize.Y;
         return new Vector2(x, y);
+    }
+
+    private Vector3 ComputeHitPoint(CameraViewType viewType, Vector3 rayOrigin, Vector3 rayDir)
+    {
+        Vector3 hit = Vector3.Zero;
+        if (viewType == CameraViewType.Top && MathF.Abs(rayDir.Y) > 0.001f)
+            hit = rayOrigin + rayDir * (-rayOrigin.Y / rayDir.Y);
+        else if (viewType == CameraViewType.Front && MathF.Abs(rayDir.Z) > 0.001f)
+            hit = rayOrigin + rayDir * (-rayOrigin.Z / rayDir.Z);
+        else if (viewType == CameraViewType.Side && MathF.Abs(rayDir.X) > 0.001f)
+            hit = rayOrigin + rayDir * (-rayOrigin.X / rayDir.X);
+        return hit;
     }
 
     private void UpdateBoundsFromDrag(CameraViewType viewType, HandleType handle, Vector3 hitPoint, ref Vector3 min, ref Vector3 max)

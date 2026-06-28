@@ -293,14 +293,9 @@ public unsafe class EditorViewport : IDisposable
             glfw.SetInputMode(win, Silk.NET.GLFW.CursorStateAttribute.Cursor, Silk.NET.GLFW.CursorModeValue.CursorNormal);
 
         float scroll = io.MouseWheel;
-        if (scroll != 0)
-        {
-            Vector2 localMousePos = io.MousePos - vpPos;
-            _camera.Zoom(scroll, localMousePos, vpSize);
-        }
-
         bool wantPan = false;
         bool wantLook = false;
+
 
         if (_camera.IsOrthographic)
         {
@@ -309,6 +304,24 @@ public unsafe class EditorViewport : IDisposable
         else
         {
             wantLook = ImGuiNET.ImGui.IsMouseDown(ImGuiNET.ImGuiMouseButton.Right);
+        }
+
+        //if (scroll != 0)
+        //{
+        //    Vector2 localMousePos = io.MousePos - vpPos;
+        //    _camera.Zoom(scroll, localMousePos, vpSize);
+        //}
+        if (scroll != 0)
+        {
+            if (!_camera.IsOrthographic && (wantLook || wantPan))
+            {
+                _camera.AdjustFlySpeed(scroll);
+            }
+            else
+            {
+                Vector2 localMousePos = io.MousePos - vpPos;
+                _camera.Zoom(scroll, localMousePos, vpSize);
+            }
         }
 
         if (ActiveViewport != null && ActiveViewport != this)
@@ -410,7 +423,10 @@ public unsafe class EditorViewport : IDisposable
                 if (ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.Q)) up -= 1;
 
                 if (fwd != 0 || right != 0 || up != 0)
-                    _camera.Fly(fwd, right, up, dt);
+                {
+                    float speedMul = ImGuiNET.ImGui.IsKeyDown(ImGuiNET.ImGuiKey.LeftShift) ? 2.0f : 1.0f;
+                    _camera.Fly(fwd, right, up, dt * speedMul);
+                }
             }
         }
         else

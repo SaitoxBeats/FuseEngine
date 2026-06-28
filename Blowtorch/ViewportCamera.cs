@@ -59,6 +59,12 @@ public class ViewportCamera
         // No zoom needed for 3D FPS noclip
     }
 
+    public void AdjustFlySpeed(float scrollDelta)
+    {
+        float scale = 1.0f + scrollDelta * 0.1f;
+        FlySpeed = float.Clamp(FlySpeed * scale, 1.0f, 500.0f);
+    }
+
     public void Pan(float deltaX, float deltaY, float viewportHeight)
     {
         if (IsOrthographic)
