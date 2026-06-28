@@ -39,6 +39,8 @@ uniform sampler2DArray uShadowMap;
 uniform sampler2DArray uSpotShadowMap;
 uniform samplerCube uPointShadowMap0;
 uniform samplerCube uPointShadowMap1;
+uniform samplerCube uPointShadowMap2;
+uniform samplerCube uPointShadowMap3;
 uniform bool uUseTexture;
 uniform bool uEnableShadowFilter;
 uniform float uShadowBiasFactor;
@@ -192,6 +194,10 @@ void main() {
                         pcfDepth = texture(uPointShadowMap0, fragToLight + offset).r;
                     } else if (uPointLights[i].shadowMapIndex == 1) {
                         pcfDepth = texture(uPointShadowMap1, fragToLight + offset).r;
+                    } else if (uPointLights[i].shadowMapIndex == 2) {
+                        pcfDepth = texture(uPointShadowMap2, fragToLight + offset).r;
+                    } else if (uPointLights[i].shadowMapIndex == 3) {
+                        pcfDepth = texture(uPointShadowMap3, fragToLight + offset).r;
                     }
                     shadows += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
                 }
@@ -202,6 +208,10 @@ void main() {
                     closestDepth = texture(uPointShadowMap0, fragToLight).r;
                 } else if (uPointLights[i].shadowMapIndex == 1) {
                     closestDepth = texture(uPointShadowMap1, fragToLight).r;
+                } else if (uPointLights[i].shadowMapIndex == 2) {
+                    closestDepth = texture(uPointShadowMap2, fragToLight).r;
+                } else if (uPointLights[i].shadowMapIndex == 3) {
+                    closestDepth = texture(uPointShadowMap3, fragToLight).r;
                 }
                 pointShadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
             }

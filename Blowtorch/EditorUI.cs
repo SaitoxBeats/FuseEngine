@@ -2172,6 +2172,10 @@ public unsafe class EditorUI
                                 if (ImGui.DragFloat("Shadow Bias##lightShadowBias", ref shadowBias, 0.0001f, 0.0f, 0.1f, "%.5f"))
                                     obj.LightShadowBias = float.Max(0.0f, shadowBias);
                             }
+
+                            bool isDynamic = obj.LightDynamic;
+                            if (ImGui.Checkbox("Dynamic (Follow Parent)##lightDynamic", ref isDynamic))
+                                obj.LightDynamic = isDynamic;
                         }
 
                         SyncLight(sceneService, obj);

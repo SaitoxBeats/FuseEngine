@@ -2112,6 +2112,7 @@
       "light_outer_cone": 0.76794493,
       "light_cast_shadows": true,
       "light_shadow_bias": 0.0005,
+      "light_dynamic": false,
       "body": {
         "shape": "none",
         "position": [
@@ -2147,6 +2148,7 @@
       "light_outer_cone": 0.5235988,
       "light_cast_shadows": true,
       "light_shadow_bias": 0.005,
+      "light_dynamic": false,
       "body": {
         "shape": "none",
         "position": [
@@ -2182,6 +2184,7 @@
       "light_outer_cone": 0.5235988,
       "light_cast_shadows": true,
       "light_shadow_bias": 0.005,
+      "light_dynamic": false,
       "body": {
         "shape": "none",
         "position": [
@@ -2204,25 +2207,25 @@
     {
       "id": "new_point_light_1",
       "visible": true,
-      "parent": "new_box",
       "light_type": "point",
       "light_color": [
         0.82352924,
         0,
         1
       ],
-      "light_intensity": 15.45,
-      "light_radius": 7.3,
+      "light_intensity": 6.65,
+      "light_radius": 11.1,
       "light_inner_cone": 0.2617994,
       "light_outer_cone": 0.5235988,
       "light_cast_shadows": true,
       "light_shadow_bias": 0.0005,
+      "light_dynamic": false,
       "body": {
         "shape": "none",
         "position": [
-          -10,
-          3,
-          -5
+          -18,
+          2.999999,
+          -13
         ],
         "rotation": [
           1,

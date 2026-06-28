@@ -19,6 +19,8 @@ public class MasterRenderer
     private Shader _pointShadowShader = null!;
     private PointShadowMap _pointShadowMap0 = null!;
     private PointShadowMap _pointShadowMap1 = null!;
+    private PointShadowMap _pointShadowMap2 = null!;
+    private PointShadowMap _pointShadowMap3 = null!;
 
     // Textures
     private Texture _crateTexture = null!;
@@ -69,6 +71,8 @@ public class MasterRenderer
         _spotShadowMap = new ShadowMap(_gl, ShadowResolution, ShadowResolution, 4);
         _pointShadowMap0 = new PointShadowMap(_gl, ShadowResolution);
         _pointShadowMap1 = new PointShadowMap(_gl, ShadowResolution);
+        _pointShadowMap2 = new PointShadowMap(_gl, ShadowResolution);
+        _pointShadowMap3 = new PointShadowMap(_gl, ShadowResolution);
         
         _skyBoxCubeMesh = assets.GetMesh("cube")!;
         
@@ -123,7 +127,9 @@ public class MasterRenderer
         }
 
         // --- 1.5. Spot Light Shadow Pass ---
-        var spotLights = scene.Lights.Where(l => l.Enabled && l.Type == LightType.Spot).Take(4).ToList();
+        var spotLights = scene.Lights.Where(l => l.Enabled && l.Type == LightType.Spot)
+            .OrderBy(l => Vector3.DistanceSquared(l.Position, camera.Position))
+            .Take(4).ToList();
         Matrix4x4[] spotSpaceMatrices = new Matrix4x4[4];
 
         if (_shadowShader != null && _shadowShader.ID != 0 && ShadowsEnabled)
@@ -153,7 +159,9 @@ public class MasterRenderer
         }
 
         // --- 1.7. Point Light Shadow Pass ---
-        var shadowPointLights = scene.Lights.Where(l => l.Enabled && l.Type == LightType.Point && l.CastShadows).Take(2).ToList();
+        var shadowPointLights = scene.Lights.Where(l => l.Enabled && l.Type == LightType.Point && l.CastShadows)
+            .OrderBy(l => Vector3.DistanceSquared(l.Position, camera.Position))
+            .Take(4).ToList();
         if (_pointShadowShader != null && _pointShadowShader.ID != 0 && ShadowsEnabled)
         {
             _gl.Enable(EnableCap.DepthTest);
@@ -164,7 +172,7 @@ public class MasterRenderer
             for (int i = 0; i < shadowPointLights.Count; i++)
             {
                 var pl = shadowPointLights[i];
-                var shadowMap = i == 0 ? _pointShadowMap0 : _pointShadowMap1;
+                var shadowMap = i == 0 ? _pointShadowMap0 : i == 1 ? _pointShadowMap1 : i == 2 ? _pointShadowMap2 : _pointShadowMap3;
                 
                 _pointShadowShader.SetVec3("uLightPos", pl.Position);
                 _pointShadowShader.SetFloat("uRadius", pl.Radius);
@@ -260,16 +268,22 @@ public class MasterRenderer
             _shader.SetInt("uSpotShadowMap", 2);
             _shader.SetInt("uPointShadowMap0", 3);
             _shader.SetInt("uPointShadowMap1", 4);
+            _shader.SetInt("uPointShadowMap2", 5);
+            _shader.SetInt("uPointShadowMap3", 6);
             _shadowMap.BindForReading(TextureUnit.Texture1);
             _spotShadowMap.BindForReading(TextureUnit.Texture2);
             _pointShadowMap0.BindForReading(TextureUnit.Texture3);
             _pointShadowMap1.BindForReading(TextureUnit.Texture4);
+            _pointShadowMap2.BindForReading(TextureUnit.Texture5);
+            _pointShadowMap3.BindForReading(TextureUnit.Texture6);
             
             _shader.SetBool("uEnableShadowFilter", EnableShadowFilter);
 
             _shader.SetVec3("uCameraPos", camera.Position);
 
-            var pointLights = scene.Lights.Where(l => l.Enabled && l.Type == LightType.Point).Take(8).ToList();
+            var pointLights = scene.Lights.Where(l => l.Enabled && l.Type == LightType.Point)
+                .OrderBy(l => Vector3.DistanceSquared(l.Position, camera.Position))
+                .Take(8).ToList();
             _shader.SetInt("uPointLightCount", pointLights.Count);
             for (int i = 0; i < pointLights.Count; i++)
             {

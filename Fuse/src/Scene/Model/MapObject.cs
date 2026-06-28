@@ -27,6 +27,7 @@ public class MapObject
     public float LightOuterCone { get; set; } = float.DegreesToRadians(30);
     public bool LightCastShadows { get; set; } = false;
     public float LightShadowBias { get; set; } = 0.00050f;
+    public bool LightDynamic { get; set; } = false;
 
     public bool IsLight => !string.IsNullOrEmpty(LightType);
     public bool IsModel => !string.IsNullOrEmpty(Model);

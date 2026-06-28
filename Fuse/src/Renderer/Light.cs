@@ -22,6 +22,7 @@ public class Light
     public bool Enabled { get; set; } = true;
     public bool CastShadows { get; set; } = false;
     public float ShadowBias { get; set; } = 0.00050f;
+    public bool Dynamic { get; set; } = false;
 
     public float InnerCos => MathF.Cos(InnerConeAngle);
     public float OuterCos => MathF.Cos(OuterConeAngle);

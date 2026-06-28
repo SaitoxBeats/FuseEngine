@@ -36,6 +36,7 @@ public class Entity
     public Vector3 InitialRelativePosition { get; set; }
     public Quaternion InitialRelativeRotation { get; set; } = Quaternion.Identity;
     public System.Text.Json.Nodes.JsonObject? MapData { get; set; }
+    public Light? AttachedLight { get; set; }
 }
 
 public class Scene
@@ -185,6 +186,13 @@ public class Scene
                         world.SetBodyPositionAndRotation(e.Body.Native, e.Transform.Position, e.Transform.Rotation);
                     }
                 }
+            }
+
+            if (e.AttachedLight != null && e.AttachedLight.Dynamic)
+            {
+                e.AttachedLight.Position = e.Transform.Position;
+                if (e.AttachedLight.Type == LightType.Spot)
+                    e.AttachedLight.Direction = Vector3.Transform(-Vector3.UnitY, e.Transform.Rotation);
             }
         }
 

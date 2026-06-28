@@ -154,12 +154,27 @@ public static class MapSerializer
             if (e.Body != null && e.Body.IsBuilt)
                 obj["body"] = SerializeBody(e, physics);
 
+            if (e.AttachedLight != null)
+            {
+                obj["light_type"] = e.AttachedLight.Type == Renderer.LightType.Point ? "point" : "spot";
+                obj["light_color"] = new JsonArray(e.AttachedLight.Color.X, e.AttachedLight.Color.Y, e.AttachedLight.Color.Z);
+                obj["light_intensity"] = e.AttachedLight.Intensity;
+                obj["light_radius"] = e.AttachedLight.Radius;
+                obj["light_inner_cone"] = e.AttachedLight.InnerConeAngle;
+                obj["light_outer_cone"] = e.AttachedLight.OuterConeAngle;
+                obj["light_cast_shadows"] = e.AttachedLight.CastShadows;
+                obj["light_shadow_bias"] = e.AttachedLight.ShadowBias;
+                obj["light_dynamic"] = e.AttachedLight.Dynamic;
+            }
+
             objects.Add(obj);
         }
 
         var lightsArray = new JsonArray();
         foreach (var l in scene.Lights)
         {
+            if (scene.Entities.Any(e => e.AttachedLight == l)) continue; // Don't save attached lights to the array
+
             var lj = new JsonObject
             {
                 ["type"] = l.Type == Renderer.LightType.Point ? "point" : "spot",
@@ -351,6 +366,7 @@ public static class MapSerializer
 
             // Check for inline light properties
             string? lightType = obj.TryGetPropertyValue("light_type", out var ltNode) ? (string)ltNode! : null;
+            Renderer.Light? attachedLight = null;
             if (lightType != null)
             {
                 var lightPos = Vector3.Zero;
@@ -384,10 +400,11 @@ public static class MapSerializer
                     OuterConeAngle = lightOuter,
                     CastShadows = lightCastShadows,
                     ShadowBias = lightShadowBias,
+                    Dynamic = obj.TryGetPropertyValue("light_dynamic", out var dynNode) && (bool)dynNode!,
                     Enabled = IsGloballyVisible(id),
                 };
                 scene.AddLight(light);
-                continue;
+                attachedLight = light;
             }
 
             if (mesh == null && !string.IsNullOrEmpty(meshKey))
@@ -408,6 +425,7 @@ public static class MapSerializer
             entity.UvRotation = uvRotation;
             entity.Visible = IsGloballyVisible(id);
             entity.ParentId = obj.TryGetPropertyValue("parent", out var pIdNode) ? (string)pIdNode! : "";
+            entity.AttachedLight = attachedLight;
 
             if (!string.IsNullOrEmpty(texturePath))
             {
