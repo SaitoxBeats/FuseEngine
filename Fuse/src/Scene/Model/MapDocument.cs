@@ -108,6 +108,8 @@ public class MapDocument
         }
         else mo.ModelScale = System.Numerics.Vector3.One;
         mo.UvScale = obj.TryGetPropertyValue("uv_scale", out var uvNode) ? Vec2FromJson(uvNode!.AsArray()) : Vector2.One;
+        mo.UvOffset = obj.TryGetPropertyValue("uv_offset", out var uvOffNode) ? Vec2FromJson(uvOffNode!.AsArray()) : Vector2.Zero;
+        mo.UvRotation = obj.TryGetPropertyValue("uv_rotation", out var uvRotNode) ? (float)uvRotNode! : 0f;
         mo.Texture = obj.TryGetPropertyValue("texture", out var texNode) ? (string)texNode! : null;
         mo.Interactable = obj.TryGetPropertyValue("interactable", out var interactNode) ? (string)interactNode! : null;
         mo.Behaviour = obj.TryGetPropertyValue("behaviour", out var behavNode) ? (string)behavNode! : null;
@@ -206,6 +208,10 @@ public class MapDocument
             j["mesh"] = obj.Mesh;
             if (obj.UvScale != Vector2.One)
                 j["uv_scale"] = Vec2ToJson(obj.UvScale);
+            if (obj.UvOffset != Vector2.Zero)
+                j["uv_offset"] = Vec2ToJson(obj.UvOffset);
+            if (obj.UvRotation != 0f)
+                j["uv_rotation"] = obj.UvRotation;
         }
 
         // fuck 

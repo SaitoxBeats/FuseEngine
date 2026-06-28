@@ -181,6 +181,8 @@ public unsafe class EditorViewport : IDisposable
 
             shader.SetMat4("uModel", entity.Transform.Matrix);
             shader.SetVec2("uUvScale", entity.UvScale);
+            shader.SetVec2("uUvOffset", entity.UvOffset);
+            shader.SetFloat("uUvRotation", entity.UvRotation);
 
             if (!isWireframe)
             {

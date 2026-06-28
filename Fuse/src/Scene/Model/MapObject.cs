@@ -10,6 +10,8 @@ public class MapObject
     public string? Model { get; set; }
     public System.Numerics.Vector3 ModelScale { get; set; } = System.Numerics.Vector3.One;
     public System.Numerics.Vector2 UvScale { get; set; } = System.Numerics.Vector2.One;
+    public System.Numerics.Vector2 UvOffset { get; set; } = System.Numerics.Vector2.Zero;
+    public float UvRotation { get; set; } = 0f;
 
     public string? Texture { get; set; }
     public string? Interactable { get; set; }

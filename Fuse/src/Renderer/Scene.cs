@@ -25,6 +25,8 @@ public class Entity
     public string BehaviourType { get; set; } = "";
     public System.Numerics.Vector3 ModelScale { get; set; } = System.Numerics.Vector3.One;
     public Vector2 UvScale { get; set; } = Vector2.One;
+    public Vector2 UvOffset { get; set; } = Vector2.Zero;
+    public float UvRotation { get; set; } = 0f;
     public Mesh? Mesh { get; set; }
     public Texture? Texture { get; set; }
     public RigidBody? Body { get; set; }
@@ -212,6 +214,8 @@ public class Scene
 
             shader.SetMat4("uModel", e.Transform.Matrix);
             shader.SetVec2("uUvScale", e.UvScale);
+            shader.SetVec2("uUvOffset", e.UvOffset);
+            shader.SetFloat("uUvRotation", e.UvRotation);
 
             var tex = e.Texture ?? defaultTexture;
             if (tex != null)

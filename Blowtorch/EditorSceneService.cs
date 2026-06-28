@@ -50,6 +50,8 @@ public class EditorSceneService
             entity.Visible = mapObj.Visible;
             entity.ModelScale = mapObj.ModelScale;
             entity.UvScale = mapObj.UvScale;
+            entity.UvOffset = mapObj.UvOffset;
+            entity.UvRotation = mapObj.UvRotation;
 
             if (mapObj is Brush)
             {

@@ -1803,6 +1803,35 @@ public unsafe class EditorUI
                     }
                     HandleUndoEnd(sceneService, assetService, history);
                 }
+
+                Vector2 commonUvOff = _selectedObjects.Select(o => o.UvOffset).Distinct().Count() == 1 ? _selectedObjects.First().UvOffset : Vector2.Zero;
+                Vector2 multiUvOff = commonUvOff;
+                if (ImGui.DragFloat2("UV Offset##multiUvOff", ref multiUvOff, 0.01f))
+                {
+                    HandleUndoStart(sceneService);
+                    foreach (var obj in _selectedObjects)
+                    {
+                        obj.UvOffset = multiUvOff;
+                        var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
+                        if (entity != null) entity.UvOffset = multiUvOff;
+                    }
+                    HandleUndoEnd(sceneService, assetService, history);
+                }
+
+                float commonUvRot = _selectedObjects.Select(o => o.UvRotation).Distinct().Count() == 1 ? _selectedObjects.First().UvRotation : 0f;
+                float multiUvRotDeg = commonUvRot * (180f / MathF.PI);
+                if (ImGui.DragFloat("UV Rotation##multiUvRot", ref multiUvRotDeg, 0.5f, -360f, 360f, "%.1f deg"))
+                {
+                    HandleUndoStart(sceneService);
+                    float multiUvRot = multiUvRotDeg * (MathF.PI / 180f);
+                    foreach (var obj in _selectedObjects)
+                    {
+                        obj.UvRotation = multiUvRot;
+                        var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
+                        if (entity != null) entity.UvRotation = multiUvRot;
+                    }
+                    HandleUndoEnd(sceneService, assetService, history);
+                }
             }
 
             if (_selectedObjects.All(o => o.Body != null))
@@ -1946,6 +1975,29 @@ public unsafe class EditorUI
                             obj.UvScale = uvScale;
                             var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
                             if (entity != null) entity.UvScale = uvScale;
+                        }
+                        HandleUndoEnd(sceneService, assetService, history);
+
+                        Vector2 uvOffset = obj.UvOffset;
+                        bool uvOffChanged = ImGui.DragFloat2("UV Offset##inspectUvOff", ref uvOffset, 0.01f);
+                        HandleUndoStart(sceneService);
+                        if (uvOffChanged)
+                        {
+                            obj.UvOffset = uvOffset;
+                            var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
+                            if (entity != null) entity.UvOffset = uvOffset;
+                        }
+                        HandleUndoEnd(sceneService, assetService, history);
+
+                        float uvRotDeg = obj.UvRotation * (180f / MathF.PI);
+                        bool uvRotChanged = ImGui.DragFloat("UV Rotation##inspectUvRot", ref uvRotDeg, 0.5f, -360f, 360f, "%.1f deg");
+                        HandleUndoStart(sceneService);
+                        if (uvRotChanged)
+                        {
+                            float uvRot = uvRotDeg * (MathF.PI / 180f);
+                            obj.UvRotation = uvRot;
+                            var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
+                            if (entity != null) entity.UvRotation = uvRot;
                         }
                         HandleUndoEnd(sceneService, assetService, history);
                     }

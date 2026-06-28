@@ -255,6 +255,17 @@ public static class MapSerializer
                 uvScale = new Vector2((float)arr[0]!, (float)arr[1]!);
             }
 
+            Vector2 uvOffset = Vector2.Zero;
+            if (obj.TryGetPropertyValue("uv_offset", out var uvOffNode))
+            {
+                var arr = uvOffNode!.AsArray();
+                uvOffset = new Vector2((float)arr[0]!, (float)arr[1]!);
+            }
+
+            float uvRotation = 0f;
+            if (obj.TryGetPropertyValue("uv_rotation", out var uvRotNode))
+                uvRotation = (float)uvRotNode!;
+
             string texturePath = obj.TryGetPropertyValue("texture", out var texNode)
                 ? (string)texNode! : "";
 
@@ -290,6 +301,8 @@ public static class MapSerializer
             entity.TexturePath = texturePath;
             entity.ModelScale = modelScale;
             entity.UvScale = uvScale;
+            entity.UvOffset = uvOffset;
+            entity.UvRotation = uvRotation;
             entity.Visible = IsGloballyVisible(id);
             entity.ParentId = obj.TryGetPropertyValue("parent", out var pIdNode) ? (string)pIdNode! : "";
 

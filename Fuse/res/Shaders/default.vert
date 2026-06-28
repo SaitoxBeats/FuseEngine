@@ -12,9 +12,16 @@ uniform mat4 uModel;
 uniform mat4 uView;
 uniform mat4 uProj;
 uniform vec2 uUvScale;
+uniform vec2 uUvOffset;
+uniform float uUvRotation;
 
 void main() {
-    vTexCoord = aTexCoord * uUvScale;
+    vec2 uv = aTexCoord * uUvScale;
+    float sinR = sin(uUvRotation);
+    float cosR = cos(uUvRotation);
+    uv = vec2(uv.x * cosR - uv.y * sinR, uv.x * sinR + uv.y * cosR);
+    uv += uUvOffset;
+    vTexCoord = uv;
     vec4 worldPos = uModel * vec4(aPos, 1.0);
     vWorldPos = worldPos.xyz;
     vWorldNormal = mat3(transpose(inverse(uModel))) * aNormal;
