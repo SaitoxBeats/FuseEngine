@@ -120,6 +120,15 @@ public static class MapSerializer
             if (!string.IsNullOrEmpty(e.ParentId))
                 obj["parent"] = e.ParentId;
 
+            if (e.MapData != null && e.MapData.TryGetPropertyValue("type", out var typeNode) && (string)typeNode! == "brush")
+            {
+                obj["type"] = "brush";
+                if (e.MapData.TryGetPropertyValue("faces", out var facesNode))
+                {
+                    obj["faces"] = System.Text.Json.Nodes.JsonNode.Parse(facesNode!.ToJsonString());
+                }
+            }
+
             if (e.MeshKey.Contains('/') || e.MeshKey.Contains('\\'))
             {
                 obj["model"] = e.MeshKey;
@@ -287,7 +296,7 @@ public static class MapSerializer
             string meshKey = isModel
                 ? (string)modelNode!
                 : (obj.TryGetPropertyValue("mesh", out var meshNode)
-                    ? (string)meshNode! : "");
+                    ? (string)meshNode! : (isBrush ? id : ""));
 
             Vector3 modelScale = Vector3.One;
             if (obj.TryGetPropertyValue("model_scale", out var scaleNode))
@@ -361,7 +370,7 @@ public static class MapSerializer
                 float lightInner = obj.TryGetPropertyValue("light_inner_cone", out var licNode) ? (float)licNode! : float.DegreesToRadians(20);
                 float lightOuter = obj.TryGetPropertyValue("light_outer_cone", out var locNode) ? (float)locNode! : float.DegreesToRadians(30);
                 bool lightCastShadows = obj.TryGetPropertyValue("light_cast_shadows", out var lcsNode) && (bool)lcsNode!;
-                float lightShadowBias = obj.TryGetPropertyValue("light_shadow_bias", out var lsbNode) ? (float)lsbNode! : 0.005f;
+                float lightShadowBias = obj.TryGetPropertyValue("light_shadow_bias", out var lsbNode) ? (float)lsbNode! : 0.00050f;
 
                 var light = new Renderer.Light
                 {
@@ -381,16 +390,19 @@ public static class MapSerializer
                 continue;
             }
 
-            if (mesh == null)
+            if (mesh == null && !string.IsNullOrEmpty(meshKey))
             {
                 Logger.Warn($"Map load: unknown mesh '{meshKey}' for '{id}'");
                 continue;
             }
 
             var entity = scene.Add(mesh, id);
+            entity.MapData = obj;
             entity.MeshKey = meshKey;
             entity.TexturePath = texturePath;
             entity.ModelScale = modelScale;
+            entity.InteractableType = obj.TryGetPropertyValue("interactable", out var it) ? (string)it! : "";
+            entity.BehaviourType = obj.TryGetPropertyValue("behaviour", out var bt) ? (string)bt! : "";
             entity.UvScale = uvScale;
             entity.UvOffset = uvOffset;
             entity.UvRotation = uvRotation;

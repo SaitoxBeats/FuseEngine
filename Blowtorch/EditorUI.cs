@@ -2409,7 +2409,7 @@ public unsafe class EditorUI
             LightInnerCone = float.DegreesToRadians(15),
             LightOuterCone = float.DegreesToRadians(30),
             LightCastShadows = false,
-            LightShadowBias = 0.005f,
+            LightShadowBias = 0.00050f,
             Body = new MapBody
             {
                 Shape = MapShapeType.None,

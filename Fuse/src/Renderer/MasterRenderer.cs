@@ -57,7 +57,7 @@ public class MasterRenderer
 
     public void Init(AssetManagement.AssetManager assets, int width, int height)
     {
-        _scrWidth = width;
+        _scrWidth = width; 
         _scrHeight = height;
 
         _shader = assets.GetShader($"{Fuse.ResPath.Path}/Shaders/default.vert", $"{Fuse.ResPath.Path}/Shaders/default.frag")!;

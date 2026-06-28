@@ -29,7 +29,7 @@
         "is_trigger": false,
         "half_extents": [
           100,
-          0.001,
+          0.1,
           100
         ]
       }
@@ -43,15 +43,15 @@
       "body": {
         "shape": "box",
         "position": [
-          -0.01390525,
-          0.5,
+          -0.013905239,
+          0.5799995,
           -2.746499
         ],
         "rotation": [
-          1,
-          0,
-          0,
-          0
+          0.99999994,
+          1.370721E-08,
+          -0.00039999548,
+          1.8600446E-08
         ],
         "mass": 10,
         "friction": 0.5,
@@ -118,15 +118,15 @@
       "body": {
         "shape": "box",
         "position": [
-          -10,
-          2,
-          -5
+          -5.0046115,
+          0.6000001,
+          -4.9943566
         ],
         "rotation": [
           1,
-          2.9102038E-11,
-          0,
-          0
+          -7.7953935E-08,
+          7.296458E-05,
+          -4.4718035E-08
         ],
         "mass": 10,
         "friction": 0.5,
@@ -146,15 +146,15 @@
       "body": {
         "shape": "box",
         "position": [
-          -1,
-          1,
-          -6
+          -1.0001074,
+          0.5999999,
+          -5.9995975
         ],
         "rotation": [
           1,
-          0,
-          0,
-          0
+          -1.0411844E-07,
+          2.1672982E-05,
+          -8.011921E-08
         ],
         "mass": 10,
         "friction": 0.5,
@@ -318,6 +318,7 @@
           "rotation": 0
         }
       ],
+      "mesh": "brush_c7a1e5a7",
       "texture": "Textures/brickwall001a.bmp",
       "body": {
         "shape": "box",
@@ -494,6 +495,7 @@
           "rotation": 0
         }
       ],
+      "mesh": "brush_c7a1e5adwa7_copy_copy",
       "texture": "Textures/brickwall001a.bmp",
       "body": {
         "shape": "box",
@@ -670,6 +672,7 @@
           "rotation": 0
         }
       ],
+      "mesh": "brush_c7a1e5adwa7_copy_copy_copy",
       "texture": "Textures/brickwall001a.bmp",
       "body": {
         "shape": "box",
@@ -846,6 +849,7 @@
           "rotation": 0
         }
       ],
+      "mesh": "brush_c7a1e5adwa7_copy_copy_copy_copy",
       "texture": "Textures/brickwall001a.bmp",
       "body": {
         "shape": "box",
@@ -1022,6 +1026,7 @@
           "rotation": 0
         }
       ],
+      "mesh": "brush_c7a1e5adwa7_copy_copy_copy_copy_1",
       "texture": "Textures/brickwall001a.bmp",
       "body": {
         "shape": "box",
@@ -1198,6 +1203,7 @@
           "rotation": 0
         }
       ],
+      "mesh": "brush_c7a1e5a7_copy",
       "texture": "Textures/brickwall001a.bmp",
       "body": {
         "shape": "box",
@@ -1231,15 +1237,15 @@
       "body": {
         "shape": "trimesh",
         "position": [
-          3,
-          2,
-          -7
+          2.6749508,
+          0.5257278,
+          -6.1522226
         ],
         "rotation": [
-          1,
-          0,
-          0,
-          0
+          0.70371485,
+          0.43284357,
+          0.30866474,
+          -0.47133645
         ],
         "mass": 10,
         "friction": 0.5,
@@ -1398,6 +1404,7 @@
           "rotation": 0
         }
       ],
+      "mesh": "brush_e3575f76",
       "texture": "Textures/dev_measurecrate01.bmp",
       "body": {
         "shape": "box",
@@ -1574,6 +1581,7 @@
           "rotation": 0
         }
       ],
+      "mesh": "brush_e3575f76_copy_2",
       "texture": "Textures/dev_measurecrate01.bmp",
       "body": {
         "shape": "box",
@@ -1683,40 +1691,18 @@
       "body": {
         "shape": "trimesh",
         "position": [
-          3,
-          2,
-          -7
+          2.6993203,
+          0.373986,
+          -7.698123
         ],
         "rotation": [
-          1,
-          0,
-          0,
-          0
+          0.9375943,
+          -0.2945161,
+          0.12385111,
+          0.13725202
         ],
         "mass": 10,
         "friction": 0.5,
-        "restitution": 0,
-        "is_trigger": false
-      }
-    },
-    {
-      "id": "group_1",
-      "visible": true,
-      "body": {
-        "shape": "none",
-        "position": [
-          -4,
-          1.8410592,
-          4
-        ],
-        "rotation": [
-          1,
-          0,
-          0,
-          0
-        ],
-        "mass": 0,
-        "friction": 0,
         "restitution": 0,
         "is_trigger": false
       }
@@ -1871,6 +1857,7 @@
           "rotation": 0
         }
       ],
+      "mesh": "brush_38a45b71",
       "texture": "Textures/dev_measurecrate01.bmp",
       "behaviour": "MovingFloor",
       "body": {
@@ -1878,7 +1865,7 @@
         "position": [
           -15.5,
           2.125,
-          -11.5
+          -11.826882
         ],
         "rotation": [
           1,
@@ -2072,6 +2059,7 @@
           "rotation": 0
         }
       ],
+      "mesh": "brush_e3575f76_copy_2_copy",
       "texture": "Textures/dev_measurecrate01.bmp",
       "body": {
         "shape": "box",
@@ -2096,154 +2084,60 @@
           0.125
         ]
       }
-    },
-    {
-      "id": "new_spot_light",
-      "visible": true,
-      "light_type": "spot",
-      "light_color": [
-        0.7058821,
-        0,
-        1
-      ],
-      "light_intensity": 6.3,
-      "light_radius": 13.1,
-      "light_inner_cone": 0.4101524,
-      "light_outer_cone": 0.76794493,
-      "light_cast_shadows": true,
-      "light_shadow_bias": 0.0005,
-      "body": {
-        "shape": "none",
-        "position": [
-          10,
-          3.9218373,
-          2.2483387
-        ],
-        "rotation": [
-          0.98803306,
-          0.15424235,
-          0,
-          0
-        ],
-        "mass": 0,
-        "friction": 0.5,
-        "restitution": 0,
-        "is_trigger": false
-      }
-    },
-    {
-      "id": "new_point_light",
-      "visible": true,
-      "interactable": "Door",
-      "light_type": "point",
-      "light_color": [
-        1,
-        0.125,
-        0
-      ],
-      "light_intensity": 8.7,
-      "light_radius": 7.1,
-      "light_inner_cone": 0.2617994,
-      "light_outer_cone": 0.5235988,
-      "light_cast_shadows": true,
-      "light_shadow_bias": 0.005,
-      "body": {
-        "shape": "none",
-        "position": [
-          -0.92328644,
-          3.4481769,
-          4.890121
-        ],
-        "rotation": [
-          1,
-          0,
-          0,
-          0
-        ],
-        "mass": 0,
-        "friction": 0.5,
-        "restitution": 0,
-        "is_trigger": false
-      }
-    },
-    {
-      "id": "new_point_light_copy",
-      "visible": true,
-      "interactable": "Door",
-      "light_type": "point",
-      "light_color": [
-        0.67647064,
-        1,
-        0
-      ],
-      "light_intensity": 5,
-      "light_radius": 7.1,
-      "light_inner_cone": 0.2617994,
-      "light_outer_cone": 0.5235988,
-      "light_cast_shadows": true,
-      "light_shadow_bias": 0.005,
-      "body": {
-        "shape": "none",
-        "position": [
-          -5.845193,
-          3.4481769,
-          6.705275
-        ],
-        "rotation": [
-          1,
-          0,
-          0,
-          0
-        ],
-        "mass": 0,
-        "friction": 0.5,
-        "restitution": 0,
-        "is_trigger": false
-      }
-    },
-    {
-      "id": "new_point_light_1",
-      "visible": true,
-      "parent": "new_box",
-      "light_type": "point",
-      "light_color": [
-        0.82352924,
-        0,
-        1
-      ],
-      "light_intensity": 15.45,
-      "light_radius": 7.3,
-      "light_inner_cone": 0.2617994,
-      "light_outer_cone": 0.5235988,
-      "light_cast_shadows": true,
-      "light_shadow_bias": 0.0005,
-      "body": {
-        "shape": "none",
-        "position": [
-          -10,
-          3,
-          -5
-        ],
-        "rotation": [
-          1,
-          0,
-          0,
-          0
-        ],
-        "mass": 0,
-        "friction": 0.5,
-        "restitution": 0,
-        "is_trigger": false
-      }
     }
   ],
   "player_spawn": {
     "position": [
       9.3,
-      1.4000001,
+      1.49999,
       10.2
     ],
-    "yaw": -90,
-    "pitch": 0
-  }
+    "yaw": -0.6999935,
+    "pitch": -3.6999986
+  },
+  "lights": [
+    {
+      "type": "spot",
+      "position": [
+        10,
+        3.9218373,
+        2.2483387
+      ],
+      "color": [
+        0.7058821,
+        0,
+        1
+      ],
+      "radius": 13.1,
+      "cast_shadows": false,
+      "shadow_bias": 0.005,
+      "intensity": 6.3,
+      "enabled": true,
+      "direction": [
+        0,
+        -0.9524186,
+        -0.3047931
+      ],
+      "inner_cone": 0.4101524,
+      "outer_cone": 0.76794493
+    },
+    {
+      "type": "point",
+      "position": [
+        -0.92328644,
+        3.4481769,
+        4.890121
+      ],
+      "color": [
+        1,
+        0.125,
+        0
+      ],
+      "radius": 7.1,
+      "cast_shadows": true,
+      "shadow_bias": 0.005,
+      "intensity": 8.7,
+      "enabled": true
+    }
+  ]
 }

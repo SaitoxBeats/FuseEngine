@@ -123,7 +123,7 @@ public class MapDocument
             mo.LightInnerCone = obj.TryGetPropertyValue("light_inner_cone", out var licNode) ? (float)licNode! : float.DegreesToRadians(20);
             mo.LightOuterCone = obj.TryGetPropertyValue("light_outer_cone", out var locNode) ? (float)locNode! : float.DegreesToRadians(30);
             mo.LightCastShadows = obj.TryGetPropertyValue("light_cast_shadows", out var csNode) && (bool)csNode!;
-            mo.LightShadowBias = obj.TryGetPropertyValue("light_shadow_bias", out var sbNode) ? (float)sbNode! : 0.005f;
+            mo.LightShadowBias = obj.TryGetPropertyValue("light_shadow_bias", out var sbNode) ? (float)sbNode! : 0.00050f;
         }
 
         if (obj.TryGetPropertyValue("body", out var bodyNode))

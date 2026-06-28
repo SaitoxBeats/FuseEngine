@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using Fuse.Core;
 
 namespace Fuse.Interaction;
@@ -23,16 +23,18 @@ public sealed class DoorInteract : IInteractable
         if (Entity?.Body == null || !Entity.Body.IsBuilt || World == null || _animating)
             return;
 
+        bool isChild = !string.IsNullOrEmpty(Entity.ParentId);
+
         if (!_baseSet)
         {
-            _baseRot = Entity.Body.Rotation(World);
+            _baseRot = isChild ? Entity.InitialRelativeRotation : Entity.Body.Rotation(World);
             _baseSet = true;
         }
 
         _open = !_open;
         _animating = true;
         _elapsed = 0f;
-        _from = Entity.Body.Rotation(World);
+        _from = isChild ? Entity.InitialRelativeRotation : Entity.Body.Rotation(World);
         _to = _baseRot * Quaternion.CreateFromAxisAngle(Vector3.UnitY, _open ? MathUtil.Deg(90f) : 0f);
 
         Logger.Info($"DOOR: {Entity.Id}");
@@ -51,7 +53,15 @@ public sealed class DoorInteract : IInteractable
             : t * t;    // ease-in quadrático
 
         var rot = Quaternion.Slerp(_from, _to, eased);
-        World.SetBodyPositionAndRotation(Entity.Body.Native, Entity.Body.Position(World), rot);
+        
+        if (string.IsNullOrEmpty(Entity.ParentId))
+        {
+            World.SetBodyPositionAndRotation(Entity.Body.Native, Entity.Body.Position(World), rot);
+        }
+        else
+        {
+            Entity.InitialRelativeRotation = rot; // O Scene.cs se encarrega de sincronizar a física baseada nisso
+        }
 
         if (t >= 1f)
         {

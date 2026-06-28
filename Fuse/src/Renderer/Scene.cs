@@ -35,6 +35,7 @@ public class Entity
     public string ParentId { get; set; } = "";
     public Vector3 InitialRelativePosition { get; set; }
     public Quaternion InitialRelativeRotation { get; set; } = Quaternion.Identity;
+    public System.Text.Json.Nodes.JsonObject? MapData { get; set; }
 }
 
 public class Scene
@@ -53,7 +54,7 @@ public class Scene
 
     public void RemoveLight(Light light) => _lights.Remove(light);
 
-    public Entity Add(Mesh mesh, string id, RigidBody? body = null)
+    public Entity Add(Mesh? mesh, string id, RigidBody? body = null)
     {
         var entity = new Entity
         {
