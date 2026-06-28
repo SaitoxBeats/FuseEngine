@@ -20,13 +20,18 @@ public class Player : IDisposable
     private float _currentEyeHeight = 0.9f;
 
     private float _maxSpeedGround = 4.0f;
-    private float _maxSpeedAir = 1.0f;
+    private float _maxSpeedAir = 2.0f;
     private float _groundAccel = 10.0f;
-    private float _airAccel = 150.0f;
+    private float _airAccel = 350.0f;
     private float _frictionValue = 4.0f;
     private float _stopSpeed = 1.5f;
     private float _jumpForce = 3.8f;
     private float boostFactor = 1.05f;
+    private float _surfAirAccel = 150.0f;
+    private float _surfMaxSpeed = 3.8f;
+    private float _surfGravityMul = 2.0f;
+    private float _maxVelocity = 3500.0f;
+    private float _surfMinSpeed = 1.0f;
 
     private bool _isSprinting;
     private float _sprintSpeedMul = 1.5f;
@@ -108,10 +113,12 @@ public class Player : IDisposable
         HandleCrouch();
         ApplyMovement(dt);
 
+        bool isGrounded = _character.GroundState == GroundState.OnGround;
+
         var updSettings = new ExtendedUpdateSettings
         {
-            StickToFloorStepDown = new Vector3(0, -0.5f, 0),
-            WalkStairsStepUp = new Vector3(0, 0.5f, 0),
+            StickToFloorStepDown = isGrounded ? new Vector3(0, -0.5f, 0) : Vector3.Zero,
+            WalkStairsStepUp = isGrounded ? new Vector3(0, 0.5f, 0) : Vector3.Zero,
             WalkStairsMinStepForward = 0.02f,
             WalkStairsStepForwardTest = 0.15f,
             WalkStairsCosAngleForwardContact = float.Cos(float.DegreesToRadians(75.0f)),
@@ -165,6 +172,7 @@ public class Player : IDisposable
     {
         Vector3 velocity = _character.LinearVelocity;
         bool onGround = _character.GroundState == GroundState.OnGround;
+        bool onSteepGround = _character.GroundState == GroundState.OnSteepGround;
 
         Vector2 wishDir = BuildWishDir();
 
@@ -239,16 +247,54 @@ public class Player : IDisposable
         }
         else
         {
+            bool isSurfing = onSteepGround;
+            var contacts = _character.GetActiveContacts();
+            foreach (var c in contacts)
+            {
+                if (c.ContactNormal.Y < 0.707f)
+                {
+                    isSurfing = true;
+                    break;
+                }
+            }
+
             Vector2 horiz = new(velocity.X, velocity.Z);
-            //float airCap = float.Max(horiz.Length(), _maxSpeedAir);
-            //horiz = Accelerate(horiz, wishDir, airCap, _airAccel, dt); infinite air speed bug
-            horiz = Accelerate(horiz, wishDir, _maxSpeedAir, _airAccel, dt);
+            float currentAirSpeed = isSurfing ? _surfMaxSpeed : _maxSpeedAir;
+            float currentAirAccel = isSurfing ? _surfAirAccel : _airAccel;
+            horiz = Accelerate(horiz, wishDir, currentAirSpeed, currentAirAccel, dt);
             velocity.X = horiz.X;
             velocity.Z = horiz.Y;
+            
+            // Add gravity
+            float gravMul = isSurfing ? _surfGravityMul : 1.0f;
+            velocity += _world.Gravity * gravMul * dt;
+            
+            // Clip velocity against all steep contacts to avoid Jolt's internal collision killing speed
+            foreach (var c in contacts)
+            {
+                if (c.ContactNormal.Y < 0.707f) // Steeper than 45 degrees
+                {
+                    velocity = ClipVelocity(velocity, Vector3.Normalize(c.ContactNormal), 1.0f);
+                }
+            }
+            
+            if (onSteepGround)
+            {
+                Vector3 rampNormal = _character.GroundNormal;
+                if (rampNormal.LengthSquared() > 0.01f)
+                {
+                    velocity = ClipVelocity(velocity, Vector3.Normalize(rampNormal), 1.0f);
+                }
+            }
+        
+            // Hard cap to prevent engine explosions
+            float speed = velocity.Length();
+            if (speed > _maxVelocity)
+                velocity = Vector3.Normalize(velocity) * _maxVelocity;
         }
 
-        if (!onGround)
-            velocity += _world.Gravity * dt;
+        //if (!onGround)
+        //    velocity += _world.Gravity * dt;
 
         _character.LinearVelocity = velocity;
     }
@@ -257,13 +303,24 @@ public class Player : IDisposable
     {
         if (!Input.Input.IsCursorDisabled())
             return Vector2.Zero;
+
+        Vector3 forward = _camera.Front;
+        forward.Y = 0.0f;
+        if (forward.LengthSquared() > 0.001f)
+            forward = Vector3.Normalize(forward);
+
+        Vector3 right = _camera.Right;
+        right.Y = 0.0f;
+        if (right.LengthSquared() > 0.001f)
+            right = Vector3.Normalize(right);
+
         Vector3 dir = Vector3.Zero;
-        if (Input.Input.KeyDown(Input.KeyCodes.W)) dir += _camera.Front;
-        if (Input.Input.KeyDown(Input.KeyCodes.S)) dir -= _camera.Front;
-        if (Input.Input.KeyDown(Input.KeyCodes.A)) dir -= _camera.Right;
-        if (Input.Input.KeyDown(Input.KeyCodes.D)) dir += _camera.Right;
-        dir.Y = 0.0f;
-        if (dir.Length() < 0.01f) return Vector2.Zero;
+        if (Input.Input.KeyDown(Input.KeyCodes.W)) dir += forward;
+        if (Input.Input.KeyDown(Input.KeyCodes.S)) dir -= forward;
+        if (Input.Input.KeyDown(Input.KeyCodes.A)) dir -= right;
+        if (Input.Input.KeyDown(Input.KeyCodes.D)) dir += right;
+
+        if (dir.LengthSquared() < 0.01f) return Vector2.Zero;
         dir = Vector3.Normalize(dir);
         return new Vector2(dir.X, dir.Z);
     }
@@ -276,6 +333,16 @@ public class Player : IDisposable
         if (addSpeed <= 0.0f) return velocity;
         float accelSpeed = float.Min(accel * dt * wishSpeed, addSpeed);
         return velocity + wishDir * accelSpeed;
+    }
+
+    private Vector3 ClipVelocity(Vector3 inputVel, Vector3 normal, float overbounce = 1.0f)
+    {
+        float backoff = Vector3.Dot(inputVel, normal);
+        if (backoff < 0.0f)
+        {
+            return inputVel - normal * backoff * overbounce;
+        }
+        return inputVel;
     }
 
     private Vector2 ApplyFriction(Vector2 velocity, float dt)
