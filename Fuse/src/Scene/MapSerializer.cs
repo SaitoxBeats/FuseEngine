@@ -354,6 +354,8 @@ public static class MapSerializer
                 ? (string)texNode! : "";
 
             Renderer.Mesh? mesh = null;
+            System.Numerics.Vector3[]? brushCollVerts = null;
+            uint[]? brushCollIndices = null;
             string modelPath = meshKey;
             if (resPath != null && isModel && !Path.IsPathRooted(meshKey))
                 modelPath = Path.GetFullPath(Path.Combine(resPath, meshKey));
@@ -363,6 +365,9 @@ public static class MapSerializer
                 var brushObj = (Brush)MapDocument.ParseObject(obj);
                 var meshData = MeshGenerator.Generate(brushObj);
                 mesh = new Renderer.Mesh(assets.Gl, meshData.Vertices, meshData.Indices);
+                brushCollVerts = new System.Numerics.Vector3[meshData.Vertices.Length];
+                for (int i = 0; i < meshData.Vertices.Length; i++) brushCollVerts[i] = meshData.Vertices[i].Position;
+                brushCollIndices = meshData.Indices;
             }
             else if (isModel)
             {
@@ -515,13 +520,20 @@ public static class MapSerializer
                 if (entity.Behaviours.Count > 0)
                     body.SetKinematic(true);
 
-                if (isTrimesh && isModel)
+                if (isTrimesh)
                 {
-                    var model = assets.GetModel(modelPath);
-                    if (model != null && model.CollVertices.Length > 0)
-                        body.SetTrimesh(model.CollVertices, model.CollIndices, modelScale);
+                    if (isBrush && brushCollVerts != null)
+                    {
+                        body.SetConvexHull(brushCollVerts);
+                    }
                     else
-                        body.SetBox(new Vector3(0.5f));
+                    {
+                        var model = assets.GetModel(modelPath);
+                        if (model != null && model.CollVertices.Length > 0)
+                            body.SetTrimesh(model.CollVertices, model.CollIndices, modelScale);
+                        else
+                            body.SetBox(new Vector3(0.5f));
+                    }
                 }
 
                 body.Build(physics);

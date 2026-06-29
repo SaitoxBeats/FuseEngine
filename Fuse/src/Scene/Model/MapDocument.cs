@@ -178,6 +178,7 @@ public class MapDocument
         switch (body.Shape)
         {
             case MapShapeType.Box:
+            case MapShapeType.Trimesh:
                 if (bj.TryGetPropertyValue("half_extents", out var heNode))
                     body.HalfExtents = Vec3FromJson(heNode!.AsArray());
                 break;
@@ -294,6 +295,7 @@ public class MapDocument
         switch (body.Shape)
         {
             case MapShapeType.Box:
+            case MapShapeType.Trimesh:
                 if (body.HalfExtents.HasValue)
                     bj["half_extents"] = Vec3ToJson(body.HalfExtents.Value);
                 break;

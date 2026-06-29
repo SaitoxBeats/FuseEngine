@@ -11,6 +11,29 @@ public class Brush : MapObject
         Faces.Add(face);
     }
 
+    public void ApplyTransformMatrix(System.Numerics.Matrix4x4 transform)
+    {
+        if (System.Numerics.Matrix4x4.Invert(transform, out var inverted))
+        {
+            var invTranspose = System.Numerics.Matrix4x4.Transpose(inverted);
+            for (int i = 0; i < Faces.Count; i++)
+            {
+                var face = Faces[i];
+                var plane = face.Plane;
+                var v = new System.Numerics.Vector4(plane.Normal, plane.D);
+                var vNew = System.Numerics.Vector4.Transform(v, invTranspose);
+                
+                var newNormal = new System.Numerics.Vector3(vNew.X, vNew.Y, vNew.Z);
+                float len = newNormal.Length();
+                if (len > 0.000001f)
+                {
+                    newNormal /= len;
+                    face.Plane = new System.Numerics.Plane(newNormal, vNew.W / len);
+                }
+            }
+        }
+    }
+
     public void ScalePlanes(System.Numerics.Vector3 scale)
     {
         for (int i = 0; i < Faces.Count; i++)

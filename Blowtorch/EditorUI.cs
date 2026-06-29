@@ -40,7 +40,7 @@ public unsafe class EditorUI
 
     // Selection & Modes
     public enum EditorMode { Select, DrawBrush }
-    public enum GizmoOperation { Translate, Rotate, Scale }
+    public enum GizmoOperation { Translate, Rotate, Scale, Shear }
     
     private EditorMode _currentMode = EditorMode.Select;
     private GizmoOperation _gizmoOperation = GizmoOperation.Translate;
@@ -77,6 +77,7 @@ public unsafe class EditorUI
     private HandleType _activeHandle = HandleType.None;
     private EditorViewport? _draggingHandleViewport;
     private Vector3 _centerDragLastHit;
+    private Vector3 _shearLastHit;
     private void SyncSelection(MapDocument doc)
     {
         if (_selectedObject != null && !doc.Objects.Contains(_selectedObject))
@@ -856,6 +857,8 @@ public unsafe class EditorUI
             if (ImGui.RadioButton("Rotate (E)", _gizmoOperation == GizmoOperation.Rotate)) _gizmoOperation = GizmoOperation.Rotate;
             ImGui.SameLine();
             if (ImGui.RadioButton("Scale (R)", _gizmoOperation == GizmoOperation.Scale)) _gizmoOperation = GizmoOperation.Scale;
+            ImGui.SameLine();
+            if (ImGui.RadioButton("Shear (T)", _gizmoOperation == GizmoOperation.Shear)) _gizmoOperation = GizmoOperation.Shear;
 
             if (!ImGui.IsMouseDown(ImGuiMouseButton.Right) && !ImGui.GetIO().WantTextInput)
             {
@@ -877,6 +880,7 @@ public unsafe class EditorUI
                 if (ImGui.IsKeyPressed(ImGuiKey.W)) _gizmoOperation = GizmoOperation.Translate;
                 if (ImGui.IsKeyPressed(ImGuiKey.E)) _gizmoOperation = GizmoOperation.Rotate;
                 if (ImGui.IsKeyPressed(ImGuiKey.R)) _gizmoOperation = GizmoOperation.Scale;
+                if (ImGui.IsKeyPressed(ImGuiKey.T)) _gizmoOperation = GizmoOperation.Shear;
                 
                 if (_currentMode == EditorMode.DrawBrush && _previewManager.HasPreview && ImGui.IsKeyPressed(ImGuiKey.Enter))
                 {
@@ -1009,6 +1013,11 @@ public unsafe class EditorUI
                             _draggingHandleViewport = viewport;
                             _previewManager.IsDraggingHandle = isPreview;
                             _preEditState = sceneService.Document.Serialize();
+                            
+                            EditorGizmo.GetMouseRay(mousePos, viewport.Camera.ViewMatrix, viewport.Camera.ProjectionMatrix(vpSize.X / vpSize.Y), vpPos, vpSize, out Vector3 ro, out Vector3 rd);
+                            _shearLastHit = ComputeHitPoint(viewport.Camera.ViewType, ro, rd);
+                            _shearLastHit = ApplySnap(_shearLastHit, _snapGrid);
+                            
                             break;
                         }
                     }
@@ -1109,7 +1118,7 @@ public unsafe class EditorUI
                 else if (_gizmoOperation == GizmoOperation.Scale)
                 {
                     Vector3 currentScale = Vector3.One;
-                    if (body.Shape == MapShapeType.Box && body.HalfExtents.HasValue) currentScale = body.HalfExtents.Value * 2.0f;
+                    if ((body.Shape == MapShapeType.Box || body.Shape == MapShapeType.Trimesh) && body.HalfExtents.HasValue) currentScale = body.HalfExtents.Value * 2.0f;
                     else if (body.Shape == MapShapeType.Sphere && body.Radius.HasValue) currentScale = new Vector3(body.Radius.Value * 2.0f);
                     else currentScale = _selectedObject.ModelScale;
 
@@ -1133,7 +1142,7 @@ public unsafe class EditorUI
                                     obj.Body.Position = pivot + relativePos * scaleMult;
                                 }
 
-                                if (obj.Body.Shape == MapShapeType.Box && obj.Body.HalfExtents.HasValue)
+                                if ((obj.Body.Shape == MapShapeType.Box || obj.Body.Shape == MapShapeType.Trimesh) && obj.Body.HalfExtents.HasValue)
                                 {
                                     Vector3 oldExtents = obj.Body.HalfExtents.Value;
                                     obj.Body.HalfExtents = Vector3.Max(new Vector3(0.05f), obj.Body.HalfExtents.Value * scaleMult);
@@ -1177,7 +1186,7 @@ public unsafe class EditorUI
                                 entity.Transform.Scale = Vector3.One;
                                 entity.Mesh = assetService.GetOrCreateMesh(brushObj);
                             }
-                            else if (obj.Body.Shape == MapShapeType.Box && obj.Body.HalfExtents.HasValue)
+                            else if ((obj.Body.Shape == MapShapeType.Box || obj.Body.Shape == MapShapeType.Trimesh) && obj.Body.HalfExtents.HasValue)
                                 entity.Transform.Scale = obj.Body.HalfExtents.Value * 2.0f;
                             else if (obj.Body.Shape == MapShapeType.Sphere && obj.Body.Radius.HasValue)
                                 entity.Transform.Scale = new Vector3(obj.Body.Radius.Value * 2.0f);
@@ -1347,6 +1356,132 @@ public unsafe class EditorUI
                     _centerDragLastHit = hitPoint;
                 }
             }
+            else if (_gizmoOperation == GizmoOperation.Shear && _activeHandle != HandleType.Center && _activeHandle != HandleType.None && !_previewManager.IsDraggingHandle && _selectedObjects.All(o => o is Brush))
+            {
+                int hAxis = 0, vAxis = 0;
+                bool hInverted = false, vInverted = false;
+                if (viewport.Camera.ViewType == CameraViewType.Top) { hAxis = 0; vAxis = 2; }
+                else if (viewport.Camera.ViewType == CameraViewType.Front) { hAxis = 0; vAxis = 1; vInverted = true; }
+                else if (viewport.Camera.ViewType == CameraViewType.Side) { hAxis = 2; vAxis = 1; hInverted = true; vInverted = true; }
+
+                bool dragLeft = _activeHandle == HandleType.Left || _activeHandle == HandleType.TopLeft || _activeHandle == HandleType.BottomLeft;
+                bool dragRight = _activeHandle == HandleType.Right || _activeHandle == HandleType.TopRight || _activeHandle == HandleType.BottomRight;
+                bool dragTop = _activeHandle == HandleType.Top || _activeHandle == HandleType.TopLeft || _activeHandle == HandleType.TopRight;
+                bool dragBottom = _activeHandle == HandleType.Bottom || _activeHandle == HandleType.BottomLeft || _activeHandle == HandleType.BottomRight;
+
+                bool shearH = dragTop || dragBottom;
+                bool shearV = dragLeft || dragRight;
+
+                if (shearH && !dragLeft && !dragRight) 
+                {
+                    float deltaH = GetComp(hitPoint, hAxis) - GetComp(_shearLastHit, hAxis);
+                    float fixedV = (dragTop && !vInverted) || (dragBottom && vInverted) ? GetComp(boxMax, vAxis) : GetComp(boxMin, vAxis);
+                    float movingV = (dragTop && !vInverted) || (dragBottom && vInverted) ? GetComp(boxMin, vAxis) : GetComp(boxMax, vAxis);
+                    
+                    float height = movingV - fixedV;
+                    if (MathF.Abs(height) > 0.001f && MathF.Abs(deltaH) > 0.00001f)
+                    {
+                        float k = deltaH / height;
+                        var shearMat = Matrix4x4.Identity;
+                        if (vAxis == 0 && hAxis == 1) shearMat.M12 = k;
+                        else if (vAxis == 0 && hAxis == 2) shearMat.M13 = k;
+                        else if (vAxis == 1 && hAxis == 0) shearMat.M21 = k;
+                        else if (vAxis == 1 && hAxis == 2) shearMat.M23 = k;
+                        else if (vAxis == 2 && hAxis == 0) shearMat.M31 = k;
+                        else if (vAxis == 2 && hAxis == 1) shearMat.M32 = k;
+
+                        foreach (Brush brush in _selectedObjects)
+                        {
+                            brush.ApplyTransformMatrix(shearMat);
+                            if (brush.Body != null)
+                            {
+                                float localFixedV = fixedV - GetComp(brush.Body.Position, vAxis);
+                                float shiftH = -k * localFixedV;
+                                var pos = brush.Body.Position;
+                                SetComponent(ref pos, hAxis, GetComp(pos, hAxis) + shiftH);
+                                brush.Body.Position = pos;
+                            }
+                            assetService.InvalidateMesh(brush.Id);
+                            var entity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == brush.Id);
+                            if (entity != null)
+                            {
+                                entity.Transform.Position = brush.Body.Position;
+                                entity.Transform.Scale = Vector3.One;
+                                entity.Mesh = assetService.GetOrCreateMesh(brush);
+                            }
+                            
+                            var meshData = Fuse.Scene.Model.MeshGenerator.Generate(brush);
+                            if (meshData.Vertices.Length > 0)
+                            {
+                                System.Numerics.Vector3 min = new System.Numerics.Vector3(float.MaxValue);
+                                System.Numerics.Vector3 max = new System.Numerics.Vector3(float.MinValue);
+                                foreach (var v in meshData.Vertices)
+                                {
+                                    min = System.Numerics.Vector3.Min(min, v.Position);
+                                    max = System.Numerics.Vector3.Max(max, v.Position);
+                                }
+                                brush.Body.HalfExtents = (max - min) / 2f;
+                                brush.Body.Shape = Fuse.Scene.Model.MapShapeType.Trimesh;
+                            }
+                        }
+                    }
+                }
+                else if (shearV && !dragTop && !dragBottom)
+                {
+                    float deltaV = GetComp(hitPoint, vAxis) - GetComp(_shearLastHit, vAxis);
+                    float fixedH = (dragLeft && !hInverted) || (dragRight && hInverted) ? GetComp(boxMax, hAxis) : GetComp(boxMin, hAxis);
+                    float movingH = (dragLeft && !hInverted) || (dragRight && hInverted) ? GetComp(boxMin, hAxis) : GetComp(boxMax, hAxis);
+
+                    float width = movingH - fixedH;
+                    if (MathF.Abs(width) > 0.001f && MathF.Abs(deltaV) > 0.00001f)
+                    {
+                        float k = deltaV / width;
+                        var shearMat = Matrix4x4.Identity;
+                        if (hAxis == 0 && vAxis == 1) shearMat.M12 = k;
+                        else if (hAxis == 0 && vAxis == 2) shearMat.M13 = k;
+                        else if (hAxis == 1 && vAxis == 0) shearMat.M21 = k;
+                        else if (hAxis == 1 && vAxis == 2) shearMat.M23 = k;
+                        else if (hAxis == 2 && vAxis == 0) shearMat.M31 = k;
+                        else if (hAxis == 2 && vAxis == 1) shearMat.M32 = k;
+
+                        foreach (Brush brush in _selectedObjects)
+                        {
+                            brush.ApplyTransformMatrix(shearMat);
+                            if (brush.Body != null)
+                            {
+                                float localFixedH = fixedH - GetComp(brush.Body.Position, hAxis);
+                                float shiftV = -k * localFixedH;
+                                var pos = brush.Body.Position;
+                                SetComponent(ref pos, vAxis, GetComp(pos, vAxis) + shiftV);
+                                brush.Body.Position = pos;
+                            }
+                            assetService.InvalidateMesh(brush.Id);
+                            var entity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == brush.Id);
+                            if (entity != null)
+                            {
+                                entity.Transform.Position = brush.Body.Position;
+                                entity.Mesh = assetService.GetOrCreateMesh(brush);
+                            }
+                                
+                            var meshData = Fuse.Scene.Model.MeshGenerator.Generate(brush);
+                            if (meshData.Vertices.Length > 0)
+                            {
+                                System.Numerics.Vector3 min = new System.Numerics.Vector3(float.MaxValue);
+                                System.Numerics.Vector3 max = new System.Numerics.Vector3(float.MinValue);
+                                foreach (var v in meshData.Vertices)
+                                {
+                                    min = System.Numerics.Vector3.Min(min, v.Position);
+                                    max = System.Numerics.Vector3.Max(max, v.Position);
+                                }
+                                brush.Body.HalfExtents = (max - min) / 2f;
+                                brush.Body.Shape = Fuse.Scene.Model.MapShapeType.Trimesh;
+                            }
+                        }
+                    }
+                }
+                
+                _shearLastHit = hitPoint;
+            }
             else
             {
 
@@ -1423,8 +1558,28 @@ public unsafe class EditorUI
 
                 Vector3 sMin = Vector3.Zero;
                 Vector3 sMax = Vector3.Zero;
-
-                if (selObj.Body.Shape == MapShapeType.Box && selObj.Body.HalfExtents.HasValue)
+                bool drawAABB = true;
+                
+                if (selObj is Fuse.Scene.Model.Brush selBrush)
+                {
+                    drawAABB = false; // We draw the actual wireframe for brushes
+                    var meshData = Fuse.Scene.Model.MeshGenerator.Generate(selBrush);
+                    if (meshData.LineIndices != null)
+                    {
+                        for (int i = 0; i < meshData.LineIndices.Length; i += 2)
+                        {
+                            var v1 = meshData.Vertices[meshData.LineIndices[i]].Position + selBrush.Body.Position;
+                            var v2 = meshData.Vertices[meshData.LineIndices[i + 1]].Position + selBrush.Body.Position;
+                            var p1 = WorldToScreen(v1, viewport, vpPos, vpSize);
+                            var p2 = WorldToScreen(v2, viewport, vpPos, vpSize);
+                            if (p1.X > 0 && p2.X > 0)
+                            {
+                                drawList.AddLine(p1, p2, otherSelColor, 2.0f);
+                            }
+                        }
+                    }
+                }
+                else if ((selObj.Body.Shape == MapShapeType.Box || selObj.Body.Shape == MapShapeType.Trimesh) && selObj.Body.HalfExtents.HasValue)
                 {
                     sMin = selObj.Body.Position - selObj.Body.HalfExtents.Value;
                     sMax = selObj.Body.Position + selObj.Body.HalfExtents.Value;
@@ -1444,30 +1599,33 @@ public unsafe class EditorUI
                     sMax = selObj.Body.Position + new Vector3(r);
                 }
 
-                Vector3[] sCorners = new Vector3[8]
+                if (drawAABB)
                 {
-                    new Vector3(sMin.X, sMin.Y, sMin.Z),
-                    new Vector3(sMax.X, sMin.Y, sMin.Z),
-                    new Vector3(sMin.X, sMax.Y, sMin.Z),
-                    new Vector3(sMax.X, sMax.Y, sMin.Z),
-                    new Vector3(sMin.X, sMin.Y, sMax.Z),
-                    new Vector3(sMax.X, sMin.Y, sMax.Z),
-                    new Vector3(sMin.X, sMax.Y, sMax.Z),
-                    new Vector3(sMax.X, sMax.Y, sMax.Z)
-                };
+                    Vector3[] sCorners = new Vector3[8]
+                    {
+                        new Vector3(sMin.X, sMin.Y, sMin.Z),
+                        new Vector3(sMax.X, sMin.Y, sMin.Z),
+                        new Vector3(sMin.X, sMax.Y, sMin.Z),
+                        new Vector3(sMax.X, sMax.Y, sMin.Z),
+                        new Vector3(sMin.X, sMin.Y, sMax.Z),
+                        new Vector3(sMax.X, sMin.Y, sMax.Z),
+                        new Vector3(sMin.X, sMax.Y, sMax.Z),
+                        new Vector3(sMax.X, sMax.Y, sMax.Z)
+                    };
 
-                float selMinX = float.MaxValue, selMinY = float.MaxValue;
-                float selMaxX = float.MinValue, selMaxY = float.MinValue;
-                foreach (var c in sCorners)
-                {
-                    Vector2 screenPos = WorldToScreen(c, viewport, vpPos, vpSize);
-                    if (screenPos.X < selMinX) selMinX = screenPos.X;
-                    if (screenPos.Y < selMinY) selMinY = screenPos.Y;
-                    if (screenPos.X > selMaxX) selMaxX = screenPos.X;
-                    if (screenPos.Y > selMaxY) selMaxY = screenPos.Y;
+                    float selMinX = float.MaxValue, selMinY = float.MaxValue;
+                    float selMaxX = float.MinValue, selMaxY = float.MinValue;
+                    foreach (var c in sCorners)
+                    {
+                        Vector2 screenPos = WorldToScreen(c, viewport, vpPos, vpSize);
+                        if (screenPos.X < selMinX) selMinX = screenPos.X;
+                        if (screenPos.Y < selMinY) selMinY = screenPos.Y;
+                        if (screenPos.X > selMaxX) selMaxX = screenPos.X;
+                        if (screenPos.Y > selMaxY) selMaxY = screenPos.Y;
+                    }
+
+                    drawList.AddRect(new Vector2(selMinX, selMinY), new Vector2(selMaxX, selMaxY), otherSelColor, 0f, ImDrawFlags.None, 1.0f);
                 }
-
-                drawList.AddRect(new Vector2(selMinX, selMinY), new Vector2(selMaxX, selMaxY), otherSelColor, 0f, ImDrawFlags.None, 1.0f);
             }
         }
 
@@ -1562,7 +1720,7 @@ public unsafe class EditorUI
             {
                 hit = RaySphereIntersect(localOrigin, localDir, Vector3.Zero, obj.Body.Radius.Value, out dist);
             }
-            else if (obj.Body.Shape == MapShapeType.Box && obj.Body.HalfExtents.HasValue)
+            else if ((obj.Body.Shape == MapShapeType.Box || obj.Body.Shape == MapShapeType.Trimesh) && obj.Body.HalfExtents.HasValue)
             {
                 hit = RayAABBIntersect(localOrigin, localDir, -obj.Body.HalfExtents.Value, obj.Body.HalfExtents.Value, out dist);
             }
@@ -2139,7 +2297,7 @@ public unsafe class EditorUI
                             var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
                             if (entity != null)
                             {
-                                if (obj.Body != null && obj.Body.Shape == MapShapeType.Box && obj.Body.HalfExtents.HasValue)
+                                if (obj.Body != null && (obj.Body.Shape == MapShapeType.Box || obj.Body.Shape == MapShapeType.Trimesh) && obj.Body.HalfExtents.HasValue)
                                     entity.Transform.Scale = obj.Body.HalfExtents.Value * 2.0f;
                                 else if (obj.Body != null && obj.Body.Shape == MapShapeType.Sphere && obj.Body.Radius.HasValue)
                                     entity.Transform.Scale = new Vector3(obj.Body.Radius.Value * 2.0f);
@@ -2406,7 +2564,7 @@ public unsafe class EditorUI
 
                         switch (body.Shape)
                         {
-                            case MapShapeType.Box when body.HalfExtents.HasValue:
+                            case MapShapeType.Box or MapShapeType.Trimesh when body.HalfExtents.HasValue:
                                 Vector3 he = body.HalfExtents.Value;
                                 bool heChanged = ImGui.DragFloat3("Half Extents##inspectHe", ref he, 0.05f, 0.0f, 1000.0f, "%.3f");
                                 HandleUndoStart(sceneService);
@@ -3442,7 +3600,7 @@ public unsafe class EditorUI
             }
 
             Vector3 h = body.HalfExtents ?? Vector3.One;
-            if (body.Shape != MapShapeType.Box)
+            if (body.Shape == MapShapeType.Sphere || body.Shape == MapShapeType.Capsule)
             {
                 float r = body.Radius ?? 0.5f;
                 if (body.Shape == MapShapeType.Capsule)

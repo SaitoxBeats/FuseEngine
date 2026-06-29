@@ -8,12 +8,13 @@ public class RigidBody
 {
     public enum ShapeType
     {
-        None,
+        None = 0,
         Box,
         Plane,
         Sphere,
         Capsule,
-        Trimesh
+        Trimesh,
+        ConvexHull
     }
 
     private Shape? _shape;
@@ -74,6 +75,14 @@ public class RigidBody
         _shapeType = ShapeType.Trimesh;
         _trimeshVerts = vertices;
         _trimeshIndices = indices;
+        _trimeshScale = scale == default ? Vector3.One : scale;
+        return this;
+    }
+
+    public RigidBody SetConvexHull(Vector3[] vertices, Vector3 scale = default)
+    {
+        _shapeType = ShapeType.ConvexHull;
+        _trimeshVerts = vertices;
         _trimeshScale = scale == default ? Vector3.One : scale;
         return this;
     }
@@ -169,6 +178,34 @@ public class RigidBody
                             return;
                         }
                     }
+                break;
+            }
+
+            case ShapeType.ConvexHull:
+            {
+                if (_trimeshVerts == null || _trimeshVerts.Length == 0)
+                {
+                    Logger.Error("RigidBody.Build CONVEXHULL with no data, skipping");
+                    return;
+                }
+
+                Vector3[] finalVerts = _trimeshVerts;
+                if (_trimeshScale != Vector3.One)
+                {
+                    finalVerts = new Vector3[_trimeshVerts.Length];
+                    for (int i = 0; i < _trimeshVerts.Length; i++)
+                    {
+                        finalVerts[i] = _trimeshVerts[i] * _trimeshScale;
+                    }
+                }
+
+                var hullSettings = new ConvexHullShapeSettings(new Span<Vector3>(finalVerts));
+                _shape = hullSettings.Create();
+                if (_shape == null)
+                {
+                    Logger.Error("RigidBody.Build ConvexHull creation failed");
+                    return;
+                }
                 break;
             }
 

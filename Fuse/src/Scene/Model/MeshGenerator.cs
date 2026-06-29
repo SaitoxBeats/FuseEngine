@@ -8,7 +8,7 @@ namespace Fuse.Scene.Model;
 
 public static class MeshGenerator
 {
-    private const float Epsilon = 0.001f;
+    private const float Epsilon = 0.05f;
 
     public static MeshData Generate(Brush brush)
     {
@@ -223,7 +223,7 @@ public static class MeshGenerator
         float det = Vector3.Dot(n1, Vector3.Cross(n2, n3));
         
         // If determinant is near zero, planes are parallel or intersect in a line
-        if (System.Math.Abs(det) < Epsilon)
+        if (System.Math.Abs(det) < 0.0000001f)
         {
             return false;
         }
