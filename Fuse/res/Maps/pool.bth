@@ -1517,7 +1517,7 @@
             0,
             0
           ],
-          "d": -5.5,
+          "d": -3.4999998,
           "texture": "default",
           "u_axis": [
             0,
@@ -1541,7 +1541,7 @@
             0,
             0
           ],
-          "d": -5.5,
+          "d": -3.4999998,
           "texture": "default",
           "u_axis": [
             0,
@@ -1564,7 +1564,7 @@
       "body": {
         "shape": "box",
         "position": [
-          30.5,
+          28.5,
           3.5,
           -5.75
         ],
@@ -1579,7 +1579,7 @@
         "restitution": 0,
         "is_trigger": false,
         "half_extents": [
-          5.5,
+          3.5,
           3.5,
           0.25
         ]

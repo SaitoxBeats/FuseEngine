@@ -35,8 +35,8 @@ public unsafe class EditorUI
     private float _snapAngle = 15.0f;
 
     // Undo/Redo state
-    private string _preEditState = "";
     private string _frameBeginState = "";
+    public UndoManager Undo { get; } = new UndoManager();
 
     // Selection & Modes
     public enum EditorMode { Select, DrawBrush }
@@ -489,12 +489,12 @@ public unsafe class EditorUI
             }
             if (ImGui.MenuItem("👁 Toggle Visibility"))
             {
-                _preEditState = _frameBeginState;
+                Undo.RecordState(_frameBeginState);
                 obj.Visible = !obj.Visible;
                 var entity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
                 if (entity != null) entity.Visible = obj.IsGloballyVisible(doc);
                 UpdateEntitiesVisibilityRecursive(doc, sceneService.Scene, obj);
-                history.PushCommand(new SnapshotCommand(sceneService, assetService, _preEditState, sceneService.Document.Serialize()));
+                Undo.ForceEnd(history, sceneService, assetService);
             }
             ImGui.Separator();
             if (ImGui.MenuItem("📦 Group Selected"))
@@ -539,12 +539,12 @@ public unsafe class EditorUI
 
         if (ImGui.Button($"{visIcon}##visbtn_{obj.Id}", new Vector2(24, 20)))
         {
-            _preEditState = _frameBeginState;
+            Undo.RecordState(_frameBeginState);
             obj.Visible = !obj.Visible;
             var entity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
             if (entity != null) entity.Visible = obj.IsGloballyVisible(doc);
             UpdateEntitiesVisibilityRecursive(doc, sceneService.Scene, obj);
-            history.PushCommand(new SnapshotCommand(sceneService, assetService, _preEditState, sceneService.Document.Serialize()));
+            Undo.ForceEnd(history, sceneService, assetService);
         }
         ImGui.PopStyleColor(3);
         if (inheritedHidden)
@@ -1012,7 +1012,7 @@ public unsafe class EditorUI
                             _activeHandle = (HandleType)h;
                             _draggingHandleViewport = viewport;
                             _previewManager.IsDraggingHandle = isPreview;
-                            _preEditState = sceneService.Document.Serialize();
+                            Undo.RecordState(sceneService.Document.Serialize());
                             
                             EditorGizmo.GetMouseRay(mousePos, viewport.Camera.ViewMatrix, viewport.Camera.ProjectionMatrix(vpSize.X / vpSize.Y), vpPos, vpSize, out Vector3 ro, out Vector3 rd);
                             _shearLastHit = ComputeHitPoint(viewport.Camera.ViewType, ro, rd);
@@ -1032,7 +1032,7 @@ public unsafe class EditorUI
                             _activeHandle = HandleType.Center;
                             _draggingHandleViewport = viewport;
                             _previewManager.IsDraggingHandle = false;
-                            _preEditState = sceneService.Document.Serialize();
+                            Undo.RecordState(sceneService.Document.Serialize());
 
                             // Record initial world-space hit for delta computation
                             EditorGizmo.GetMouseRay(mousePos, viewport.Camera.ViewMatrix, viewport.Camera.ProjectionMatrix(vpSize.X / vpSize.Y), vpPos, vpSize, out Vector3 ro, out Vector3 rd);
@@ -1207,13 +1207,13 @@ public unsafe class EditorUI
 
                 if (isUsingNow && !_wasUsingGizmo) 
                 {
-                    _preEditState = _frameBeginState;
+                    Undo.RecordState(_frameBeginState);
                 }
 
                 if (!isUsingNow && _wasUsingGizmo)
                 {
                     var postEditState = sceneService.Document.Serialize();
-                    history.PushCommand(new SnapshotCommand(sceneService, assetService, _preEditState, postEditState));
+                    Undo.ForceEnd(history, sceneService, assetService);
                 }
                 _wasUsingGizmo = isUsingNow;
             }
@@ -1539,7 +1539,7 @@ public unsafe class EditorUI
                 if (!_previewManager.IsDraggingHandle)
                 {
                     var postEditState = sceneService.Document.Serialize();
-                    history.PushCommand(new SnapshotCommand(sceneService, assetService, _preEditState, postEditState));
+                    Undo.ForceEnd(history, sceneService, assetService);
                 }
                 _previewManager.IsDraggingHandle = false;
             }
@@ -1792,22 +1792,9 @@ public unsafe class EditorUI
         return true;
     }
 
-    private void HandleUndoStart(EditorSceneService sceneService)
-    {
-        if (ImGui.IsItemActivated())
-        {
-            _preEditState = _frameBeginState;
-        }
-    }
+    
 
-    private void HandleUndoEnd(EditorSceneService sceneService, EditorAssetService assetService, CommandHistory history)
-    {
-        if (ImGui.IsItemDeactivatedAfterEdit())
-        {
-            var postEditState = sceneService.Document.Serialize();
-            history.PushCommand(new SnapshotCommand(sceneService, assetService, _preEditState, postEditState));
-        }
-    }
+    
 
     private float ApplySnap(float val, float snap)
     {
@@ -1934,33 +1921,33 @@ public unsafe class EditorUI
             
             Vector3 spPos = sp.Position;
             bool posChanged = ImGui.DragFloat3("Spawn Pos##spPos", ref spPos, 0.05f);
-            HandleUndoStart(sceneService);
+            Undo.TrackItem(_frameBeginState);
             if (posChanged)
             {
                 spPos = ApplySnap(spPos, _snapGrid);
                 sp.Position = spPos;
             }
-            HandleUndoEnd(sceneService, assetService, history);
+            
             
             float yaw = sp.Yaw;
             bool yawChanged = ImGui.DragFloat("Spawn Yaw##spYaw", ref yaw, 0.5f);
-            HandleUndoStart(sceneService);
+            Undo.TrackItem(_frameBeginState);
             if (yawChanged)
             {
                 yaw = ApplySnap(yaw, _snapAngle);
                 sp.Yaw = yaw;
             }
-            HandleUndoEnd(sceneService, assetService, history);
+            
 
             float pitch = sp.Pitch;
             bool pitchChanged = ImGui.DragFloat("Spawn Pitch##spPitch", ref pitch, 0.5f);
-            HandleUndoStart(sceneService);
+            Undo.TrackItem(_frameBeginState);
             if (pitchChanged)
             {
                 pitch = ApplySnap(pitch, _snapAngle);
                 sp.Pitch = pitch;
             }
-            HandleUndoEnd(sceneService, assetService, history);
+            
         }
 
         MapObject? objectToDelete = null;
@@ -2047,28 +2034,28 @@ public unsafe class EditorUI
             bool multiVis = allVisible;
             if (ImGui.Checkbox("Visible##multiVis", ref multiVis))
             {
-                _preEditState = _frameBeginState;
+                Undo.RecordState(_frameBeginState);
                 foreach (var obj in _selectedObjects)
                 {
                     obj.Visible = multiVis;
                     var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
                     if (entity != null) entity.Visible = multiVis;
                 }
-                history.PushCommand(new SnapshotCommand(sceneService, assetService, _preEditState, sceneService.Document.Serialize()));
+                Undo.ForceEnd(history, sceneService, assetService);
             }
 
             string commonTex = _selectedObjects.Select(o => o.Texture).Distinct().Count() == 1 ? (_selectedObjects.First().Texture ?? "") : "";
             string multiTex = commonTex;
             if (ImGui.InputText("Texture##multiTex", ref multiTex, 256))
             {
-                HandleUndoStart(sceneService);
+                Undo.TrackItem(_frameBeginState);
                 foreach (var obj in _selectedObjects)
                 {
                     obj.Texture = multiTex;
                     var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
                     if (entity != null) entity.TexturePath = multiTex;
                 }
-                HandleUndoEnd(sceneService, assetService, history);
+                
             }
 
             if (_selectedObjects.All(o => !o.IsModel))
@@ -2077,35 +2064,35 @@ public unsafe class EditorUI
                 Vector2 multiUv = commonUv;
                 if (ImGui.DragFloat2("UV Scale##multiUv", ref multiUv, 0.05f))
                 {
-                    HandleUndoStart(sceneService);
+                    Undo.TrackItem(_frameBeginState);
                     foreach (var obj in _selectedObjects)
                     {
                         obj.UvScale = multiUv;
                         var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
                         if (entity != null) entity.UvScale = multiUv;
                     }
-                    HandleUndoEnd(sceneService, assetService, history);
+                    
                 }
 
                 Vector2 commonUvOff = _selectedObjects.Select(o => o.UvOffset).Distinct().Count() == 1 ? _selectedObjects.First().UvOffset : Vector2.Zero;
                 Vector2 multiUvOff = commonUvOff;
                 if (ImGui.DragFloat2("UV Offset##multiUvOff", ref multiUvOff, 0.01f))
                 {
-                    HandleUndoStart(sceneService);
+                    Undo.TrackItem(_frameBeginState);
                     foreach (var obj in _selectedObjects)
                     {
                         obj.UvOffset = multiUvOff;
                         var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
                         if (entity != null) entity.UvOffset = multiUvOff;
                     }
-                    HandleUndoEnd(sceneService, assetService, history);
+                    
                 }
 
                 float commonUvRot = _selectedObjects.Select(o => o.UvRotation).Distinct().Count() == 1 ? _selectedObjects.First().UvRotation : 0f;
                 float multiUvRotDeg = commonUvRot * (180f / MathF.PI);
                 if (ImGui.DragFloat("UV Rotation##multiUvRot", ref multiUvRotDeg, 0.5f, -360f, 360f, "%.1f deg"))
                 {
-                    HandleUndoStart(sceneService);
+                    Undo.TrackItem(_frameBeginState);
                     float multiUvRot = multiUvRotDeg * (MathF.PI / 180f);
                     foreach (var obj in _selectedObjects)
                     {
@@ -2113,7 +2100,7 @@ public unsafe class EditorUI
                         var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
                         if (entity != null) entity.UvRotation = multiUvRot;
                     }
-                    HandleUndoEnd(sceneService, assetService, history);
+                    
                 }
             }
 
@@ -2123,12 +2110,12 @@ public unsafe class EditorUI
                 float multiMass = commonMass;
                 if (ImGui.DragFloat("Mass##multiMass", ref multiMass, 0.1f, 0.0f, 100000.0f, "%.3f"))
                 {
-                    HandleUndoStart(sceneService);
+                    Undo.TrackItem(_frameBeginState);
                     foreach (var obj in _selectedObjects)
                     {
                         obj.Body!.Mass = multiMass;
                     }
-                    HandleUndoEnd(sceneService, assetService, history);
+                    
                 }
 
                 // Is Trigger
@@ -2137,7 +2124,7 @@ public unsafe class EditorUI
                 bool multiTrigger = commonTrigger;
                 if (ImGui.Checkbox("Is Trigger##multiTrigger", ref multiTrigger))
                 {
-                    HandleUndoStart(sceneService);
+                    Undo.TrackItem(_frameBeginState);
                     foreach (var obj in _selectedObjects)
                     {
                         obj.Body!.IsTrigger = multiTrigger;
@@ -2147,7 +2134,7 @@ public unsafe class EditorUI
                             entity.TexturePath = multiTrigger ? "Textures/tools/toolstrigger.bmp" : (obj.Texture ?? "");
                         }
                     }
-                    HandleUndoEnd(sceneService, assetService, history);
+                    
                 }
             }
         }
@@ -2159,7 +2146,7 @@ public unsafe class EditorUI
                 // ID
                 string id = obj.Id;
                 bool idChanged = ImGui.InputText("ID##inspectId", ref id, 64);
-                HandleUndoStart(sceneService);
+                Undo.TrackItem(_frameBeginState);
                 if (idChanged)
                 {
                     var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
@@ -2176,19 +2163,19 @@ public unsafe class EditorUI
                         obj.Id = uniqueId;
                     }
                 }
-                HandleUndoEnd(sceneService, assetService, history);
+                
 
                 // Visible
                 bool visible = obj.Visible;
                 bool visChanged = ImGui.Checkbox("Visible##inspectVis", ref visible);
-                if (visChanged) _preEditState = _frameBeginState;
+                if (visChanged) Undo.RecordState(_frameBeginState);
                 if (visChanged)
                 {
                     obj.Visible = visible;
                     var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
                     if (entity != null) entity.Visible = visible;
                     SyncLight(sceneService, obj);
-                    history.PushCommand(new SnapshotCommand(sceneService, assetService, _preEditState, sceneService.Document.Serialize()));
+                    Undo.ForceEnd(history, sceneService, assetService);
                 }
 
                 // Parent Selection
@@ -2197,14 +2184,14 @@ public unsafe class EditorUI
                 {
                     if (ImGui.Selectable("(None)##parent_none", string.IsNullOrEmpty(obj.ParentId)))
                     {
-                        HandleUndoStart(sceneService);
+                        Undo.TrackItem(_frameBeginState);
                         obj.ParentId = null;
                         var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
                         if (entity != null)
                         {
                             entity.ParentId = "";
                         }
-                        HandleUndoEnd(sceneService, assetService, history);
+                        
                     }
 
                     foreach (var potentialParent in doc.Objects)
@@ -2215,7 +2202,7 @@ public unsafe class EditorUI
                         bool isSelectedParent = obj.ParentId == potentialParent.Id;
                         if (ImGui.Selectable($"{potentialParent.Id}##parent_{potentialParent.Id}", isSelectedParent))
                         {
-                            HandleUndoStart(sceneService);
+                            Undo.TrackItem(_frameBeginState);
                             obj.ParentId = potentialParent.Id;
                             
                             var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
@@ -2229,10 +2216,107 @@ public unsafe class EditorUI
                                     entity.InitialRelativeRotation = Quaternion.Inverse(parentEntity.Transform.Rotation) * entity.Transform.Rotation;
                                 }
                             }
-                            HandleUndoEnd(sceneService, assetService, history);
+                            
                         }
                     }
                     ImGui.EndCombo();
+                }
+
+                // Transform
+                if (ImGui.CollapsingHeader("Transform", ImGuiTreeNodeFlags.DefaultOpen))
+                {
+                    bool isChild = !string.IsNullOrEmpty(obj.ParentId);
+                    var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
+                    var parentEntity = isChild ? scene.Entities.FirstOrDefault(e => e.Id == obj.ParentId) : null;
+
+                    Vector3 pos = entity != null ? entity.Transform.Position : (obj.Body != null ? obj.Body.Position : Vector3.Zero);
+                    Quaternion rot = entity != null ? entity.Transform.Rotation : (obj.Body != null ? obj.Body.Rotation : Quaternion.Identity);
+                    
+                    Vector3 currentScale = Vector3.One;
+                    if (obj.Body != null && (obj.Body.Shape == MapShapeType.Box || obj.Body.Shape == MapShapeType.Trimesh) && obj.Body.HalfExtents.HasValue) currentScale = obj.Body.HalfExtents.Value * 2.0f;
+                    else if (obj.Body != null && obj.Body.Shape == MapShapeType.Sphere && obj.Body.Radius.HasValue) currentScale = new Vector3(obj.Body.Radius.Value * 2.0f);
+                    else if (obj.IsModel) currentScale = obj.ModelScale;
+
+                    if (isChild && parentEntity != null)
+                    {
+                        ImGui.TextColored(new Vector4(0.8f, 0.8f, 0.3f, 1.0f), "Local Space (Parented)");
+                        pos = Vector3.Transform(pos - parentEntity.Transform.Position, Quaternion.Inverse(parentEntity.Transform.Rotation));
+                        rot = Quaternion.Inverse(parentEntity.Transform.Rotation) * rot;
+                        currentScale = currentScale / parentEntity.Transform.Scale;
+                    }
+                    else
+                    {
+                        ImGui.TextColored(new Vector4(0.3f, 0.8f, 0.3f, 1.0f), "Global Space");
+                    }
+
+                    Vector3 euler = QuaternionToEuler(rot);
+
+                    bool tChanged = ImGui.DragFloat3("Location##inspectPos", ref pos, 0.1f);
+                    Undo.TrackItem(_frameBeginState);
+
+                    bool rChanged = ImGui.DragFloat3("Rotation##inspectRot", ref euler, 0.5f, -360f, 360f, "%.1f deg");
+                    Undo.TrackItem(_frameBeginState);
+
+                    bool sChanged = ImGui.DragFloat3("Scale##inspectScale", ref currentScale, 0.05f);
+                    Undo.TrackItem(_frameBeginState);
+
+                    if (tChanged || rChanged || sChanged)
+                    {
+                        if (isChild && parentEntity != null)
+                        {
+                            if (tChanged) pos = parentEntity.Transform.Position + Vector3.Transform(pos, parentEntity.Transform.Rotation);
+                            if (rChanged) rot = parentEntity.Transform.Rotation * EulerToQuaternion(euler);
+                            if (sChanged) currentScale = currentScale * parentEntity.Transform.Scale;
+                        }
+                        else
+                        {
+                            if (rChanged) rot = EulerToQuaternion(euler);
+                        }
+
+                        if (entity != null)
+                        {
+                            if (tChanged) entity.Transform.Position = pos;
+                            if (rChanged) entity.Transform.Rotation = rot;
+                        }
+                        if (obj.Body != null)
+                        {
+                            if (tChanged) obj.Body.Position = pos;
+                            if (rChanged) obj.Body.Rotation = rot;
+                        }
+
+                        if (sChanged)
+                        {
+                            if (obj.IsModel) obj.ModelScale = currentScale;
+                            else if (obj.Body != null && (obj.Body.Shape == MapShapeType.Box || obj.Body.Shape == MapShapeType.Trimesh) && obj.Body.HalfExtents.HasValue)
+                            {
+                                Vector3 oldExtents = obj.Body.HalfExtents.Value;
+                                obj.Body.HalfExtents = Vector3.Max(new Vector3(0.05f), currentScale / 2.0f);
+                                if (obj is Fuse.Scene.Model.Brush b) b.ScalePlanes(obj.Body.HalfExtents.Value / oldExtents);
+                            }
+                            else if (obj.Body != null && obj.Body.Shape == MapShapeType.Sphere && obj.Body.Radius.HasValue)
+                            {
+                                obj.Body.Radius = MathF.Max(0.05f, currentScale.X / 2.0f);
+                            }
+                        }
+
+                        if (entity != null)
+                        {
+                            if (obj.Body != null && (obj.Body.Shape == MapShapeType.Box || obj.Body.Shape == MapShapeType.Trimesh) && obj.Body.HalfExtents.HasValue)
+                                entity.Transform.Scale = obj.Body.HalfExtents.Value * 2.0f;
+                            else if (obj.Body != null && obj.Body.Shape == MapShapeType.Sphere && obj.Body.Radius.HasValue)
+                                entity.Transform.Scale = new Vector3(obj.Body.Radius.Value * 2.0f);
+                            else
+                                entity.Transform.Scale = currentScale;
+                        }
+
+                        if (sChanged && !obj.IsModel)
+                        {
+                            assetService.InvalidateMesh(obj.Id);
+                            if (entity != null) entity.Mesh = assetService.GetOrCreateMesh(obj);
+                        }
+                    }
+
+
                 }
 
                 // Visuals & Material
@@ -2240,42 +2324,42 @@ public unsafe class EditorUI
                 {
                     string texture = obj.Texture ?? "";
                     bool texChanged = ImGui.InputText("Texture##inspectTex", ref texture, 256);
-                    HandleUndoStart(sceneService);
+                    Undo.TrackItem(_frameBeginState);
                     if (texChanged)
                     {
                         obj.Texture = texture;
                         var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
                         if (entity != null) entity.TexturePath = texture;
                     }
-                    HandleUndoEnd(sceneService, assetService, history);
+                    
 
                     if (!obj.IsModel)
                     {
                         Vector2 uvScale = obj.UvScale;
                         bool uvChanged = ImGui.DragFloat2("UV Scale##inspectUv", ref uvScale, 0.05f);
-                        HandleUndoStart(sceneService);
+                        Undo.TrackItem(_frameBeginState);
                         if (uvChanged)
                         {
                             obj.UvScale = uvScale;
                             var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
                             if (entity != null) entity.UvScale = uvScale;
                         }
-                        HandleUndoEnd(sceneService, assetService, history);
+                        
 
                         Vector2 uvOffset = obj.UvOffset;
                         bool uvOffChanged = ImGui.DragFloat2("UV Offset##inspectUvOff", ref uvOffset, 0.01f);
-                        HandleUndoStart(sceneService);
+                        Undo.TrackItem(_frameBeginState);
                         if (uvOffChanged)
                         {
                             obj.UvOffset = uvOffset;
                             var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
                             if (entity != null) entity.UvOffset = uvOffset;
                         }
-                        HandleUndoEnd(sceneService, assetService, history);
+                        
 
                         float uvRotDeg = obj.UvRotation * (180f / MathF.PI);
                         bool uvRotChanged = ImGui.DragFloat("UV Rotation##inspectUvRot", ref uvRotDeg, 0.5f, -360f, 360f, "%.1f deg");
-                        HandleUndoStart(sceneService);
+                        Undo.TrackItem(_frameBeginState);
                         if (uvRotChanged)
                         {
                             float uvRot = uvRotDeg * (MathF.PI / 180f);
@@ -2283,29 +2367,11 @@ public unsafe class EditorUI
                             var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
                             if (entity != null) entity.UvRotation = uvRot;
                         }
-                        HandleUndoEnd(sceneService, assetService, history);
+                        
                     }
                     else
                     {
                         ImGui.Text($"Model File: {obj.Model}");
-                        Vector3 scale = obj.ModelScale;
-                        bool scaleChanged = ImGui.DragFloat3("Model Scale##inspectScale", ref scale, 0.01f);
-                        HandleUndoStart(sceneService);
-                        if (scaleChanged)
-                        {
-                            obj.ModelScale = scale;
-                            var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
-                            if (entity != null)
-                            {
-                                if (obj.Body != null && (obj.Body.Shape == MapShapeType.Box || obj.Body.Shape == MapShapeType.Trimesh) && obj.Body.HalfExtents.HasValue)
-                                    entity.Transform.Scale = obj.Body.HalfExtents.Value * 2.0f;
-                                else if (obj.Body != null && obj.Body.Shape == MapShapeType.Sphere && obj.Body.Radius.HasValue)
-                                    entity.Transform.Scale = new Vector3(obj.Body.Radius.Value * 2.0f);
-                                else
-                                    entity.Transform.Scale = scale;
-                            }
-                        }
-                        HandleUndoEnd(sceneService, assetService, history);
                     }
                 }
 
@@ -2314,20 +2380,20 @@ public unsafe class EditorUI
                 {
                     string interactable = obj.Interactable ?? "";
                     bool interactChanged = ImGui.InputText("Interactable Type##inspectInteract", ref interactable, 128);
-                    HandleUndoStart(sceneService);
+                    Undo.TrackItem(_frameBeginState);
                     if (interactChanged)
                     {
                         obj.Interactable = interactable;
                         var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
                         if (entity != null) entity.InteractableType = interactable;
                     }
-                    HandleUndoEnd(sceneService, assetService, history);
+                    
                 }
 
                 // Behaviours
                 if (ImGui.CollapsingHeader("Behaviours", ImGuiTreeNodeFlags.DefaultOpen))
                 {
-                    HandleUndoStart(sceneService);
+                    Undo.TrackItem(_frameBeginState);
                     
                     var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
                     
@@ -2403,7 +2469,7 @@ public unsafe class EditorUI
                             entity.Behaviours.Add(b.Clone());
                     }
 
-                    HandleUndoEnd(sceneService, assetService, history);
+                    
                 }
 
                 // Light Properties
@@ -2411,7 +2477,7 @@ public unsafe class EditorUI
                 {
                     if (ImGui.CollapsingHeader("Light Properties", ImGuiTreeNodeFlags.DefaultOpen))
                     {
-                        HandleUndoStart(sceneService);
+                        Undo.TrackItem(_frameBeginState);
 
                         string[] lightTypes = ["point", "spot"];
                         int lightTypeIdx = obj.LightType == "spot" ? 1 : 0;
@@ -2460,7 +2526,7 @@ public unsafe class EditorUI
                         }
 
                         SyncLight(sceneService, obj);
-                        HandleUndoEnd(sceneService, assetService, history);
+                        
                     }
                 }
 
@@ -2474,7 +2540,7 @@ public unsafe class EditorUI
 
                         Vector3 pos = body.Position;
                         bool posChanged = ImGui.DragFloat3("Position##inspectPos", ref pos, 0.05f, 0.0f, 0.0f, "%.3f");
-                        HandleUndoStart(sceneService);
+                        Undo.TrackItem(_frameBeginState);
                         if (posChanged)
                         {
                             pos = ApplySnap(pos, _snapGrid);
@@ -2494,11 +2560,11 @@ public unsafe class EditorUI
                                 }
                             }
                         }
-                        HandleUndoEnd(sceneService, assetService, history);
+                        
 
                         Vector3 euler = QuaternionToEuler(body.Rotation);
                         bool rotChanged = ImGui.DragFloat3("Rotation (Euler)##inspectRot", ref euler, 0.5f, 0.0f, 0.0f, "%.3f");
-                        HandleUndoStart(sceneService);
+                        Undo.TrackItem(_frameBeginState);
                         if (rotChanged)
                         {
                             euler = ApplySnap(euler, _snapAngle);
@@ -2528,29 +2594,29 @@ public unsafe class EditorUI
                                 }
                             }
                         }
-                        HandleUndoEnd(sceneService, assetService, history);
+                        
 
                         float mass = body.Mass;
                         bool massChanged = ImGui.DragFloat("Mass##inspectMass", ref mass, 0.1f, 0.0f, 100000.0f, "%.3f");
-                        HandleUndoStart(sceneService);
+                        Undo.TrackItem(_frameBeginState);
                         if (massChanged) body.Mass = mass;
-                        HandleUndoEnd(sceneService, assetService, history);
+                        
 
                         float friction = body.Friction;
                         bool fricChanged = ImGui.DragFloat("Friction##inspectFriction", ref friction, 0.05f, 0.0f, 10.0f, "%.2f");
-                        HandleUndoStart(sceneService);
+                        Undo.TrackItem(_frameBeginState);
                         if (fricChanged) body.Friction = friction;
-                        HandleUndoEnd(sceneService, assetService, history);
+                        
 
                         float restitution = body.Restitution;
                         bool restChanged = ImGui.DragFloat("Restitution##inspectRestitution", ref restitution, 0.05f, 0.0f, 1.0f, "%.2f");
-                        HandleUndoStart(sceneService);
+                        Undo.TrackItem(_frameBeginState);
                         if (restChanged) body.Restitution = restitution;
-                        HandleUndoEnd(sceneService, assetService, history);
+                        
 
                         bool isTrigger = body.IsTrigger;
                         bool trigChanged = ImGui.Checkbox("Is Trigger##inspectTrigger", ref isTrigger);
-                        HandleUndoStart(sceneService);
+                        Undo.TrackItem(_frameBeginState);
                         if (trigChanged)
                         {
                             body.IsTrigger = isTrigger;
@@ -2560,14 +2626,14 @@ public unsafe class EditorUI
                                 entity.TexturePath = isTrigger ? "Textures/tools/toolstrigger.bmp" : (obj.Texture ?? "");
                             }
                         }
-                        HandleUndoEnd(sceneService, assetService, history);
+                        
 
                         switch (body.Shape)
                         {
                             case MapShapeType.Box or MapShapeType.Trimesh when body.HalfExtents.HasValue:
                                 Vector3 he = body.HalfExtents.Value;
                                 bool heChanged = ImGui.DragFloat3("Half Extents##inspectHe", ref he, 0.05f, 0.0f, 1000.0f, "%.3f");
-                                HandleUndoStart(sceneService);
+                                Undo.TrackItem(_frameBeginState);
                                 if (heChanged)
                                 {
                                     Vector3 oldHalf = body.HalfExtents ?? Vector3.One;
@@ -2591,12 +2657,12 @@ public unsafe class EditorUI
                                             entity.Transform.Scale = body.HalfExtents.Value * 2.0f;
                                     }
                                 }
-                                HandleUndoEnd(sceneService, assetService, history);
+                                
                                 break;
                             case MapShapeType.Sphere when body.Radius.HasValue:
                                 float rad = body.Radius.Value;
                                 bool radChanged = ImGui.DragFloat("Radius##inspectRad", ref rad, 0.05f, 0.0f, 1000.0f, "%.3f");
-                                HandleUndoStart(sceneService);
+                                Undo.TrackItem(_frameBeginState);
                                 if (radChanged)
                                 {
                                     body.Radius = ApplySnap(rad, _snapGrid);
@@ -2604,20 +2670,20 @@ public unsafe class EditorUI
                                     if (entity != null && body.Radius.HasValue)
                                         entity.Transform.Scale = new Vector3(body.Radius.Value * 2.0f);
                                 }
-                                HandleUndoEnd(sceneService, assetService, history);
+                                
                                 break;
                             case MapShapeType.Capsule when body.Radius.HasValue && body.Height.HasValue:
                                 float capRad = body.Radius.Value;
                                 bool capRadChanged = ImGui.DragFloat("Radius##inspectCapRad", ref capRad, 0.05f, 0.0f, 1000.0f, "%.3f");
-                                HandleUndoStart(sceneService);
+                                Undo.TrackItem(_frameBeginState);
                                 if (capRadChanged) body.Radius = ApplySnap(capRad, _snapGrid);
-                                HandleUndoEnd(sceneService, assetService, history);
+                                
 
                                 float capH = body.Height.Value;
                                 bool capHChanged = ImGui.DragFloat("Height##inspectCapH", ref capH, 0.05f, 0.0f, 1000.0f, "%.3f");
-                                HandleUndoStart(sceneService);
+                                Undo.TrackItem(_frameBeginState);
                                 if (capHChanged) body.Height = ApplySnap(capH, _snapGrid);
-                                HandleUndoEnd(sceneService, assetService, history);
+                                
                                 break;
                         }
                     }
@@ -2638,6 +2704,7 @@ public unsafe class EditorUI
 
         DrawModelImportDialog(sceneService, assetService, history);
 
+        Undo.EndFrame(history, sceneService, assetService);
         ImGui.End();
     }
 
