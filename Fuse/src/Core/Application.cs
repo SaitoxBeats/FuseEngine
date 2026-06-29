@@ -33,6 +33,7 @@ public unsafe class Application : IDisposable
     private UI.HUDImage _crosshairNode = null!;
     private Debug.DebugDrawer _debugDrawer = null!;
     private Imgui.ImGuiBackEnd _imgui = null!;
+    private bool _showImgui = false;
     private Imgui.Console _console = null!;
     private float _loadProgress;
     private string _loadStatus = "";
@@ -232,7 +233,8 @@ public unsafe class Application : IDisposable
 
                 // ImGui
                 _imgui.NewFrame(dt, _scrWidth, _scrHeight);
-                _imgui.DrawWindows(_player);
+                if (_showImgui)
+                    _imgui.DrawWindows(_player);
 
                 // Debug
                 if (_debugDrawer.Enabled)
@@ -277,6 +279,9 @@ public unsafe class Application : IDisposable
     {
         if (Input.Input.KeyPressed(KeyCodes.F2)) _screenshotRequested = true;
         
+
+        if (Input.Input.KeyPressed(KeyCodes.F5)) ReloadMap(OnLoadProgress);
+
         if (Input.Input.KeyPressed(KeyCodes.F6))
         {
             string savePath = _sceneManager.CurrentMapPath;
@@ -287,14 +292,17 @@ public unsafe class Application : IDisposable
             Fuse.Scene.MapSerializer.SaveToFile(_sceneManager.ActiveScene, _physics, savePath, spawn);
         }
 
-        if (Input.Input.KeyPressed(KeyCodes.F5)) ReloadMap(OnLoadProgress);
         if (Input.Input.KeyPressed(KeyCodes.F9)) _debugDrawer.Toggle();
+
         if (Input.Input.KeyPressed(KeyCodes.GraveAccent))
         {
             _console.Toggle();
             if (_console.IsOpen) Input.Input.ShowCursor();
             else Input.Input.DisableCursor();
         }
+
+        if (Input.Input.KeyPressed(KeyCodes.Insert))
+            _showImgui = !_showImgui;
 
         if (Input.Input.KeyPressed(KeyCodes.G))
         {
