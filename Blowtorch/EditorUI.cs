@@ -359,25 +359,81 @@ public unsafe class EditorUI
 
         if (ImGui.BeginDragDropTarget())
         {
-            var payload = ImGui.AcceptDragDropPayload("HIERARCHY_NODE");
+            var payload = ImGui.AcceptDragDropPayload("HIERARCHY_NODE", ImGuiDragDropFlags.AcceptNoDrawDefaultRect);
+            
+            var rectMin = ImGui.GetItemRectMin();
+            var rectMax = ImGui.GetItemRectMax();
+            var mousePos = ImGui.GetMousePos();
+            float height = rectMax.Y - rectMin.Y;
+            bool isReorderAbove = mousePos.Y < rectMin.Y + height * 0.25f;
+            bool isReorderBelow = mousePos.Y > rectMax.Y - height * 0.25f;
+
+            if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenBlockedByActiveItem))
+            {
+                var drawList = ImGui.GetWindowDrawList();
+                uint color = ImGui.GetColorU32(ImGuiCol.DragDropTarget);
+
+                if (isReorderAbove)
+                {
+                    drawList.AddLine(new Vector2(rectMin.X, rectMin.Y), new Vector2(rectMax.X, rectMin.Y), color, 2.0f);
+                }
+                else if (isReorderBelow)
+                {
+                    drawList.AddLine(new Vector2(rectMin.X, rectMax.Y), new Vector2(rectMax.X, rectMax.Y), color, 2.0f);
+                }
+                else
+                {
+                    drawList.AddRect(rectMin, rectMax, color, 0.0f, ImDrawFlags.None, 2.0f);
+                }
+            }
+
             if (payload.NativePtr != null)
             {
                 if (_draggedObject != null && _draggedObject != obj && !IsDescendantOf(obj, _draggedObject, doc))
                 {
                     var pre = doc.Serialize();
-                    _draggedObject.ParentId = obj.Id;
                     
-                    var entity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == _draggedObject.Id);
-                    var parentEntity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
-                    if (entity != null)
+                    if (isReorderAbove || isReorderBelow)
                     {
-                        entity.ParentId = obj.Id;
-                        if (parentEntity != null)
+                        // REORDER
+                        _draggedObject.ParentId = obj.ParentId;
+                        doc.Objects.Remove(_draggedObject);
+                        int insertIndex = doc.Objects.IndexOf(obj);
+                        if (isReorderBelow) insertIndex++;
+                        if (insertIndex < 0) insertIndex = 0;
+                        if (insertIndex > doc.Objects.Count) insertIndex = doc.Objects.Count;
+                        doc.Objects.Insert(insertIndex, _draggedObject);
+                        
+                        var entity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == _draggedObject.Id);
+                        var parentEntity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == obj.ParentId);
+                        if (entity != null)
                         {
-                            entity.InitialRelativePosition = entity.Transform.Position - parentEntity.Transform.Position;
-                            entity.InitialRelativeRotation = Quaternion.Inverse(parentEntity.Transform.Rotation) * entity.Transform.Rotation;
+                            entity.ParentId = obj.ParentId ?? "";
+                            if (parentEntity != null)
+                            {
+                                entity.InitialRelativePosition = entity.Transform.Position - parentEntity.Transform.Position;
+                                entity.InitialRelativeRotation = Quaternion.Inverse(parentEntity.Transform.Rotation) * entity.Transform.Rotation;
+                            }
                         }
                     }
+                    else
+                    {
+                        // REPARENT
+                        _draggedObject.ParentId = obj.Id;
+                        
+                        var entity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == _draggedObject.Id);
+                        var parentEntity = sceneService.Scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
+                        if (entity != null)
+                        {
+                            entity.ParentId = obj.Id;
+                            if (parentEntity != null)
+                            {
+                                entity.InitialRelativePosition = entity.Transform.Position - parentEntity.Transform.Position;
+                                entity.InitialRelativeRotation = Quaternion.Inverse(parentEntity.Transform.Rotation) * entity.Transform.Rotation;
+                            }
+                        }
+                    }
+
                     var post = doc.Serialize();
                     history.PushCommand(new SnapshotCommand(sceneService, assetService, pre, post));
                     sceneService.PopulateScene(assetService);
