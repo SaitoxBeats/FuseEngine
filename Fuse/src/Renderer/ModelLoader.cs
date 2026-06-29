@@ -8,13 +8,22 @@ namespace Fuse.Renderer;
 public class LoadedModel : IDisposable
 {
     public Mesh? Mesh { get; set; }
+    public Mesh? CollMesh { get; set; }
+    public Mesh? ConvexCollMesh { get; set; }
     public Vector3[] CollVertices { get; set; } = [];
     public uint[] CollIndices { get; set; } = [];
 
     public void Dispose()
     {
         Mesh?.Dispose();
+        CollMesh?.Dispose();
+        ConvexCollMesh?.Dispose();
     }
+}
+
+public class HullVertex : MIConvexHull.IVertex
+{
+    public double[] Position { get; set; }
 }
 
 public static unsafe class ModelLoader
@@ -98,9 +107,30 @@ public static unsafe class ModelLoader
         var resultMesh = new Mesh(gl, [.. vertices], [.. indices]);
         Logger.Asset($"Model loaded: {path} ({vertices.Count} verts, {indices.Count} indices)");
 
+        var collLineIndices = new List<uint>();
+        int countMinus2 = indices.Count - 2;
+        for (int i = 0; i < countMinus2; i += 3)
+        {
+            collLineIndices.Add(indices[i]);
+            collLineIndices.Add(indices[i + 1]);
+            collLineIndices.Add(indices[i + 1]);
+            collLineIndices.Add(indices[i + 2]);
+            collLineIndices.Add(indices[i + 2]);
+            collLineIndices.Add(indices[i]);
+        }
+
+        var collMeshVerts = new Vertex[collVerts.Count];
+        for (int i = 0; i < collVerts.Count; i++) collMeshVerts[i] = new Vertex { Position = collVerts[i] };
+        
+        var resultCollMesh = new Mesh(gl, collMeshVerts, [.. indices], [.. collLineIndices]);
+
+        var resultConvexMesh = GenerateConvexHullMesh(gl, collVerts);
+
         return new LoadedModel
         {
             Mesh = resultMesh,
+            CollMesh = resultCollMesh,
+            ConvexCollMesh = resultConvexMesh,
             CollVertices = [.. collVerts],
             CollIndices = [.. indices],
         };
@@ -160,9 +190,30 @@ public static unsafe class ModelLoader
             }
 
             var resultMesh = new Mesh(gl, [.. vertices], [.. indices]);
+
+            var collLineIndices = new List<uint>();
+            int countMinus2 = indices.Count - 2;
+            for (int j = 0; j < countMinus2; j += 3)
+            {
+                collLineIndices.Add(indices[j]);
+                collLineIndices.Add(indices[j + 1]);
+                collLineIndices.Add(indices[j + 1]);
+                collLineIndices.Add(indices[j + 2]);
+                collLineIndices.Add(indices[j + 2]);
+                collLineIndices.Add(indices[j]);
+            }
+
+            var collMeshVerts = new Vertex[collVerts.Count];
+            for (int j = 0; j < collVerts.Count; j++) collMeshVerts[j] = new Vertex { Position = collVerts[j] };
+            
+            var resultCollMesh = new Mesh(gl, collMeshVerts, [.. indices], [.. collLineIndices]);
+            var resultConvexMesh = GenerateConvexHullMesh(gl, collVerts);
+
             results[m] = new LoadedModel
             {
                 Mesh = resultMesh,
+                CollMesh = resultCollMesh,
+                ConvexCollMesh = resultConvexMesh,
                 CollVertices = [.. collVerts],
                 CollIndices = [.. indices],
             };
@@ -172,5 +223,44 @@ public static unsafe class ModelLoader
         Logger.Asset($"Model loaded all submeshes: {cleanPath} ({count} meshes)");
 
         return results;
+    }
+
+    private static Mesh? GenerateConvexHullMesh(GL gl, List<Vector3> vertices)
+    {
+        try
+        {
+            if (vertices.Count < 4) return null;
+
+            var hullVerts = vertices.Select(v => new HullVertex { Position = new double[] { v.X, v.Y, v.Z } }).ToList();
+            var hull = MIConvexHull.ConvexHull.Create(hullVerts);
+            
+            var pointToIndex = hull.Result.Points.Select((p, i) => new { p, i }).ToDictionary(x => x.p, x => (uint)x.i);
+            
+            var cvxTriIndices = new List<uint>();
+            var cvxLineIndices = new List<uint>();
+            
+            foreach (var face in hull.Result.Faces)
+            {
+                uint p1 = pointToIndex[face.Vertices[0]];
+                uint p2 = pointToIndex[face.Vertices[1]];
+                uint p3 = pointToIndex[face.Vertices[2]];
+                
+                cvxTriIndices.Add(p1);
+                cvxTriIndices.Add(p2);
+                cvxTriIndices.Add(p3);
+                
+                cvxLineIndices.Add(p1); cvxLineIndices.Add(p2);
+                cvxLineIndices.Add(p2); cvxLineIndices.Add(p3);
+                cvxLineIndices.Add(p3); cvxLineIndices.Add(p1);
+            }
+
+            var cvxMeshVerts = hull.Result.Points.Select(p => new Vertex { Position = new Vector3((float)p.Position[0], (float)p.Position[1], (float)p.Position[2]) }).ToArray();
+            
+            return new Mesh(gl, cvxMeshVerts, cvxTriIndices.ToArray(), cvxLineIndices.ToArray());
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

@@ -179,6 +179,7 @@ public class MapDocument
         {
             case MapShapeType.Box:
             case MapShapeType.Trimesh:
+            case MapShapeType.ConvexHull:
                 if (bj.TryGetPropertyValue("half_extents", out var heNode))
                     body.HalfExtents = Vec3FromJson(heNode!.AsArray());
                 break;
@@ -296,6 +297,7 @@ public class MapDocument
         {
             case MapShapeType.Box:
             case MapShapeType.Trimesh:
+            case MapShapeType.ConvexHull:
                 if (body.HalfExtents.HasValue)
                     bj["half_extents"] = Vec3ToJson(body.HalfExtents.Value);
                 break;
@@ -375,6 +377,7 @@ public class MapDocument
         "capsule" => MapShapeType.Capsule,
         "plane" => MapShapeType.Plane,
         "trimesh" => MapShapeType.Trimesh,
+        "convexhull" => MapShapeType.ConvexHull,
         _ => MapShapeType.None
     };
 
@@ -385,6 +388,7 @@ public class MapDocument
         MapShapeType.Capsule => "capsule",
         MapShapeType.Plane => "plane",
         MapShapeType.Trimesh => "trimesh",
+        MapShapeType.ConvexHull => "convexhull",
         _ => "none"
     };
 }

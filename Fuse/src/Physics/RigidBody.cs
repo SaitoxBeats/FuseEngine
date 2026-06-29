@@ -82,8 +82,36 @@ public class RigidBody
     public RigidBody SetConvexHull(Vector3[] vertices, Vector3 scale = default)
     {
         _shapeType = ShapeType.ConvexHull;
-        _trimeshVerts = vertices;
         _trimeshScale = scale == default ? Vector3.One : scale;
+        _trimeshVerts = vertices;
+        _trimeshIndices = null;
+
+        try
+        {
+            if (vertices.Length >= 4)
+            {
+                var hullVerts = vertices.Select(v => new Fuse.Renderer.HullVertex { Position = new double[] { v.X, v.Y, v.Z } }).ToList();
+                var hull = MIConvexHull.ConvexHull.Create(hullVerts);
+                var pointToIndex = hull.Result.Points.Select((p, i) => new { p, i }).ToDictionary(x => x.p, x => (uint)x.i);
+                
+                var cvxTriIndices = new System.Collections.Generic.List<uint>();
+                foreach (var face in hull.Result.Faces)
+                {
+                    cvxTriIndices.Add(pointToIndex[face.Vertices[0]]);
+                    cvxTriIndices.Add(pointToIndex[face.Vertices[1]]);
+                    cvxTriIndices.Add(pointToIndex[face.Vertices[2]]);
+                }
+                
+                _trimeshVerts = hull.Result.Points.Select(p => new Vector3((float)p.Position[0], (float)p.Position[1], (float)p.Position[2])).ToArray();
+                _trimeshIndices = cvxTriIndices.ToArray();
+            }
+        }
+        catch
+        {
+            // Fallback to original vertices without indices (won't be drawn)
+            _trimeshVerts = vertices;
+        }
+
         return this;
     }
 

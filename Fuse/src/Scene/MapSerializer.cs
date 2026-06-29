@@ -511,6 +511,9 @@ public static class MapSerializer
                 bool isTrimesh = bj.TryGetPropertyValue("shape", out var shapeNode)
                     && (string)shapeNode! == "trimesh";
 
+                bool isConvexHull = bj.TryGetPropertyValue("shape", out var shapeNode2)
+                    && (string)shapeNode2! == "convexhull";
+
                 var body = new RigidBody();
                 ConfigureBodyFromJson(body, bj);
 
@@ -520,19 +523,26 @@ public static class MapSerializer
                 if (entity.Behaviours.Count > 0)
                     body.SetKinematic(true);
 
-                if (isTrimesh)
+                if (isTrimesh || isConvexHull)
                 {
                     if (isBrush && brushCollVerts != null)
                     {
-                        body.SetConvexHull(brushCollVerts);
+                        body.SetConvexHull(brushCollVerts); // Brushes always use ConvexHull
                     }
                     else
                     {
                         var model = assets.GetModel(modelPath);
                         if (model != null && model.CollVertices.Length > 0)
-                            body.SetTrimesh(model.CollVertices, model.CollIndices, modelScale);
+                        {
+                            if (isConvexHull)
+                                body.SetConvexHull(model.CollVertices, modelScale);
+                            else
+                                body.SetTrimesh(model.CollVertices, model.CollIndices, modelScale);
+                        }
                         else
+                        {
                             body.SetBox(new Vector3(0.5f));
+                        }
                     }
                 }
 
@@ -544,9 +554,9 @@ public static class MapSerializer
                 
                 if (isBrush)
                     entity.Transform.Scale = Vector3.One;
-                else if (body.Type == RigidBody.ShapeType.Box)
+                else if (!isModel && body.Type == RigidBody.ShapeType.Box)
                     entity.Transform.Scale = body.BoxHalfExtents * 2.0f;
-                else if (body.Type == RigidBody.ShapeType.Sphere)
+                else if (!isModel && body.Type == RigidBody.ShapeType.Sphere)
                     entity.Transform.Scale = new Vector3(body.SphereRadius * 2.0f);
                 else
                     entity.Transform.Scale = modelScale;

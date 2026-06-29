@@ -41,20 +41,23 @@ public unsafe class DebugDrawer : IDisposable
             layout(location = 0) in vec3 aPos;
             layout(location = 1) in vec3 aColor;
             out vec3 vColor;
+            uniform mat4 uModel;
             uniform mat4 uView;
             uniform mat4 uProj;
+            uniform bool uUseVertexColor;
+            uniform vec3 uColor;
             void main() {
-                vColor = aColor;
-                gl_Position = uProj * uView * vec4(aPos, 1.0);
+                vColor = uUseVertexColor ? aColor : uColor;
+                gl_Position = uProj * uView * uModel * vec4(aPos, 1.0);
             }
             """;
 
         string fsSrc = """
             #version 330 core
             in vec3 vColor;
-            out vec4 fragColor;
+            out vec4 FragColor;
             void main() {
-                fragColor = vec4(vColor, 1.0);
+                FragColor = vec4(vColor, 1.0);
             }
             """;
 
@@ -352,15 +355,49 @@ public unsafe class DebugDrawer : IDisposable
 
         float[] viewArr = GetMatrixValues(view);
         float[] projArr = GetMatrixValues(proj);
-        fixed (float* vp = viewArr, pp = projArr)
+        float[] modelArr = GetMatrixValues(Matrix4x4.Identity);
+        fixed (float* vp = viewArr, pp = projArr, mp = modelArr)
         {
             _gl.UniformMatrix4(_uView, 1, false, vp);
             _gl.UniformMatrix4(_uProj, 1, false, pp);
+            int uModel = _gl.GetUniformLocation(_shader, "uModel");
+            _gl.UniformMatrix4(uModel, 1, false, mp);
         }
+
+        int uUseVC = _gl.GetUniformLocation(_shader, "uUseVertexColor");
+        _gl.Uniform1(uUseVC, 1);
 
         _gl.DrawArrays(GLEnum.Lines, 0, (uint)verts.Length);
 
         _gl.BindVertexArray(0);
+    }
+
+    public void DrawCachedLineMesh(Mesh mesh, Vector3 pos, Quaternion rot, Vector3 scale, Vector3 color, Matrix4x4 view, Matrix4x4 proj)
+    {
+        if (!Enabled || !mesh.HasLineBuffer) return;
+
+        _gl.UseProgram(_shader);
+
+        var transform = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(pos);
+        float[] viewArr = GetMatrixValues(view);
+        float[] projArr = GetMatrixValues(proj);
+        float[] modelArr = GetMatrixValues(transform);
+
+        fixed (float* vp = viewArr, pp = projArr, mp = modelArr)
+        {
+            _gl.UniformMatrix4(_uView, 1, false, vp);
+            _gl.UniformMatrix4(_uProj, 1, false, pp);
+            int uModel = _gl.GetUniformLocation(_shader, "uModel");
+            _gl.UniformMatrix4(uModel, 1, false, mp);
+        }
+
+        int uUseVC = _gl.GetUniformLocation(_shader, "uUseVertexColor");
+        _gl.Uniform1(uUseVC, 0);
+
+        int uColor = _gl.GetUniformLocation(_shader, "uColor");
+        _gl.Uniform3(uColor, color.X, color.Y, color.Z);
+
+        mesh.DrawLineBuffer();
     }
 
     private void PushBoxWire(Vector3[] p, Vector3 color)

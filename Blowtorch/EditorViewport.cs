@@ -286,8 +286,21 @@ public unsafe class EditorViewport : IDisposable
                 case MapShapeType.Trimesh when mapObj.IsModel && mapObj.Model != null:
                     string modelPath = Path.GetFullPath(Path.Combine(fuseResPath, mapObj.Model));
                     var model = assets.GetModel(modelPath);
-                    if (model != null && model.CollVertices.Length > 0)
-                        _debugDrawer.DrawTrimesh(body.Position, body.Rotation, model.CollVertices, model.CollIndices, color, mapObj.ModelScale);
+                    if (model != null && model.CollMesh != null)
+                    {
+                        _debugDrawer.DrawCachedLineMesh(model.CollMesh, body.Position, body.Rotation, mapObj.ModelScale, color, view, proj);
+                    }
+                    break;
+                case MapShapeType.ConvexHull when mapObj.IsModel && mapObj.Model != null:
+                    string modelPathHull = Path.GetFullPath(Path.Combine(fuseResPath, mapObj.Model));
+                    var modelHull = assets.GetModel(modelPathHull);
+                    if (modelHull != null)
+                    {
+                        if (modelHull.ConvexCollMesh != null)
+                            _debugDrawer.DrawCachedLineMesh(modelHull.ConvexCollMesh, body.Position, body.Rotation, mapObj.ModelScale, color, view, proj);
+                        else if (modelHull.CollMesh != null)
+                            _debugDrawer.DrawCachedLineMesh(modelHull.CollMesh, body.Position, body.Rotation, mapObj.ModelScale, color, view, proj);
+                    }
                     break;
             }
         }

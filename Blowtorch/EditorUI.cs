@@ -2233,8 +2233,8 @@ public unsafe class EditorUI
                     Quaternion rot = entity != null ? entity.Transform.Rotation : (obj.Body != null ? obj.Body.Rotation : Quaternion.Identity);
                     
                     Vector3 currentScale = Vector3.One;
-                    if (obj.Body != null && (obj.Body.Shape == MapShapeType.Box || obj.Body.Shape == MapShapeType.Trimesh) && obj.Body.HalfExtents.HasValue) currentScale = obj.Body.HalfExtents.Value * 2.0f;
-                    else if (obj.Body != null && obj.Body.Shape == MapShapeType.Sphere && obj.Body.Radius.HasValue) currentScale = new Vector3(obj.Body.Radius.Value * 2.0f);
+                    if (!obj.IsModel && obj.Body != null && (obj.Body.Shape == MapShapeType.Box || obj.Body.Shape == MapShapeType.Trimesh) && obj.Body.HalfExtents.HasValue) currentScale = obj.Body.HalfExtents.Value * 2.0f;
+                    else if (!obj.IsModel && obj.Body != null && obj.Body.Shape == MapShapeType.Sphere && obj.Body.Radius.HasValue) currentScale = new Vector3(obj.Body.Radius.Value * 2.0f);
                     else if (obj.IsModel) currentScale = obj.ModelScale;
 
                     if (isChild && parentEntity != null)
@@ -2301,9 +2301,9 @@ public unsafe class EditorUI
 
                         if (entity != null)
                         {
-                            if (obj.Body != null && (obj.Body.Shape == MapShapeType.Box || obj.Body.Shape == MapShapeType.Trimesh) && obj.Body.HalfExtents.HasValue)
+                            if (!obj.IsModel && obj.Body != null && (obj.Body.Shape == MapShapeType.Box || obj.Body.Shape == MapShapeType.Trimesh) && obj.Body.HalfExtents.HasValue)
                                 entity.Transform.Scale = obj.Body.HalfExtents.Value * 2.0f;
-                            else if (obj.Body != null && obj.Body.Shape == MapShapeType.Sphere && obj.Body.Radius.HasValue)
+                            else if (!obj.IsModel && obj.Body != null && obj.Body.Shape == MapShapeType.Sphere && obj.Body.Radius.HasValue)
                                 entity.Transform.Scale = new Vector3(obj.Body.Radius.Value * 2.0f);
                             else
                                 entity.Transform.Scale = currentScale;
@@ -2536,7 +2536,34 @@ public unsafe class EditorUI
                     var body = obj.Body;
                     if (ImGui.CollapsingHeader("Physics Body", ImGuiTreeNodeFlags.DefaultOpen))
                     {
-                        ImGui.Text($"Collision Shape: {body.Shape}");
+                        if (obj.IsModel)
+                        {
+                            string[] shapes = { "Trimesh", "Convex Hull", "No Collision" };
+                            int shapeIdx = body.Shape == MapShapeType.Trimesh ? 0 : (body.Shape == MapShapeType.ConvexHull ? 1 : 2);
+                            bool shapeChanged = ImGui.Combo("Collision Shape", ref shapeIdx, shapes, shapes.Length);
+                            Undo.TrackItem(_frameBeginState);
+                            if (shapeChanged)
+                            {
+                                body.Shape = shapeIdx == 0 ? MapShapeType.Trimesh : (shapeIdx == 1 ? MapShapeType.ConvexHull : MapShapeType.None);
+                            }
+                        }
+                        else
+                        {
+                            string[] shapes = { "Default", "No Collision" };
+                            int shapeIdx = body.Shape == MapShapeType.None ? 1 : 0;
+                            bool shapeChanged = ImGui.Combo("Collision", ref shapeIdx, shapes, shapes.Length);
+                            Undo.TrackItem(_frameBeginState);
+                            if (shapeChanged)
+                            {
+                                if (shapeIdx == 1) body.Shape = MapShapeType.None;
+                                else 
+                                {
+                                    if (obj is Fuse.Scene.Model.Brush) body.Shape = MapShapeType.Box;
+                                    else if (obj.Mesh == "sphere") body.Shape = MapShapeType.Sphere;
+                                    else body.Shape = MapShapeType.Box;
+                                }
+                            }
+                        }
 
                         Vector3 pos = body.Position;
                         bool posChanged = ImGui.DragFloat3("Position##inspectPos", ref pos, 0.05f, 0.0f, 0.0f, "%.3f");
@@ -2596,37 +2623,39 @@ public unsafe class EditorUI
                         }
                         
 
-                        float mass = body.Mass;
-                        bool massChanged = ImGui.DragFloat("Mass##inspectMass", ref mass, 0.1f, 0.0f, 100000.0f, "%.3f");
-                        Undo.TrackItem(_frameBeginState);
-                        if (massChanged) body.Mass = mass;
-                        
-
-                        float friction = body.Friction;
-                        bool fricChanged = ImGui.DragFloat("Friction##inspectFriction", ref friction, 0.05f, 0.0f, 10.0f, "%.2f");
-                        Undo.TrackItem(_frameBeginState);
-                        if (fricChanged) body.Friction = friction;
-                        
-
-                        float restitution = body.Restitution;
-                        bool restChanged = ImGui.DragFloat("Restitution##inspectRestitution", ref restitution, 0.05f, 0.0f, 1.0f, "%.2f");
-                        Undo.TrackItem(_frameBeginState);
-                        if (restChanged) body.Restitution = restitution;
-                        
-
-                        bool isTrigger = body.IsTrigger;
-                        bool trigChanged = ImGui.Checkbox("Is Trigger##inspectTrigger", ref isTrigger);
-                        Undo.TrackItem(_frameBeginState);
-                        if (trigChanged)
+                        if (body.Shape != MapShapeType.None)
                         {
-                            body.IsTrigger = isTrigger;
-                            var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
-                            if (entity != null)
+                            float mass = body.Mass;
+                            bool massChanged = ImGui.DragFloat("Mass##inspectMass", ref mass, 0.1f, 0.0f, 100000.0f, "%.3f");
+                            Undo.TrackItem(_frameBeginState);
+                            if (massChanged) body.Mass = mass;
+                            
+
+                            float friction = body.Friction;
+                            bool fricChanged = ImGui.DragFloat("Friction##inspectFriction", ref friction, 0.05f, 0.0f, 10.0f, "%.2f");
+                            Undo.TrackItem(_frameBeginState);
+                            if (fricChanged) body.Friction = friction;
+                            
+
+                            float restitution = body.Restitution;
+                            bool restChanged = ImGui.DragFloat("Restitution##inspectRestitution", ref restitution, 0.05f, 0.0f, 1.0f, "%.2f");
+                            Undo.TrackItem(_frameBeginState);
+                            if (restChanged) body.Restitution = restitution;
+                            
+
+                            bool isTrigger = body.IsTrigger;
+                            bool trigChanged = ImGui.Checkbox("Is Trigger##inspectTrigger", ref isTrigger);
+                            Undo.TrackItem(_frameBeginState);
+                            if (trigChanged)
                             {
-                                entity.TexturePath = isTrigger ? "Textures/tools/toolstrigger.bmp" : (obj.Texture ?? "");
+                                body.IsTrigger = isTrigger;
+                                var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
+                                if (entity != null)
+                                {
+                                    entity.TexturePath = isTrigger ? "Textures/tools/toolstrigger.bmp" : (obj.Texture ?? "");
+                                }
                             }
                         }
-                        
 
                         switch (body.Shape)
                         {
@@ -2653,7 +2682,7 @@ public unsafe class EditorUI
                                     {
                                         if (obj is Brush)
                                             entity.Transform.Scale = Vector3.One;
-                                        else
+                                        else if (!obj.IsModel)
                                             entity.Transform.Scale = body.HalfExtents.Value * 2.0f;
                                     }
                                 }
@@ -2668,7 +2697,9 @@ public unsafe class EditorUI
                                     body.Radius = ApplySnap(rad, _snapGrid);
                                     var entity = scene.Entities.FirstOrDefault(e => e.Id == obj.Id);
                                     if (entity != null && body.Radius.HasValue)
-                                        entity.Transform.Scale = new Vector3(body.Radius.Value * 2.0f);
+                                    {
+                                        if (!obj.IsModel) entity.Transform.Scale = new Vector3(body.Radius.Value * 2.0f);
+                                    }
                                 }
                                 
                                 break;

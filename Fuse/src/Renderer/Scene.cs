@@ -81,7 +81,7 @@ public class Scene
 
     public void RegisterBody(Entity entity)
     {
-        if (entity.Body != null)
+        if (entity.Body != null && entity.Body.IsBuilt)
             _bodyEntityMap[entity.Body.Native] = entity;
     }
 

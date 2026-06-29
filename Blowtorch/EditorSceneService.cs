@@ -90,11 +90,11 @@ public class EditorSceneService
                 entity.Transform.Position = mapObj.Body.Position;
                 entity.Transform.Rotation = mapObj.Body.Rotation;
                 
-                if (mapObj.Body.Shape == MapShapeType.Box && mapObj.Body.HalfExtents.HasValue)
+                if (!mapObj.IsModel && mapObj.Body.Shape == MapShapeType.Box && mapObj.Body.HalfExtents.HasValue)
                 {
                     entity.Transform.Scale = mapObj.Body.HalfExtents.Value * 2.0f;
                 }
-                else if (mapObj.Body.Shape == MapShapeType.Sphere && mapObj.Body.Radius.HasValue)
+                else if (!mapObj.IsModel && mapObj.Body.Shape == MapShapeType.Sphere && mapObj.Body.Radius.HasValue)
                 {
                     entity.Transform.Scale = new System.Numerics.Vector3(mapObj.Body.Radius.Value * 2.0f);
                 }

@@ -2432,6 +2432,118 @@
         "restitution": 0,
         "is_trigger": false
       }
+    },
+    {
+      "id": "Nala_Tribal_SFW_SampleV1_NalaTribalFreeSampleV2",
+      "visible": true,
+      "body": {
+        "shape": "none",
+        "position": [
+          9.003007,
+          0,
+          1.7287331
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0,
+        "restitution": 0,
+        "is_trigger": false
+      }
+    },
+    {
+      "id": "Nala_Tribal_SFW_SampleV1_NalaTribalFreeSampleV2_NalaTribalFreeSampleV2-0",
+      "visible": true,
+      "parent": "Nala_Tribal_SFW_SampleV1_NalaTribalFreeSampleV2",
+      "model": "Models/nala-the-lion-king-tribal-free/source/Nala_Tribal_SFW_SampleV1.glb#0",
+      "model_scale": [
+        0.014273126,
+        0.014273126,
+        0.014273126
+      ],
+      "texture": "Textures/Nala_Tribal_SFW_SampleV1/tex_0.png",
+      "body": {
+        "shape": "convexhull",
+        "position": [
+          9.003007,
+          0,
+          1.7287331
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0.5,
+        "restitution": 0,
+        "is_trigger": false
+      }
+    },
+    {
+      "id": "Nala_Tribal_SFW_SampleV1_NalaTribalFreeSampleV2_NalaTribalFreeSampleV2-1",
+      "visible": true,
+      "parent": "Nala_Tribal_SFW_SampleV1_NalaTribalFreeSampleV2",
+      "model": "Models/nala-the-lion-king-tribal-free/source/Nala_Tribal_SFW_SampleV1.glb#1",
+      "model_scale": [
+        0.014273126,
+        0.014273126,
+        0.014273126
+      ],
+      "texture": "Textures/Nala_Tribal_SFW_SampleV1/tex_3.png",
+      "body": {
+        "shape": "none",
+        "position": [
+          9.003007,
+          0,
+          1.7287331
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0.5,
+        "restitution": 0,
+        "is_trigger": false
+      }
+    },
+    {
+      "id": "Nala_Tribal_SFW_SampleV1_NalaTribalFreeSampleV2_NalaTribalFreeSampleV2-2",
+      "visible": true,
+      "parent": "Nala_Tribal_SFW_SampleV1_NalaTribalFreeSampleV2",
+      "model": "Models/nala-the-lion-king-tribal-free/source/Nala_Tribal_SFW_SampleV1.glb#2",
+      "model_scale": [
+        0.014273126,
+        0.014273126,
+        0.014273126
+      ],
+      "texture": "Textures/Nala_Tribal_SFW_SampleV1/tex_6.png",
+      "body": {
+        "shape": "none",
+        "position": [
+          9.003007,
+          0,
+          1.7287331
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0.5,
+        "restitution": 0,
+        "is_trigger": false
+      }
     }
   ],
   "player_spawn": {

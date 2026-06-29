@@ -220,6 +220,7 @@ public class SceneManager
                 case RigidBody.ShapeType.Capsule:
                     debugDrawer.DrawCapsule(pos, rot, b.CapsuleHeight * 0.5f, b.CapsuleRadius, color);
                     break;
+                case RigidBody.ShapeType.ConvexHull:
                 case RigidBody.ShapeType.Trimesh:
                     if (b.TrimeshVertices != null && b.TrimeshIndices != null)
                         debugDrawer.DrawTrimesh(pos, rot, b.TrimeshVertices, b.TrimeshIndices, color, b.TrimeshScale);

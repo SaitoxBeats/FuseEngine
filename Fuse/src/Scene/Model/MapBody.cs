@@ -9,6 +9,7 @@ public enum MapShapeType
     Capsule,
     Plane,
     Trimesh,
+    ConvexHull,
     None
 }
 

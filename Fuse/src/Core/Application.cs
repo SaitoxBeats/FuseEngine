@@ -13,6 +13,7 @@ public unsafe class Application : IDisposable
     private double _lastTime;
     private bool _paused;
     private int _scrWidth = 1280, _scrHeight = 800;
+    private bool _screenshotRequested;
 
     // Core Systems
     private readonly Physics.PhysicsWorld _physics;
@@ -220,7 +221,11 @@ public unsafe class Application : IDisposable
 
                 // Render
                 _renderer.RenderFrame(_sceneManager.ActiveScene, _player.Camera, _physics);
-
+                if (_screenshotRequested)
+                {
+                    _screenshotRequested = false;
+                    TakeScreenshot(gl);
+                }
 
                 // UI
                 DrawUI(gl);
@@ -270,6 +275,8 @@ public unsafe class Application : IDisposable
 
     private void HandleInput()
     {
+        if (Input.Input.KeyPressed(KeyCodes.F2)) _screenshotRequested = true;
+        
         if (Input.Input.KeyPressed(KeyCodes.F6))
         {
             string savePath = _sceneManager.CurrentMapPath;
@@ -310,6 +317,36 @@ public unsafe class Application : IDisposable
 
             Physics.Explosion.Apply(_physics, target, 105f, 10000.0f);
         }
+    }
+
+    private unsafe void TakeScreenshot(GL gl)
+    {
+        var pixels = new byte[_scrWidth * _scrHeight * 4];
+        fixed (byte* ptr = pixels)
+        {
+            gl.ReadPixels(0, 0, (uint)_scrWidth, (uint)_scrHeight,
+                PixelFormat.Bgra, PixelType.UnsignedByte, ptr);
+        }
+
+        // Flip Y: OpenGL y=0 é bottom, PNG y=0 é top
+        var flipped = new byte[pixels.Length];
+        int stride = _scrWidth * 4;
+        for (int y = 0; y < _scrHeight; y++)
+            System.Buffer.BlockCopy(pixels, y * stride,
+                flipped, (_scrHeight - 1 - y) * stride, stride);
+
+        string filename = $"screenshot_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.png";
+
+        fixed (byte* ptr = flipped)
+        {
+            using var bmp = new System.Drawing.Bitmap(
+                _scrWidth, _scrHeight, stride,
+                System.Drawing.Imaging.PixelFormat.Format32bppArgb,
+                (nint)ptr);
+            bmp.Save(filename, System.Drawing.Imaging.ImageFormat.Png);
+        }
+
+        Logger.Info($"Screenshot saved: {Path.GetFullPath(filename)}");
     }
 
     private void DrawUI(GL gl)
