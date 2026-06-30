@@ -48,7 +48,7 @@ public class EditorSceneService
                 var light = new Light
                 {
                     Id = mapObj.Id,
-                    Type = mapObj.LightType == "spot" ? LightType.Spot : LightType.Point,
+                    Type = mapObj.LightType == "directional" ? LightType.Directional : (mapObj.LightType == "spot" ? LightType.Spot : LightType.Point),
                     Position = pos,
                     Direction = dir,
                     Color = mapObj.LightColor,

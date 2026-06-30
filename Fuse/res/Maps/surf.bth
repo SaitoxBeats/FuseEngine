@@ -5372,6 +5372,41 @@
           2
         ]
       }
+    },
+    {
+      "id": "new_directional_light",
+      "visible": true,
+      "light_type": "directional",
+      "light_color": [
+        1,
+        1,
+        1
+      ],
+      "light_intensity": 1,
+      "light_radius": 15,
+      "light_inner_cone": 0.2617994,
+      "light_outer_cone": 0.5235988,
+      "light_cast_shadows": true,
+      "light_shadow_bias": 0.001,
+      "light_dynamic": false,
+      "body": {
+        "shape": "none",
+        "position": [
+          0,
+          2,
+          0
+        ],
+        "rotation": [
+          0.93115455,
+          0.3646248,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0.5,
+        "restitution": 0,
+        "is_trigger": false
+      }
     }
   ],
   "player_spawn": {

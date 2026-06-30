@@ -104,12 +104,14 @@ public class MasterRenderer
         scene.UpdateTransforms(physics);
 
         // --- 1. Shadow Pass ---
-        Vector3 lightDir = Vector3.Normalize(new Vector3(1, 2, 1));
+        var dirLight = scene.Lights.FirstOrDefault(l => l.Enabled && l.Type == LightType.Directional);
+        Vector3 lightDir = dirLight != null ? -Vector3.Normalize(dirLight.Direction) : Vector3.Normalize(new Vector3(1, 2, 1));
+        bool renderDirShadows = dirLight != null && dirLight.CastShadows && ShadowsEnabled;
         
         float[] cascadeLevels = { ShadowFarPlane * 0.05f, ShadowFarPlane * 0.2f, ShadowFarPlane };
         Matrix4x4[] lightSpaceMatrices = new Matrix4x4[3];
 
-        if (_shadowShader != null && _shadowShader.ID != 0 && ShadowsEnabled)
+        if (_shadowShader != null && _shadowShader.ID != 0 && renderDirShadows)
         {
             _gl.Enable(EnableCap.DepthTest);
             _gl.Enable(EnableCap.CullFace);
@@ -245,8 +247,15 @@ public class MasterRenderer
 
             float lum = _skyboxDominantColor.X * 0.2126f + _skyboxDominantColor.Y * 0.7152f + _skyboxDominantColor.Z * 0.0722f;
             _shader.SetFloat("uAmbient", 0.02f + 0.28f * lum);
-            var tinted = Vector3.Lerp(new Vector3(1, 0.95f, 0.9f), _skyboxDominantColor, 0.5f);
-            _shader.SetVec3("uLightColor", tinted * (0.5f + 0.5f * lum));
+            
+            if (dirLight != null)
+            {
+                _shader.SetVec3("uLightColor", dirLight.Color * dirLight.Intensity);
+            }
+            else
+            {
+                _shader.SetVec3("uLightColor", Vector3.Zero);
+            }
             
             _shader.SetMat4("uView", view);
             _shader.SetMat4("uProj", proj);

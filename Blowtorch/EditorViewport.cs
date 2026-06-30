@@ -110,8 +110,17 @@ public unsafe class EditorViewport : IDisposable
         var proj = _camera.ProjectionMatrix((float)_width / _height);
 
         shader.Use();
-        shader.SetVec3("uLightDir", Vector3.Normalize(new Vector3(1, 2, 1)));
-        shader.SetVec3("uLightColor", new Vector3(1, 0.95f, 0.9f));
+        var dirLight = scene.Lights.FirstOrDefault(l => l.Enabled && l.Type == LightType.Directional);
+        if (dirLight != null)
+        {
+            shader.SetVec3("uLightDir", -Vector3.Normalize(dirLight.Direction));
+            shader.SetVec3("uLightColor", dirLight.Color * dirLight.Intensity);
+        }
+        else
+        {
+            shader.SetVec3("uLightDir", Vector3.Normalize(new Vector3(1, 2, 1)));
+            shader.SetVec3("uLightColor", Vector3.Zero);
+        }
         shader.SetFloat("uAmbient", 0.2f);
         shader.SetMat4("uView", view);
         shader.SetMat4("uProj", proj);

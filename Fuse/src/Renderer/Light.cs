@@ -5,7 +5,8 @@ namespace Fuse.Renderer;
 public enum LightType
 {
     Point,
-    Spot
+    Spot,
+    Directional
 }
 
 public class Light

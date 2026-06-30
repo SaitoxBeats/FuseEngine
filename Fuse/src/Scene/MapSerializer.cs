@@ -166,7 +166,7 @@ public static class MapSerializer
 
             if (e.AttachedLight != null)
             {
-                obj["light_type"] = e.AttachedLight.Type == Renderer.LightType.Point ? "point" : "spot";
+                obj["light_type"] = e.AttachedLight.Type == Renderer.LightType.Directional ? "directional" : (e.AttachedLight.Type == Renderer.LightType.Point ? "point" : "spot");
                 obj["light_color"] = new JsonArray(e.AttachedLight.Color.X, e.AttachedLight.Color.Y, e.AttachedLight.Color.Z);
                 obj["light_intensity"] = e.AttachedLight.Intensity;
                 obj["light_radius"] = e.AttachedLight.Radius;
@@ -187,7 +187,7 @@ public static class MapSerializer
 
             var lj = new JsonObject
             {
-                ["type"] = l.Type == Renderer.LightType.Point ? "point" : "spot",
+                ["type"] = l.Type == Renderer.LightType.Directional ? "directional" : (l.Type == Renderer.LightType.Point ? "point" : "spot"),
                 ["position"] = Vec3ToJson(l.Position),
                 ["color"] = Vec3ToJson(l.Color),
                 ["radius"] = l.Radius,
@@ -196,7 +196,7 @@ public static class MapSerializer
                 ["intensity"] = l.Intensity,
                 ["enabled"] = l.Enabled,
             };
-            if (l.Type == Renderer.LightType.Spot)
+            if (l.Type == Renderer.LightType.Spot || l.Type == Renderer.LightType.Directional)
             {
                 lj["direction"] = Vec3ToJson(l.Direction);
                 lj["inner_cone"] = l.InnerConeAngle;
@@ -271,8 +271,8 @@ public static class MapSerializer
                 l.ShadowBias = lj.TryGetPropertyValue("shadow_bias", out var sbNode) ? (float)sbNode! : 0.005f;
                 l.Intensity = (float)lj["intensity"]!;
                 l.Enabled = lj.TryGetPropertyValue("enabled", out var en) ? (bool)en! : true;
-                l.Type = (string)lj["type"]! == "spot" ? Renderer.LightType.Spot : Renderer.LightType.Point;
-                if (l.Type == Renderer.LightType.Spot)
+                l.Type = (string)lj["type"]! == "directional" ? Renderer.LightType.Directional : ((string)lj["type"]! == "spot" ? Renderer.LightType.Spot : Renderer.LightType.Point);
+                if (l.Type == Renderer.LightType.Spot || l.Type == Renderer.LightType.Directional)
                 {
                     l.Direction = Vec3FromJson(lj["direction"]!.AsArray());
                     l.InnerConeAngle = (float)lj["inner_cone"]!;
@@ -405,7 +405,7 @@ public static class MapSerializer
 
                 var light = new Renderer.Light
                 {
-                    Type = lightType == "spot" ? Renderer.LightType.Spot : Renderer.LightType.Point,
+                    Type = lightType == "directional" ? Renderer.LightType.Directional : (lightType == "spot" ? Renderer.LightType.Spot : Renderer.LightType.Point),
                     Position = lightPos,
                     Direction = lightDir,
                     Color = lightCol,

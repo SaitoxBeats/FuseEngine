@@ -220,12 +220,17 @@ public class Scene
                 float radius = MathF.Max(e.Transform.Scale.X, MathF.Max(e.Transform.Scale.Y, e.Transform.Scale.Z)) * 2.0f;
                 
                 // Extremely safe minimum radius since we don't have precise AABBs for meshes
-                // 30.0 units guarantees that large objects like grounds or walls won't vanish easily
-                radius = MathF.Max(radius, 40.0f); 
+                // Shadows (Orthographic) need a massive radius because tall objects cast very long shadows from outside the immediate view.
+                bool isOrthographic = cullMatrix.Value.M44 > 0.5f;
+                float safeRadius = isOrthographic ? 250.0f : 40.0f;
+                radius = MathF.Max(radius, safeRadius); 
                 
-                // Convert world radius to NDC padding using the matrix's scale components
-                float pX = MathF.Abs(radius * cullMatrix.Value.M11);
-                float pY = MathF.Abs(radius * cullMatrix.Value.M22);
+                // Convert world radius to NDC padding using the magnitude of the matrix columns
+                // This correctly handles any rotation in the view matrix, preventing pX/pY from vanishing at certain angles!
+                float col1Len = MathF.Sqrt(cullMatrix.Value.M11 * cullMatrix.Value.M11 + cullMatrix.Value.M21 * cullMatrix.Value.M21 + cullMatrix.Value.M31 * cullMatrix.Value.M31);
+                float col2Len = MathF.Sqrt(cullMatrix.Value.M12 * cullMatrix.Value.M12 + cullMatrix.Value.M22 * cullMatrix.Value.M22 + cullMatrix.Value.M32 * cullMatrix.Value.M32);
+                float pX = radius * col1Len;
+                float pY = radius * col2Len;
 
                 // Ignore Z culling entirely! Objects far behind the camera can still cast long shadows into our view.
                 // If fully outside the X and Y bounds of the light's view, ignore it!

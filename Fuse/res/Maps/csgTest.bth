@@ -3290,6 +3290,111 @@
           2.75
         ]
       }
+    },
+    {
+      "id": "new_point_light",
+      "visible": true,
+      "light_type": "point",
+      "light_color": [
+        1,
+        1,
+        1
+      ],
+      "light_intensity": 1,
+      "light_radius": 15,
+      "light_inner_cone": 0.2617994,
+      "light_outer_cone": 0.5235988,
+      "light_cast_shadows": true,
+      "light_shadow_bias": 0.001,
+      "light_dynamic": false,
+      "body": {
+        "shape": "none",
+        "position": [
+          4,
+          2,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0.5,
+        "restitution": 0,
+        "is_trigger": false
+      }
+    },
+    {
+      "id": "new_point_light_copy",
+      "visible": true,
+      "light_type": "point",
+      "light_color": [
+        1,
+        1,
+        1
+      ],
+      "light_intensity": 1,
+      "light_radius": 15,
+      "light_inner_cone": 0.2617994,
+      "light_outer_cone": 0.5235988,
+      "light_cast_shadows": true,
+      "light_shadow_bias": 0.001,
+      "light_dynamic": false,
+      "body": {
+        "shape": "none",
+        "position": [
+          21,
+          2.2973452,
+          0
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0.5,
+        "restitution": 0,
+        "is_trigger": false
+      }
+    },
+    {
+      "id": "new_point_light_copy_copy",
+      "visible": true,
+      "light_type": "point",
+      "light_color": [
+        1,
+        1,
+        1
+      ],
+      "light_intensity": 1,
+      "light_radius": 15,
+      "light_inner_cone": 0.2617994,
+      "light_outer_cone": 0.5235988,
+      "light_cast_shadows": true,
+      "light_shadow_bias": 0.001,
+      "light_dynamic": false,
+      "body": {
+        "shape": "none",
+        "position": [
+          21,
+          2.3512983,
+          18
+        ],
+        "rotation": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "mass": 0,
+        "friction": 0.5,
+        "restitution": 0,
+        "is_trigger": false
+      }
     }
   ],
   "player_spawn": {

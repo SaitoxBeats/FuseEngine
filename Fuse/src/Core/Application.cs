@@ -25,6 +25,7 @@ public unsafe class Application : IDisposable
     // Player
     private Player.Player _player = null!;
     private Player.PickupController _pickup = null!;
+    private Renderer.Light _flashlight = null!;
 
     // UI & Debug
     private Renderer.UIRenderer _ui = null!;
@@ -69,6 +70,21 @@ public unsafe class Application : IDisposable
         _player = new Player.Player(_physics, new Vector3(0, 2, 0));
         var emptyID = new JoltPhysicsSharp.BodyID();
         _pickup = new Player.PickupController(_physics, _player.Camera, emptyID);
+        _flashlight = new Renderer.Light
+        {
+            Id = "player_flashlight",
+            Type = Renderer.LightType.Spot,
+            Position = _player.Camera.Position,
+            Direction = _player.Camera.Front,
+            Color = new Vector3(1.0f, 0.95f, 0.8f),
+            Radius = 25.0f,
+            Intensity = 1.0f,
+            InnerConeAngle = float.DegreesToRadians(15),
+            OuterConeAngle = float.DegreesToRadians(35),
+            Dynamic = true,
+            Enabled = false
+        };
+        _player.SetFlashlight(_flashlight);
 
         // Console
         _console = new Imgui.Console();
@@ -97,6 +113,7 @@ public unsafe class Application : IDisposable
 
         // Default Map Loading
         LoadMap(initialMap, OnLoadProgress);
+        _sceneManager.ActiveScene.AddLight(_flashlight);
 
         RegisterWindowCallbacks();
 
@@ -115,29 +132,7 @@ public unsafe class Application : IDisposable
             _player.Camera.SetRotation(spawn.Value.Yaw, spawn.Value.Pitch);
         }
         _sceneManager.InitTriggerSystem(_player);
-
-        //var testPoint = new Renderer.Light
-        //{
-        //    Type = Renderer.LightType.Point,
-        //    Position = new Vector3(0, 3, 0),
-        //    Color = new Vector3(1, 0.3f, 0.2f),
-        //    Radius = 15.0f,
-        //    Intensity = 2.0f
-        //};
-        //_sceneManager.ActiveScene.AddLight(testPoint);
-        //
-        //var testSpot = new Renderer.Light
-        //{
-        //    Type = Renderer.LightType.Spot,
-        //    Position = new Vector3(5, 8, 0),
-        //    Direction = new Vector3(0, -1, 0),
-        //    Color = new Vector3(0.2f, 0.5f, 1.0f),
-        //    Radius = 20.0f,
-        //    Intensity = 3.0f,
-        //    InnerConeAngle = float.DegreesToRadians(15),
-        //    OuterConeAngle = float.DegreesToRadians(30)
-        //};
-        //_sceneManager.ActiveScene.AddLight(testSpot);
+        _sceneManager.ActiveScene.AddLight(_flashlight);
     }
     
     private void ReloadMap(Action<float, string>? onProgress = null)
@@ -150,6 +145,7 @@ public unsafe class Application : IDisposable
             _player.Camera.SetRotation(spawn.Value.Yaw, spawn.Value.Pitch);
         }
         _sceneManager.InitTriggerSystem(_player);
+        _sceneManager.ActiveScene.AddLight(_flashlight);
     }
 
     private void RegisterWindowCallbacks()

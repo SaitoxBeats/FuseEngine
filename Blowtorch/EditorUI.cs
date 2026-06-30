@@ -1911,6 +1911,8 @@ public unsafe class EditorUI
             if (ImGui.Button("Add Pt Light")) AddNewLight(sceneService, assetService, history, "point");
             ImGui.SameLine();
             if (ImGui.Button("Add Spot Light")) AddNewLight(sceneService, assetService, history, "spot");
+            ImGui.SameLine();
+            if (ImGui.Button("Add Dir Light")) AddNewLight(sceneService, assetService, history, "directional");
 
             ImGui.Text($"Total Objects: {doc.Objects.Count}");
         }
@@ -2479,9 +2481,9 @@ public unsafe class EditorUI
                     {
                         Undo.TrackItem(_frameBeginState);
 
-                        string[] lightTypes = ["point", "spot"];
-                        int lightTypeIdx = obj.LightType == "spot" ? 1 : 0;
-                        if (ImGui.Combo("Type##lightType", ref lightTypeIdx, lightTypes, 2))
+                        string[] lightTypes = ["point", "spot", "directional"];
+                        int lightTypeIdx = obj.LightType == "directional" ? 2 : (obj.LightType == "spot" ? 1 : 0);
+                        if (ImGui.Combo("Type##lightType", ref lightTypeIdx, lightTypes, 3))
                             obj.LightType = lightTypes[lightTypeIdx];
 
                         Vector3 col = obj.LightColor;
@@ -2507,7 +2509,7 @@ public unsafe class EditorUI
                                 obj.LightOuterCone = float.DegreesToRadians(outerDeg);
                         }
 
-                        if (obj.LightType == "spot" || obj.LightType == "point")
+                        if (obj.LightType == "spot" || obj.LightType == "point" || obj.LightType == "directional")
                         {
                             bool castShadows = obj.LightCastShadows;
                             if (ImGui.Checkbox("Cast Shadows##lightShadows", ref castShadows))
@@ -2820,7 +2822,7 @@ public unsafe class EditorUI
         if (!obj.IsLight || obj.Body == null) return;
         var light = sceneService.Scene.Lights.FirstOrDefault(l => l.Id == obj.Id);
         if (light == null) return;
-        light.Type = obj.LightType == "spot" ? LightType.Spot : LightType.Point;
+        light.Type = obj.LightType == "directional" ? LightType.Directional : (obj.LightType == "spot" ? LightType.Spot : LightType.Point);
         light.Position = obj.Body.Position;
         light.Direction = Vector3.Transform(-Vector3.UnitY, obj.Body.Rotation);
         light.Enabled = obj.Visible;

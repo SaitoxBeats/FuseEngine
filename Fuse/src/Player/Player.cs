@@ -2,6 +2,7 @@ using System.Numerics;
 using System.Runtime.Intrinsics.X86;
 using System.Threading.Tasks.Dataflow;
 using Fuse.Core;
+using Fuse.Input;
 using Fuse.Physics;
 using Fuse.Renderer;
 using JoltPhysicsSharp;
@@ -50,6 +51,8 @@ public class Player : IDisposable
     private Vector3 _noclipPosition;
     private float _noclipSpeed = 10.0f;
     private float _noclipSprintSpeed = 15.0f;
+
+    private Light? _flashlight;
 
     private float _tiltTarget;
     private float _tiltCurrent;
@@ -113,6 +116,7 @@ public class Player : IDisposable
         }
 
         HandleCrouch();
+        HandleFlashlightToggle();
         ApplyMovement(dt);
 
         bool isGrounded = _character.GroundState == GroundState.OnGround;
@@ -167,7 +171,15 @@ public class Player : IDisposable
         //_camera.Roll = _tiltCurrent;
 
         SyncCamera();
+        SyncFlashlight();
         PushDynamicBodies();
+    }
+
+    private void HandleFlashlightToggle()
+    {
+        if (_flashlight == null) return;
+        if (Input.Input.KeyPressed(KeyCodes.F))
+            _flashlight.Enabled = !_flashlight.Enabled;
     }
 
     private void ApplyMovement(float dt)
@@ -385,6 +397,13 @@ public class Player : IDisposable
         _camera.Position = new Vector3(charPos.X, (float)charPos.Y + _currentEyeHeight, charPos.Z);
     }
 
+    private void SyncFlashlight()
+    {
+        if (_flashlight == null) return;
+        _flashlight.Position = _camera.Position;
+        _flashlight.Direction = _camera.Front;
+    }
+
     public Camera Camera => _camera;
     public BodyLockInterface GetBodyLockInterface() => _bli;
     public Vector3 Position => new((float)_character.Position.X, (float)_character.Position.Y, (float)_character.Position.Z);
@@ -420,6 +439,7 @@ public class Player : IDisposable
 
     public void SetSpeed(float speed) => _maxSpeedGround = speed;
     public float Speed => _maxSpeedGround;
+    public void SetFlashlight(Light light) => _flashlight = light;
 
     private void HandleSprint()
     {
