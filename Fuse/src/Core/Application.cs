@@ -249,16 +249,16 @@ public unsafe class Application : IDisposable
                     OrientationGizmo.Draw(_player.Camera);
                 }
 
-                //if (_paused)
-                //{
-                //    ImGuiNET.ImGui.Begin("Shadow Settings");
-                //    ImGuiNET.ImGui.DragFloat("Bias Factor", ref _renderer.ShadowBiasFactor, 0.0001f, 0.0f, 0.1f, "%.5f");
-                //    ImGuiNET.ImGui.DragFloat("Bias Base", ref _renderer.ShadowBiasBase, 0.00001f, 0.0f, 0.01f, "%.6f");
-                //    ImGuiNET.ImGui.DragFloat("Near Plane", ref _renderer.ShadowNearPlane, 1.0f, -200.0f, 200.0f, "%.1f");
-                //    ImGuiNET.ImGui.DragFloat("Far Plane", ref _renderer.ShadowFarPlane, 1.0f, 10.0f, 1000.0f, "%.1f");
-                //    ImGuiNET.ImGui.DragFloat("Spread (Softness)", ref _renderer.ShadowSpread, 0.1f, 0.0f, 20.0f, "%.1f");
-                //    ImGuiNET.ImGui.End();
-                //}
+                if (_paused)
+                {
+                    ImGuiNET.ImGui.Begin("Shadow Settings");
+                    ImGuiNET.ImGui.DragFloat("Bias Factor", ref _renderer.ShadowBiasFactor, 0.0001f, 0.0f, 0.1f, "%.5f");
+                    ImGuiNET.ImGui.DragFloat("Bias Base", ref _renderer.ShadowBiasBase, 0.00001f, 0.0f, 0.01f, "%.6f");
+                    ImGuiNET.ImGui.DragFloat("Near Plane", ref _renderer.ShadowNearPlane, 1.0f, -200.0f, 200.0f, "%.1f");
+                    ImGuiNET.ImGui.DragFloat("Far Plane", ref _renderer.ShadowFarPlane, 1.0f, 10.0f, 1000.0f, "%.1f");
+                    ImGuiNET.ImGui.DragFloat("Spread (Softness)", ref _renderer.ShadowSpread, 0.1f, 0.0f, 20.0f, "%.1f");
+                    ImGuiNET.ImGui.End();
+                }
 
                 _console.Draw();
                 _imgui.Render();

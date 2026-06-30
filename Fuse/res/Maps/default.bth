@@ -2371,8 +2371,8 @@
         1,
         0
       ],
-      "light_intensity": 5,
-      "light_radius": 7.1,
+      "light_intensity": 3.55,
+      "light_radius": 6.8,
       "light_inner_cone": 0.2617994,
       "light_outer_cone": 0.5235988,
       "light_cast_shadows": true,
@@ -2381,9 +2381,9 @@
       "body": {
         "shape": "none",
         "position": [
-          -5.845193,
+          -5.375,
           3.4481769,
-          6.705275
+          6.25
         ],
         "rotation": [
           1,

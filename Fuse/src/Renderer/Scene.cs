@@ -91,7 +91,7 @@ public class Scene
         return entity;
     }
 
-    public void Render(Shader shader, PhysicsWorld world, Texture defaultTexture, Matrix4x4? cullMatrix = null)
+    public void UpdateTransforms(PhysicsWorld world)
     {
         // 1. Update all physics-driven parent positions
         foreach (var e in _entities)
@@ -195,7 +195,10 @@ public class Scene
                     e.AttachedLight.Direction = Vector3.Transform(-Vector3.UnitY, e.Transform.Rotation);
             }
         }
+    }
 
+    public void Render(Shader shader, Texture defaultTexture, Matrix4x4? cullMatrix = null)
+    {
         // 3. Render all entities
         foreach (var e in _entities)
         {

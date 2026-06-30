@@ -45,10 +45,10 @@ public class MasterRenderer
     // Shadow Settings
     public uint ShadowResolution = 512;
     public float ShadowBiasFactor = 0.0f;
-    public float ShadowBiasBase = 0.000040f;
-    public float ShadowNearPlane = 1.0f;
-    public float ShadowFarPlane = 300.0f;
-    public float ShadowSpread = 2.0f;
+    public float ShadowBiasBase = 0.000000f;
+    public float ShadowNearPlane = 0.0f;
+    public float ShadowFarPlane = 23.0f;
+    public float ShadowSpread = 1.0f;
     public bool ShadowsEnabled = false;
     public bool EnableShadowFilter = true;
 
@@ -67,7 +67,7 @@ public class MasterRenderer
         _shadowShader = assets.GetShader($"{Fuse.ResPath.Path}/Shaders/shadow.vert", $"{Fuse.ResPath.Path}/Shaders/shadow.frag")!;
         _pointShadowShader = assets.GetShader($"{Fuse.ResPath.Path}/Shaders/point_shadow.vert", $"{Fuse.ResPath.Path}/Shaders/point_shadow.frag")!;
         
-        _shadowMap = new ShadowMap(_gl, ShadowResolution, ShadowResolution);
+        _shadowMap = new ShadowMap(_gl, ShadowResolution * 2, ShadowResolution * 2);
         _spotShadowMap = new ShadowMap(_gl, ShadowResolution, ShadowResolution, 4);
         _pointShadowMap0 = new PointShadowMap(_gl, ShadowResolution);
         _pointShadowMap1 = new PointShadowMap(_gl, ShadowResolution);
@@ -100,6 +100,9 @@ public class MasterRenderer
         var view = camera.GetViewMatrix();
         var proj = camera.GetProjectionMatrix(aspect);
 
+        // --- 0. Update Physics and Hierarchy ---
+        scene.UpdateTransforms(physics);
+
         // --- 1. Shadow Pass ---
         Vector3 lightDir = Vector3.Normalize(new Vector3(1, 2, 1));
         
@@ -122,7 +125,7 @@ public class MasterRenderer
                 
                 _shadowShader.SetMat4("uLightSpaceMatrix", lightSpaceMatrices[i]);
                 _shadowMap.BindForWriting(i);
-                scene.Render(_shadowShader, physics, _crateTexture, null); 
+                scene.Render(_shadowShader, _crateTexture, lightSpaceMatrices[i]); 
             }
         }
 
@@ -154,7 +157,7 @@ public class MasterRenderer
                 
                 _shadowShader.SetMat4("uLightSpaceMatrix", spotSpaceMatrices[i]);
                 _spotShadowMap.BindForWriting(i);
-                scene.Render(_shadowShader, physics, _crateTexture, null); 
+                scene.Render(_shadowShader, _crateTexture, spotSpaceMatrices[i]); 
             }
         }
 
@@ -199,7 +202,7 @@ public class MasterRenderer
 
                     _pointShadowShader.SetMat4("uLightSpaceMatrix", lightSpaceMatrix);
                     shadowMap.BindForWriting(face);
-                    scene.Render(_pointShadowShader, physics, _crateTexture, null);
+                    scene.Render(_pointShadowShader, _crateTexture, lightSpaceMatrix);
                 }
             }
         }
@@ -312,7 +315,7 @@ public class MasterRenderer
                 _shader.SetMat4($"uSpotLightSpaceMatrices[{i}]", spotSpaceMatrices[i]);
             }
 
-            scene.Render(_shader, physics, _crateTexture);
+            scene.Render(_shader, _crateTexture, null);
         }
     }
 

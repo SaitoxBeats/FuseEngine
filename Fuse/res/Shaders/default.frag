@@ -6,6 +6,8 @@ in vec3 vViewPos;
 
 out vec4 fragColor;
 
+// Você pode alterar esse valor para aumentar o desfoque das luzes Point e Spot
+#define SHADOW_BLUR_MULTIPLIER 0.2 
 
 #define MAX_POINT_LIGHTS 8
 #define MAX_SPOT_LIGHTS 4
@@ -35,12 +37,12 @@ uniform PointLight uPointLights[MAX_POINT_LIGHTS];
 uniform int uSpotLightCount;
 uniform SpotLight uSpotLights[MAX_SPOT_LIGHTS];
 uniform sampler2D uTexture;
-uniform sampler2DArray uShadowMap;
-uniform sampler2DArray uSpotShadowMap;
-uniform samplerCube uPointShadowMap0;
-uniform samplerCube uPointShadowMap1;
-uniform samplerCube uPointShadowMap2;
-uniform samplerCube uPointShadowMap3;
+uniform sampler2DArrayShadow uShadowMap;
+uniform sampler2DArrayShadow uSpotShadowMap;
+uniform samplerCubeShadow uPointShadowMap0;
+uniform samplerCubeShadow uPointShadowMap1;
+uniform samplerCubeShadow uPointShadowMap2;
+uniform samplerCubeShadow uPointShadowMap3;
 uniform bool uUseTexture;
 uniform bool uEnableShadowFilter;
 uniform float uShadowBiasFactor;
@@ -86,7 +88,13 @@ float ShadowCalculation(vec3 worldPos, vec3 normal, vec3 lightDir)
         }
     }
 
-    vec4 fragPosLightSpace = uLightSpaceMatrices[cascadeIndex] * vec4(worldPos, 1.0);
+    // Normal Offset Bias (reduzido para evitar descolamento extremo)
+    float normalOffsetScale = 0.02; // 2 cm
+    if (cascadeIndex == 1) normalOffsetScale *= 2.0;
+    if (cascadeIndex == 2) normalOffsetScale *= 4.0;
+    
+    vec3 offsetPos = worldPos + normal * normalOffsetScale;
+    vec4 fragPosLightSpace = uLightSpaceMatrices[cascadeIndex] * vec4(offsetPos, 1.0);
 
     // perform perspective divide
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
@@ -99,32 +107,28 @@ float ShadowCalculation(vec3 worldPos, vec3 normal, vec3 lightDir)
     // get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
     
-    // calculate bias (based on depth map resolution and slope)
-    float bias = max(uShadowBiasFactor * (1.0 - dot(normal, lightDir)), uShadowBiasBase);
+    // Depth bias mantido incrivelmente minúsculo (0.000005)
+    // Na nossa projeção (-2000 a 2000), 0.000005 representa 2 centímetros!
+    float bias = 0.000005;
     
-    // Compensar o bias para mapas maiores que abrangem distancias longas
-    if (cascadeIndex == 1) bias *= 1.5;
-    if (cascadeIndex == 2) bias *= 3.0;
-    
-    // PCF (Poisson Disk com Interleaved Gradient Noise)
+    // PCF - Estilo Unity (Fixed Filter)
+    // Removemos o ruído aleatório que causa o efeito de dither "spray"
+    // e usamos 4 amostras fixas bilineares em formato de quadrado para um blur 3x3 suave
     float shadow = 0.0;
     vec2 texelSize = 1.0 / vec2(textureSize(uShadowMap, 0));
     
-    // Calcula um angulo de rotacao aleatorio para este pixel
-    float noise = interleaved_gradient_noise(gl_FragCoord.xy) * 6.28318530718; // 2 * PI
-    float s = sin(noise);
-    float c = cos(noise);
-    mat2 rot = mat2(c, -s, s, c);
+    vec2 offsets[4] = vec2[](
+        vec2(-0.5, -0.5), vec2(0.5, -0.5), vec2(-0.5, 0.5), vec2(0.5, 0.5)
+    );
     
-    // Tira 16 amostras do mapa de profundidade na camada específica
-    for(int i = 0; i < 16; i++)
+    for(int i = 0; i < 4; i++)
     {
-        // Gira a amostra e aplica a dispersao (spread)
-        vec2 offset = rot * poissonDisk[i] * (uShadowSpread * texelSize);
-        float pcfDepth = texture(uShadowMap, vec3(projCoords.xy + offset, cascadeIndex)).r; 
-        shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
+        // Multiplicamos por uShadowSpread mas mantemos as posições relativas fixas
+        vec2 offset = offsets[i] * (uShadowSpread * texelSize);
+        float visibility = texture(uShadowMap, vec4(projCoords.xy + offset, cascadeIndex, currentDepth - bias)); 
+        shadow += (1.0 - visibility);
     }
-    shadow /= 16.0;
+    shadow /= 4.0;
     
     return shadow;
 }
@@ -177,43 +181,42 @@ void main() {
             float currentDepth = length(fragToLight) / radius;
             float bias = uPointLights[i].shadowBias;
             if (uEnableShadowFilter) {
-                // PCF com grid esférico de amostras
-                vec3 sampleOffsetDirections[20] = vec3[](
-                   vec3( 1,  1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1,  1,  1), 
-                   vec3( 1,  1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1,  1, -1),
-                   vec3( 1,  1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1,  1,  0),
-                   vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
-                   vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
+                // PCF com grid esférico de amostras otimizado via Hardware PCF (4 amostras)
+                vec3 sampleOffsetDirections[4] = vec3[](
+                   vec3( 1,  1,  1), vec3( 1, -1, -1), vec3(-1, -1,  1), vec3(-1,  1, -1)
                 );
                 float shadows = 0.0;
-                float diskRadius = 0.05;
-                for(int j = 0; j < 20; ++j) {
+                float diskRadius = 0.05 * SHADOW_BLUR_MULTIPLIER;
+                vec3 L = normalize(fragToLight);
+                for(int j = 0; j < 4; ++j) {
                     vec3 offset = sampleOffsetDirections[j] * diskRadius;
-                    float pcfDepth = 1.0;
+                    vec3 sampleDir = L + offset;
+                    float visibility = 1.0;
                     if (uPointLights[i].shadowMapIndex == 0) {
-                        pcfDepth = texture(uPointShadowMap0, fragToLight + offset).r;
+                        visibility = texture(uPointShadowMap0, vec4(sampleDir, currentDepth - bias));
                     } else if (uPointLights[i].shadowMapIndex == 1) {
-                        pcfDepth = texture(uPointShadowMap1, fragToLight + offset).r;
+                        visibility = texture(uPointShadowMap1, vec4(sampleDir, currentDepth - bias));
                     } else if (uPointLights[i].shadowMapIndex == 2) {
-                        pcfDepth = texture(uPointShadowMap2, fragToLight + offset).r;
+                        visibility = texture(uPointShadowMap2, vec4(sampleDir, currentDepth - bias));
                     } else if (uPointLights[i].shadowMapIndex == 3) {
-                        pcfDepth = texture(uPointShadowMap3, fragToLight + offset).r;
+                        visibility = texture(uPointShadowMap3, vec4(sampleDir, currentDepth - bias));
                     }
-                    shadows += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+                    shadows += (1.0 - visibility);
                 }
-                pointShadow = shadows / 20.0;
+                pointShadow = shadows / 4.0;
             } else {
-                float closestDepth = 1.0;
+                float visibility = 1.0;
+                vec3 L = normalize(fragToLight);
                 if (uPointLights[i].shadowMapIndex == 0) {
-                    closestDepth = texture(uPointShadowMap0, fragToLight).r;
+                    visibility = texture(uPointShadowMap0, vec4(L, currentDepth - bias));
                 } else if (uPointLights[i].shadowMapIndex == 1) {
-                    closestDepth = texture(uPointShadowMap1, fragToLight).r;
+                    visibility = texture(uPointShadowMap1, vec4(L, currentDepth - bias));
                 } else if (uPointLights[i].shadowMapIndex == 2) {
-                    closestDepth = texture(uPointShadowMap2, fragToLight).r;
+                    visibility = texture(uPointShadowMap2, vec4(L, currentDepth - bias));
                 } else if (uPointLights[i].shadowMapIndex == 3) {
-                    closestDepth = texture(uPointShadowMap3, fragToLight).r;
+                    visibility = texture(uPointShadowMap3, vec4(L, currentDepth - bias));
                 }
-                pointShadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+                pointShadow = 1.0 - visibility;
             }
         }
         
@@ -258,17 +261,18 @@ void main() {
                 float currentDepth = projCoords.z;
                 float bias = max(uSpotLights[i].shadowBias * (1.0 - dot(norm, lightDirSL)), uSpotLights[i].shadowBias * 0.1);
                 if (uEnableShadowFilter) {
-                    vec2 texelSize = 1.0 / vec2(textureSize(uSpotShadowMap, 0));
-                    for(int x = -1; x <= 1; ++x) {
-                        for(int y = -1; y <= 1; ++y) {
-                            float pcfDepth = texture(uSpotShadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, i)).r; 
-                            spotShadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;        
-                        }    
+                    vec2 texelSize = (1.0 / vec2(textureSize(uSpotShadowMap, 0))) * SHADOW_BLUR_MULTIPLIER;
+                    vec2 offsets[4] = vec2[](
+                        vec2(-0.5, -0.5), vec2(0.5, -0.5), vec2(-0.5, 0.5), vec2(0.5, 0.5)
+                    );
+                    for(int j = 0; j < 4; ++j) {
+                        float visibility = texture(uSpotShadowMap, vec4(projCoords.xy + offsets[j] * texelSize, i, currentDepth - bias)); 
+                        spotShadow += (1.0 - visibility);
                     }
-                    spotShadow /= 9.0;
+                    spotShadow /= 4.0;
                 } else {
-                    float closestDepth = texture(uSpotShadowMap, vec3(projCoords.xy, i)).r;
-                    spotShadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+                    float visibility = texture(uSpotShadowMap, vec4(projCoords.xy, i, currentDepth - bias));
+                    spotShadow = 1.0 - visibility;
                 }
             }
         }
